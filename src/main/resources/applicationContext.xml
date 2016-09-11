@@ -60,10 +60,10 @@
 
     <bean class="ru.cip.ws.erp.jms.MQMessageListener" id="mqListener" lazy-init="true"/>
 
-    <bean class="ru.cip.ws.erp.jms.MQMessageSender" id ="messageSender" p:destinationQueue="${wmq.queue.response}"/>
+    <bean class="ru.cip.ws.erp.jms.MQMessageSender" id ="messageSender" p:destinationQueue="${wmq.queue.request}"/>
 
     <jms:listener-container acknowledge="transacted" concurrency="1" connection-factory="jmsQueueConnectionFactorySecured" container-type="default">
-        <jms:listener ref="mqListener" destination="${wmq.queue.request}"/>
+        <jms:listener ref="mqListener" destination="${wmq.queue.response}"/>
     </jms:listener-container>
 
 </beans>
