@@ -9,6 +9,8 @@ import org.springframework.web.HttpRequestHandler;
 import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.factory.XMLFactory;
 import ru.cip.ws.erp.generated.erptypes.LetterToERPType;
+import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
+import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
 import ru.cip.ws.erp.jms.MQMessageSender;
 
 import javax.jms.JMSException;
@@ -18,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -37,13 +40,22 @@ public class StartErpUpdateServlet implements HttpRequestHandler {
     @Autowired
     private XMLFactory messageFactory;
 
+    @Autowired
+    private CheckPlanRecordDaoImpl checkPlanRecordDao;
+
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final int requestNumber = counter.incrementAndGet();
         logger.info("#{} Call StartErpUpdateServlet", requestNumber);
         response.setContentType("text/html");
         response.setCharacterEncoding("UTF-8");
-        final JAXBElement<LetterToERPType> letterToERPTypeJAXBElement = messageFactory.constructPlanRegular294initialization();
+        final List<CipCheckPlanRecord> checkPlanRecords = checkPlanRecordDao.getRecordsByPlanId(3964102);
+        if(logger.isDebugEnabled()){
+            for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
+                logger.debug("#{} Founded record: {}", requestNumber, checkPlanRecord);
+            }
+        }
+        final JAXBElement<LetterToERPType> letterToERPTypeJAXBElement = messageFactory.constructPlanRegular294initialization(checkPlanRecords);
         try {
             final String result = JAXBMarshallerUtil.marshalAsString(letterToERPTypeJAXBElement);
             if (!StringUtils.isEmpty(result)) {

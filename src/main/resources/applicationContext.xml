@@ -15,10 +15,12 @@
 
     <context:component-scan base-package="ru" />
 
-    <context:property-placeholder location="classpath:wmq.properties" ignore-unresolvable="true"/>
+    <context:property-placeholder location="classpath:wmq.properties, classpath:db.properties" ignore-unresolvable="true"/>
 
     <context:annotation-config />
 
+
+    <!-- JMS - MQ Configuration ################################################################################################################# -->
     <bean class="com.ibm.mq.jms.MQQueueConnectionFactory" id="mqBindingConnectionFactory"/>
 
     <!-- Use this factory in CLIENT mode -->
@@ -65,5 +67,36 @@
     <jms:listener-container acknowledge="transacted" concurrency="1" connection-factory="jmsQueueConnectionFactorySecured" container-type="default">
         <jms:listener ref="mqListener" destination="${wmq.queue.response}"/>
     </jms:listener-container>
+
+    <!-- DatabaseConfiguration ################################################################################################################# -->
+
+    <bean id="nsiDatasource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="url" value="${jdbc.url}" />
+    </bean>
+
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="nsiDatasource" />
+        <property name="defaultTimeout" value="36000" />
+    </bean>
+
+    <bean id="hibernate3AnnotatedSessionFactory"  class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <property name="dataSource" ref="nsiDatasource" />
+        <property name="packagesToScan">
+            <list>
+                <value>ru.cip.ws.erp.jdbc.entity</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</prop>
+                <prop key="hibernate.current_session_context_class">thread</prop>
+                <prop key="hibernate.show_sql">false</prop>
+            </props>
+        </property>
+    </bean>
+
 
 </beans>
