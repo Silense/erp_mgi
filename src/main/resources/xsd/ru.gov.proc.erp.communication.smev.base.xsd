@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2007 rel. 3 (http://www.altova.com) by USER (EMBRACE) -->
+<xs:schema xmlns:tns="urn://ru.gov.proc.erp.communication/base/2.0.5" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn://ru.gov.proc.erp.communication/base/2.0.5" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:simpleType name="EnumerstorPositiveInteger-203099999999">
+		<xs:annotation>
+			<xs:documentation>простой тип -перечислитель целых положительных чисел до 203099999999</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:minInclusive value="201000000000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EnumeratorPositiveInteger-2030999999">
+		<xs:annotation>
+			<xs:documentation>простой тип -перечислитель целых положительных чисел до 2030999999</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:minInclusive value="2000000000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EnumeratorPositiveInteger-9x10-18">
+		<xs:annotation>
+			<xs:documentation>простой тип -перечислитель целых положительных чисел до 9x10*18</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:minInclusive value="0" fixed="true"/>
+			<xs:maxInclusive value="9000000000000000000" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EnumeratorPositiveInteger-2x10-9">
+		<xs:annotation>
+			<xs:documentation>простой тип -перечислитель целых положительных чисел до 2x10*9</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:minInclusive value="0" fixed="true"/>
+			<xs:maxInclusive value="2000000000" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EnumeratorPositiveInteger-32000">
+		<xs:annotation>
+			<xs:documentation>простой тип -перечислитель целых положительных чисел до 32000</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:minInclusive value="1" fixed="true"/>
+			<xs:maxInclusive value="32000" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-8192">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 8192 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="8192" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-4096">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 4096 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="4096" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-2048">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 2048 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="2048" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-1024">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 1024 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="1024" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-512">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 512 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="512" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-256">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 256 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="256" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-128">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 128 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="128" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-64">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 64 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="64" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-32">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 32 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="32" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-16">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 16 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="16" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-8">
+		<xs:annotation>
+			<xs:documentation>простой тип -  строка 8 символов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="0" fixed="true"/>
+			<xs:maxLength value="8" fixed="true"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="LegalPersonINNType">
+		<xs:annotation>
+			<xs:documentation>ИНН юридического лица</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="10"/>
+			<xs:pattern value="\d{10}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PhysicalPersonINNType">
+		<xs:annotation>
+			<xs:documentation>ИНН физического лица</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="12"/>
+			<xs:pattern value="\d{12}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="OGRNCompanyType">
+		<xs:annotation>
+			<xs:documentation>ОГРН юридического лица</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="13"/>
+			<xs:pattern value="[125]{1}\d{12}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="OGRNSoleProprietorType">
+		<xs:annotation>
+			<xs:documentation>ОГРН индивидуального предпринимателя</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="15"/>
+			<xs:pattern value="[3]{1}\d{14}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ProsecutorsCode">
+		<xs:annotation>
+			<xs:documentation>простой тип - код прокуратуры</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="10"/>
+			<xs:maxLength value="10"/>
+			<xs:pattern value="[1][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ModernDate">
+		<xs:annotation>
+			<xs:documentation>простой тип - современные даты</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:date">
+			<xs:minInclusive value="1992-01-01"/>
+			<xs:maxInclusive value="2030-12-31"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="AnnualPlan">
+		<xs:annotation>
+			<xs:documentation>простой тип - годы сводных планов проверок</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:minInclusive value="2000"/>
+			<xs:maxInclusive value="2030"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="CommonStyleINN">
+		<xs:annotation>
+			<xs:documentation>простой тип - ИНН общего формата</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="\d{12}"/>
+			<xs:pattern value="\d{10}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="CommonStyleOGRN">
+		<xs:annotation>
+			<xs:documentation>простой тип - ОГРН общего формата</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[125]{1}\d{12}"/>
+			<xs:pattern value="[3]{1}\d{14}"/>
+			<xs:pattern value=""/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TypeOfUnplannedInspection">
+		<xs:annotation>
+			<xs:documentation>простой тип перечисление - Вид внеплановой проверки</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Заявление КО"/>
+			<xs:enumeration value="Уведомление"/>
+			<xs:enumeration value="Требование прокуратуры"/>
+			<xs:enumeration value="Без уведомления"/>
+			<!--Заявление КО - требует согласования с прокурором-->
+			<!--Уведомление - НЕ требует согласования с прокурором-->
+			<!--Требование прокуратуры - НЕ требует согласования с прокурором (т.к. инициатором является прокуратура)-->
+			<!--Без уведомления - НЕ требует согласования с прокурором (эти проверки проводятся для проверки выполнения ранее выписанных ЮЛ/ИП предписаний)-->
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TypeOfInspection">
+		<xs:annotation>
+			<xs:documentation>простой тип перечисление - Виды проведения проверки</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="32" fixed="true"/>
+			<xs:enumeration value="выездная"/>
+			<xs:enumeration value="документарная"/>
+			<xs:enumeration value="документарная/выездная"/>
+			<xs:enumeration value="не установленно"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TypeOfLocation">
+		<xs:annotation>
+			<xs:documentation>простой тип - Локация проверок ( доступность )</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Локация проверок на стороне Контролирующих органов"/>
+			<xs:enumeration value="Локация проверок на стороне Прокуратуры"/>
+			<xs:enumeration value="Локация проверок на стороне Витрины АС ЕРП"/>
+			<!--Определяется доступность для редактирования проверки-->
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ProsecutorType">
+		<xs:annotation>
+			<xs:documentation>Комплексный тип - Прокуратура Российской Федерации ( Базовый тип)</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="Code" type="tns:ProsecutorsCode" use="optional">
+			<xs:annotation>
+				<xs:documentation>Код прокуратуры (ключ)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="Name" type="tns:string-1024" use="optional">
+			<xs:annotation>
+				<xs:documentation>Наименование прокуратуры</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="RegionsCode" type="xs:integer" use="optional">
+			<xs:annotation>
+				<xs:documentation>Код федерального округа</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="RegionsName" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation>Наименование федерального округа</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="FederalCentersCode" type="xs:integer" use="optional">
+			<xs:annotation>
+				<xs:documentation>Код федерального центра</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="FederalCentersName" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation>Наименование федерального центра</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="LocalAreasCode" type="xs:integer" use="optional">
+			<xs:annotation>
+				<xs:documentation>Код района по версии ЕРП</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="KOUserType">
+		<xs:annotation>
+			<xs:documentation>Комплексный тип -  Контролирующий орган - как пользователь АС ЕРП</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="Name" type="tns:string-128" use="optional"/>
+		<xs:attribute name="OGRN" type="tns:OGRNCompanyType" use="optional"/>
+		<xs:attribute name="FRGU_ORG_ID" type="xs:integer" use="optional"/>
+		<xs:attribute name="FRGU_SERV_ID" type="xs:integer" use="optional"/>
+	</xs:complexType>
+	<xs:complexType name="SubjectInspectionType">
+		<xs:annotation>
+			<xs:documentation>Комплексный тип - Субъект проверки (Базовый тип)</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="YearAnnualPlan" type="tns:AnnualPlan" minOccurs="0" maxOccurs="50">
+				<xs:annotation>
+					<xs:documentation>Год проведения проверок</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SubjectInspectionURIType">
+		<xs:annotation>
+			<xs:documentation>Комплексный тип - Субъект проверки Юридическое лицо</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:SubjectInspectionType">
+				<xs:attribute name="INN" type="tns:LegalPersonINNType" use="required"/>
+				<xs:attribute name="OGRN" type="tns:OGRNCompanyType" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="SubjectInspectionFRIType">
+		<xs:annotation>
+			<xs:documentation>Комплексный тип - Субъект проверки Физическое лицо</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="tns:SubjectInspectionType">
+				<xs:attribute name="INN" type="tns:PhysicalPersonINNType" use="required"/>
+				<xs:attribute name="OGRN" type="tns:OGRNSoleProprietorType" use="required"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="InspectionFormulationType">
+		<xs:annotation>
+			<xs:documentation>Простой тип - перечисление формулировки типов проверок</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Проверки: 294ФЗ в отношении ЮЛ/ИП"/>
+			<xs:enumeration value="Проверки: 136ФЗ (Земельный кодекс) в отношении ЮЛ/ИП"/>
+			<xs:enumeration value="Проверки: 136ФЗ (Земельный кодекс) в отношении ОГВ"/>
+			<xs:enumeration value="Проверки: 131ФЗ в отношении ОМС"/>
+			<xs:enumeration value="Проверки: 136ФЗ (Земельный кодекс) в отношении ОМС"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="FZType">
+		<xs:annotation>
+			<xs:documentation>Простой тип - перечисление Номера федеральных законов</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:enumeration value="294"/>
+			<xs:enumeration value="131"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="LawType">
+		<xs:annotation>
+			<xs:documentation>Комплексный тип - Определение федерального закона</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="FORMULATION" type="tns:InspectionFormulationType" use="required">
+			<xs:annotation>
+				<xs:documentation>Формултировка федерального закона </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="LAW_BASE" type="tns:FZType" use="required">
+			<xs:annotation>
+				<xs:documentation>Федеральный закон - основание проаедения</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+</xs:schema>
