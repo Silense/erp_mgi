@@ -63,6 +63,35 @@
                 <targetPath>${project.build.outputDirectory}</targetPath>
             </resource>
         </resources>
+
+        <plugins>
+            <!--TODO need manual fixes after run
+             @see http://blog.bdoughan.com/2011/12/reusing-generated-jaxb-classes.html
+           <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>jaxb2-maven-plugin</artifactId>
+               <executions>
+                   <execution>
+                       <goals>
+                           <goal>xjc</goal>
+                       </goals>
+                   </execution>
+               </executions>
+               <configuration>
+                   <addGeneratedAnnotation>false</addGeneratedAnnotation>
+                   <clearOutputDir>false</clearOutputDir>
+                   <enableIntrospection>true</enableIntrospection>
+                   <noPackageLevelAnnotations>true</noPackageLevelAnnotations>
+                   <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
+                   <packageName>ru.cip.ws.erp.generated.erptypes</packageName>
+                   <laxSchemaValidation>true</laxSchemaValidation>
+                   <sources>
+                       <source>src/main/resources/xsd/</source>
+                   </sources>
+               </configuration>
+           </plugin>
+       -->
+        </plugins>
     </build>
 
     <dependencies>
@@ -182,6 +211,14 @@
             <artifactId>spring-ws-core</artifactId>
             <version>2.2.0.RELEASE</version>
         </dependency>
+
+        <!-- http://stackoverflow.com/questions/2326107/what-happened-to-jaxbs-namespaceprefixmapper-in-jdk6u18 -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.1.11</version>
+        </dependency>
+
     </dependencies>
 
 
