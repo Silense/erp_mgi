@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+    <jmxConfigurator/>
+    <contextName>ERP</contextName>
+
+    <!--APPENDERS-->
+
+    <!-- Основные настройки для консоли-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${log.format}</pattern>
+        </encoder>
+        <param name="target" value="System.out"/>
+    </appender>
+
+    <!-- для SQL-->
+    <appender name="APPENDER_SQL" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${log.format}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <file>${logs.directory}/SQL/SQL.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${logs.directory}/SQL/SQL_%i.log.gz</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>3</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>25MB</maxFileSize>
+        </triggeringPolicy>
+    </appender>
+
+    <!--Для DAO-->
+    <appender name="APPENDER_DAO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${log.format}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logs.directory}/DAO/DAO.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>${logs.maxHistory}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Для JMS сообщений-->
+    <appender name="APPENDER_JMS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${log.format}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logs.directory}/JMS/jms.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Для Сервлетов-->
+    <appender name="APPENDER_SERVLET" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${log.format}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logs.directory}/servlet/servlet.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>${logs.maxHistory}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!--LOGGERS-->
+
+    <!-- Для сервлетов-->
+    <logger name="ru.cip.ws.erp.servlet" level="DEBUG" additivity="true">
+        <appender-ref ref="APPENDER_SERVLET"/>
+    </logger>
+
+    <!-- Для JMS-->
+    <logger name="ru.cip.ws.erp.jms" level="DEBUG" additivity="true">
+        <appender-ref ref="APPENDER_JMS"/>
+    </logger>
+
+    <!--Hibernate SQL LOGGER-->
+    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+        <appender-ref ref="APPENDER_SQL"/>
+    </logger>
+
+    <root level="${logs.level}">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
