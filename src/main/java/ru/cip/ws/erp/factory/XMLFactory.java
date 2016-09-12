@@ -1,7 +1,9 @@
 package ru.cip.ws.erp.factory;
 
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.cip.ws.erp.generated.erptypes.*;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
@@ -18,11 +20,13 @@ import java.util.List;
 /**
  * Author: Upatov Egor <br>
  * Date: 11.09.2016, 11:43 <br>
- * Company: Bars Group [ www.bars.open.ru ]
  * Description:
  */
 @Component
 public class XMLFactory {
+
+    @Autowired
+    private PropertiesHolder prop;
 
     private ObjectFactory of = new ObjectFactory();
 
@@ -30,28 +34,24 @@ public class XMLFactory {
         return of.createRequest(value);
     }
 
-    public LetterToERPType createLetterToERPType(){
-        return of.createLetterToERPType();
-    }
-
     public MessageToERP294Type constructMessageToERP294Type() {
         final MessageToERP294Type result = of.createMessageToERP294Type();
-        result.setInfoModel(BigInteger.valueOf(20150201));
-        result.setPreviousInfoModel(BigInteger.valueOf(0));
-        result.setMailer(constructMailer("ФНС России", "1047707030513", 10000001169L, 10000037754L));
-        result.setAddressee(constructAdressee("1020500000", "Прокуратура Московской области "));
+        result.setInfoModel(prop.MESSAGETYPE_INFO_MODEL);
+        result.setPreviousInfoModel(prop.MESSAGETYPE_PREVIOUS_INFO_MODEL);
+        result.setMailer(constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID));
+        result.setAddressee(constructAdressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME));
         return result;
     }
 
-    public JAXBElement<LetterToERPType> constructPlanRegular294initialization(final List<CipCheckPlanRecord> checkPlanRecords){
+    public JAXBElement<LetterToERPType> constructPlanRegular294initialization(final String acceptedName, final int year, final List<CipCheckPlanRecord> checkPlanRecords){
         final LetterToERPType letterToERPType = of.createLetterToERPType();
         final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
 
 
-        final MessageToERP294Type.PlanRegular294Initialization  message= of.createMessageToERP294TypePlanRegular294Initialization();
-        message.setKONAME("Управление Роскомнадзора по Приволжскому федеральному округу");
-        message.setACCEPTEDNAME("");
-        message.setYEAR(2016);
+        final MessageToERP294Type.PlanRegular294Initialization  message = of.createMessageToERP294TypePlanRegular294Initialization();
+        message.setKONAME(prop.MGI_ORG_NAME);
+        message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
+        message.setYEAR(year);
         message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
         final List<InspectionRegular294InitializationType> inspectionList = message.getInspectionRegular294Initialization();
         for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {

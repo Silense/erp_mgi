@@ -61,6 +61,7 @@
                     <include>applicationContext.xml</include>
                     <include>wmq.properties</include>
                     <include>db.properties</include>
+                    <include>app.properties</include>
                 </includes>
                 <targetPath>${project.build.outputDirectory}</targetPath>
             </resource>

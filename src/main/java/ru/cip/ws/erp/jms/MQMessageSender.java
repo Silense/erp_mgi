@@ -69,7 +69,7 @@ public class MQMessageSender {
                                      tm.setJMSReplyTo(jmsTemplate.getDestinationResolver().resolveDestinationName(session, getReplyToQueue(), false));
                                  }
                                  messageAtomicReference.set(tm);
-                                 logger.debug("#{} Message is \'{}\'", requestNumber, tm.getText());
+                                 logger.debug("#{} Message is \n{}", requestNumber, tm.getText());
                                  return tm;
                              }
                          });
@@ -80,4 +80,3 @@ public class MQMessageSender {
         return getReplyToQueue() != null;
     }
 }
-
