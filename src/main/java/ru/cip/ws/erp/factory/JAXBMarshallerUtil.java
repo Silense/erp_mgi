@@ -1,10 +1,11 @@
 package ru.cip.ws.erp.factory;
 
+import org.springframework.xml.transform.StringSource;
 import ru.cip.ws.erp.generated.erptypes.ObjectFactory;
+import ru.cip.ws.erp.generated.erptypes.ResponseMsg;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import javax.xml.bind.*;
+import javax.xml.transform.Source;
 import java.io.StringWriter;
 
 /**
@@ -22,5 +23,13 @@ public class JAXBMarshallerUtil {
         final StringWriter sw = new StringWriter();
         marshaller.marshal(item, sw);
         return sw.toString();
+    }
+
+    public static ResponseMsg unmarshalResponse(final String raw) throws JAXBException {
+        final JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
+        final Unmarshaller unmarshaller = context.createUnmarshaller();
+        final Source is = new StringSource(raw);
+        final JAXBElement<ResponseMsg> root = unmarshaller.unmarshal(is, ResponseMsg.class);
+        return root.getValue();
     }
 }

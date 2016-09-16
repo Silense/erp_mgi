@@ -8,11 +8,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestHandler;
 import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.factory.XMLFactory;
+import ru.cip.ws.erp.generated.erptypes.MessageToERP294Type;
 import ru.cip.ws.erp.generated.erptypes.RequestMsg;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.ExportSessionDaoImpl;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
+import ru.cip.ws.erp.jdbc.entity.ExpSession;
+import ru.cip.ws.erp.jdbc.entity.ExpSessionEvent;
 import ru.cip.ws.erp.jms.MQMessageSender;
 
 import javax.jms.JMSException;
@@ -23,6 +27,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -47,6 +52,8 @@ public class StartPlanRegular294initialization implements HttpRequestHandler {
     private CheckPlanRecordDaoImpl checkPlanRecordDao;
     @Autowired
     private CheckPlanDaoImpl checkPlanDao;
+    @Autowired
+    private ExportSessionDaoImpl exportSessionDao;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -94,14 +101,24 @@ public class StartPlanRegular294initialization implements HttpRequestHandler {
                 logger.debug("#{} Founded record: {}", requestNumber, checkPlanRecord);
             }
         }
+        final UUID requestId = UUID.randomUUID();
         final JAXBElement<RequestMsg> jaxb_messsage = messageFactory.constructPlanRegular294initialization(
                 StringUtils.defaultString(param_accepted_name, checkPlan.getACCEPTED_NAME()),
                 param_year != null ? param_year : checkPlan.getYEAR(),
-                checkPlanRecords
+                checkPlanRecords,
+                requestId
         );
         try {
             final String result = JAXBMarshallerUtil.marshalAsString(jaxb_messsage);
             if (!StringUtils.isEmpty(result)) {
+                final ExpSession exportSession = exportSessionDao.createNewExportSession(
+                        "2.2.2 Первичное размещение плана плановых проверок",
+                        MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName(),
+                        requestId.toString()
+                );
+                logger.info("#{} Create new ExportSession: {}", requestNumber, exportSession);
+                final ExpSessionEvent exportEvent = exportSessionDao.createNewExportEvent(result, exportSession);
+                logger.info("#{} Create new ExportEvent: {}", requestNumber, exportEvent);
                 final String messageId = mqMessageSender.send(result);
                 response.setContentType("text/xml");
                 response.getWriter().println(result);

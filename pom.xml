@@ -15,9 +15,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <spring.version>4.0.6.RELEASE</spring.version>
+        <spring.version>4.1.4.RELEASE</spring.version>
         <webSphereMQVersion>7.5</webSphereMQVersion>
-        <hibernate.version>3.6.9.Final</hibernate.version>
+        <hibernate.version>4.2.0.Final</hibernate.version>
 
         <sampe.jars>${basedir}/src/main/webapp/WEB-INF/lib</sampe.jars>
 
@@ -122,6 +122,16 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <version>${hibernate.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+            <version>1.0.1.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <version>3.1.0.CR2</version>
         </dependency>
         <dependency>
             <groupId>com.oracle</groupId>

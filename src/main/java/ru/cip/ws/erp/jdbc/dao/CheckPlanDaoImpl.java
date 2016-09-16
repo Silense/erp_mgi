@@ -1,13 +1,11 @@
 package ru.cip.ws.erp.jdbc.dao;
 
-import org.hibernate.SessionFactory;
-import org.hibernate.classic.Session;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
-import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
 
-import javax.annotation.Resource;
-import java.util.ArrayList;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 /**
@@ -17,59 +15,25 @@ import java.util.List;
  * Description:
  */
 
-@Component
+@Repository
+@Transactional
 public class CheckPlanDaoImpl {
-    @Resource
-    private SessionFactory sessionFactory;
 
-    @SuppressWarnings("unchecked")
+    @PersistenceContext
+    private EntityManager em;
+
     public List<CipCheckPlan> getAll() {
-        Session session = null;
-        List<CipCheckPlan> result = new ArrayList<>();
-        try {
-            session = sessionFactory.openSession();
-            result = session.createQuery("SELECT a FROM CipCheckPlan a ").list();
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-        }
-        return result;
+        return em.createQuery("SELECT a FROM CipCheckPlan a ", CipCheckPlan.class).getResultList();
     }
 
-    @SuppressWarnings("unchecked")
-        public CipCheckPlan getById(final int check_plan_id) {
-        Session session = null;
-        CipCheckPlan result = null;
-        try {
-            session = sessionFactory.openSession();
-            List resultList = session.createQuery("SELECT a FROM CipCheckPlan a WHERE a.CHECK_PLAN_ID = :check_plan_id")
-                    .setParameter("check_plan_id", check_plan_id)
-                    .list();
-            result = resultList.iterator().hasNext() ? (CipCheckPlan) resultList.iterator().next() : null;
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-        }
-        return result;
+    public CipCheckPlan getById(final int check_plan_id) {
+        return em.find(CipCheckPlan.class, check_plan_id);
     }
 
-    @SuppressWarnings("unchecked")
     public CipCheckPlan getByYear(final int year) {
-        Session session = null;
-        CipCheckPlan result = null;
-        try {
-            session = sessionFactory.openSession();
-            List resultList = session.createQuery("SELECT a FROM CipCheckPlan a WHERE a.YEAR = :year")
-                    .setParameter("year", year)
-                    .list();
-            result = resultList.iterator().hasNext() ? (CipCheckPlan) resultList.iterator().next() : null;
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-        }
-        return result;
+        final List<CipCheckPlan> resultList = em.createQuery("SELECT a FROM CipCheckPlan a WHERE a.YEAR = :year", CipCheckPlan.class).setParameter(
+                "year", year
+        ).getResultList();
+        return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
 }

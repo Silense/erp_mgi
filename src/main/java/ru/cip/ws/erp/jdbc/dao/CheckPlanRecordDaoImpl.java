@@ -1,12 +1,11 @@
 package ru.cip.ws.erp.jdbc.dao;
 
-import org.hibernate.SessionFactory;
-import org.hibernate.classic.Session;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
 
-import javax.annotation.Resource;
-import java.util.ArrayList;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 
 /**
@@ -15,41 +14,21 @@ import java.util.List;
  * Company: Bars Group [ www.bars.open.ru ]
  * Description:
  */
-@Component
+@Repository
+@Transactional
 public class CheckPlanRecordDaoImpl {
 
-    @Resource
-    private SessionFactory sessionFactory;
+    @PersistenceContext
+    private EntityManager em;
 
-    @SuppressWarnings("unchecked")
     public List<CipCheckPlanRecord> getAllRecords() {
-        Session session = null;
-        List<CipCheckPlanRecord> result = new ArrayList<>();
-        try {
-            session = sessionFactory.openSession();
-            result = session.createQuery("SELECT a FROM CipCheckPlanRecord a ").list();
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-        }
-        return result;
+        return em.createQuery("SELECT a FROM CipCheckPlanRecord a ", CipCheckPlanRecord.class).getResultList();
     }
 
     @SuppressWarnings("unchecked")
     public List<CipCheckPlanRecord> getRecordsByPlanId(final int check_plan_id) {
-        Session session = null;
-        List<CipCheckPlanRecord> result = new ArrayList<>();
-        try {
-            session = sessionFactory.openSession();
-            result = session.createQuery("SELECT a FROM CipCheckPlanRecord a WHERE a.CHECK_PLAN_ID = :check_plan_id")
-                    .setParameter("check_plan_id", check_plan_id)
-                    .list();
-        } finally {
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-        }
-        return result;
+       return em.createQuery("SELECT a FROM CipCheckPlanRecord a WHERE a.CHECK_PLAN_ID = :check_plan_id", CipCheckPlanRecord.class)
+               .setParameter("check_plan_id", check_plan_id)
+               .getResultList();
     }
 }

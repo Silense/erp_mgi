@@ -70,33 +70,40 @@
 
     <!-- DatabaseConfiguration ################################################################################################################# -->
 
-    <bean id="nsiDatasource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="${jdbc.driver}" />
         <property name="username" value="${jdbc.username}" />
         <property name="password" value="${jdbc.password}" />
         <property name="url" value="${jdbc.url}" />
     </bean>
 
-    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-        <property name="dataSource" ref="nsiDatasource" />
+    <bean id="txManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+        <property name="entityManagerFactory" ref="entityManagerFactoryBean"/>
         <property name="defaultTimeout" value="36000" />
     </bean>
 
-    <bean id="hibernate3AnnotatedSessionFactory"  class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
-        <property name="dataSource" ref="nsiDatasource" />
-        <property name="packagesToScan">
-            <list>
-                <value>ru.cip.ws.erp.jdbc.entity</value>
-            </list>
+    <!-- This produces a container-managed EntityManagerFactory;
+         rather than application-managed EntityManagerFactory as in case of LocalEntityManagerFactoryBean-->
+    <bean id="entityManagerFactoryBean" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <!-- This makes /META-INF/persistence.xml is no longer necessary -->
+        <property name="packagesToScan" value="ru.cip.ws.erp.jdbc.entity" />
+        <!-- JpaVendorAdapter implementation for Hibernate EntityManager.
+             Exposes Hibernate's persistence provider and EntityManager extension interface -->
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
         </property>
-        <property name="hibernateProperties">
+        <property name="jpaProperties">
             <props>
                 <prop key="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</prop>
-                <prop key="hibernate.current_session_context_class">thread</prop>
-                <prop key="hibernate.show_sql">false</prop>
             </props>
         </property>
     </bean>
+
+    <!-- responsible for registering the necessary Spring components that power annotation-driven transaction management;
+       such as when @Transactional methods are invoked -->
+    <tx:annotation-driven />
 
 
 </beans>

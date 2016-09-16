@@ -5,8 +5,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
+import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
+import ru.cip.ws.erp.generated.erptypes.ResponseMsg;
+import ru.cip.ws.erp.jdbc.dao.ImportSessionDaoImpl;
+import ru.cip.ws.erp.jdbc.entity.ImpSession;
+import ru.cip.ws.erp.jdbc.entity.ImpSessionEvent;
 
 import javax.jms.*;
+import javax.xml.bind.JAXBException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -22,31 +28,44 @@ public class MQMessageListener implements MessageListener {
     @Autowired
     private JmsTemplate jmsTemplate;
 
+    @Autowired
+    private ImportSessionDaoImpl importSessionDao;
+
     @Override
     public void onMessage(Message message) {
-        final int currentRequestNumber = counter.incrementAndGet();
+        final int requestNumber = counter.incrementAndGet();
         try {
             final String messageId = message.getJMSMessageID();
-            logger.info("#{} Incoming message[{}] Type: {}", currentRequestNumber,  messageId,  message.getClass().getName());
+            logger.info("#{} Incoming message[{}] Type: {}", requestNumber,  messageId,  message.getClass().getName());
             if (isTextMessage(message)) {
                 // Process text message
                 final TextMessage textMessage = (TextMessage) message;
                 logger.debug("MessageBody: {}", textMessage.getText());
-                //TODO
+                final ResponseMsg msg = JAXBMarshallerUtil.unmarshalResponse(textMessage.getText());
+                final ImpSession importSession = importSessionDao.createNewImportSession(
+                        "Ответ от ЕРП",
+                        msg.getStatusMessage(),
+                        msg.getRequestId()
+                );
+                logger.info("#{} Create new ImportSession: {}", requestNumber, importSession);
+                final ImpSessionEvent importEvent = importSessionDao.createNewImportEvent(textMessage.getText(), importSession);
+                logger.info("#{} Create new ImportEvent: {}", requestNumber, importEvent);
                 // ready for reply
                 final Destination replyTo = message.getJMSReplyTo();
                 if (replyTo == null) { // quite eating messages without JMSReplyTo
-                    logger.warn("#{} comes without JMSReplyTo", currentRequestNumber);
+                    logger.warn("#{} comes without JMSReplyTo", requestNumber);
                 } else {
-                    reply(messageId, replyTo, currentRequestNumber);
+                    reply(messageId, replyTo, requestNumber);
                 }
             } else {
                 final String wrongTypeMessage = "We don't handle messages other then TextMessage.";
-                logger.warn("#{} is not TextMessage", currentRequestNumber);
+                logger.warn("#{} is not TextMessage", requestNumber);
                 throw new JMSException(wrongTypeMessage);
             }
         } catch (JMSException e) {
-            logger.error("#{} Exception in onMessage : ", currentRequestNumber, e);
+            logger.error("#{} Exception in onMessage : ", requestNumber, e);
+        } catch (JAXBException e) {
+            logger.error("#{} Cant parse to JAXB (XML type) ", e);
         }
     }
 

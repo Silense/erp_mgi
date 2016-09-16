@@ -31,7 +31,7 @@ public class XMLFactory {
 
     private ObjectFactory of = new ObjectFactory();
 
-    public JAXBElement<LetterToERPType> createRequest(LetterToERPType value){
+    public JAXBElement<LetterToERPType> createRequest(LetterToERPType value) {
         return of.createRequest(value);
     }
 
@@ -44,9 +44,14 @@ public class XMLFactory {
         return result;
     }
 
-    public JAXBElement<RequestMsg> constructPlanRegular294initialization(final String acceptedName, final int year, final List<CipCheckPlanRecord> checkPlanRecords){
+    public JAXBElement<RequestMsg> constructPlanRegular294initialization(
+            final String acceptedName,
+            final int year,
+            final List<CipCheckPlanRecord> checkPlanRecords,
+            final UUID uuid
+    ) {
         final RequestMsg requestMsg = of.createRequestMsg();
-        requestMsg.setRequestId(UUID.randomUUID().toString());
+        requestMsg.setRequestId(uuid.toString());
         requestMsg.setRequestDate(wrapDateTime(new Date()));
         final RequestBody requestBody = of.createRequestBody();
 
@@ -54,7 +59,7 @@ public class XMLFactory {
         final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
 
 
-        final MessageToERP294Type.PlanRegular294Initialization  message = of.createMessageToERP294TypePlanRegular294Initialization();
+        final MessageToERP294Type.PlanRegular294Initialization message = of.createMessageToERP294TypePlanRegular294Initialization();
         message.setKONAME(prop.MGI_ORG_NAME);
         message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
         message.setYEAR(year);
@@ -74,18 +79,18 @@ public class XMLFactory {
 
     private InspectionRegular294InitializationType constructInspectionRegular294InitializationType(final CipCheckPlanRecord record) {
         final InspectionRegular294InitializationType result = of.createInspectionRegular294InitializationType();
-        result.setORGNAME(record.getORG_NAME());           
+        result.setORGNAME(record.getORG_NAME());
         result.setADRSECI(record.getADR_SEC_I());
         result.setADRSECII(record.getADR_SEC_II());
         result.setADRSECIII(record.getADR_SEC_III());
-        result.setADRSECIV(record.getADR_SEC_IV());        
+        result.setADRSECIV(record.getADR_SEC_IV());
         result.setOGRN(record.getOGRN());
         result.setINN(record.getINN());
         result.setINSPTARGET(record.getINSP_TARGET());
         result.setREASONSECI(wrapDate(record.getREASON_SEC_I()));
         result.setREASONSECII(wrapDate(record.getREASON_SEC_II()));
         result.setREASONSECIII(wrapDate(record.getREASON_SEC_III()));
-        if(record.getREASON_SEC_IV() != null) {
+        if (record.getREASON_SEC_IV() != null) {
             result.setREASONSECIV(String.valueOf(record.getREASON_SEC_IV()));
         }
         result.setSTARTDATE(wrapDate(record.getSTART_DATE()));
@@ -105,7 +110,6 @@ public class XMLFactory {
         result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
         return result;
     }
-
 
 
     private LawBook294Type constructLawBook294(final long lawBase, final InspectionFormulationType inspectionFormulation) {
@@ -136,7 +140,7 @@ public class XMLFactory {
 
     private XMLGregorianCalendar wrapDate(final Date date) {
         try {
-            return date==null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat("yyyy-MM-dd").format(date));
+            return date == null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat("yyyy-MM-dd").format(date));
         } catch (DatatypeConfigurationException e) {
             return null;
         }
@@ -144,7 +148,9 @@ public class XMLFactory {
 
     private XMLGregorianCalendar wrapDateTime(final Date date) {
         try {
-            return date==null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(date));
+            return date == null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(
+                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(date)
+            );
         } catch (DatatypeConfigurationException e) {
             return null;
         }

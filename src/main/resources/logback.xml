@@ -73,6 +73,11 @@
         <appender-ref ref="APPENDER_SERVLET"/>
     </logger>
 
+    <!--Для DAO-->
+    <logger name="ru.cip.ws.erp.jdbc.dao" level="DEBUG" additivity="true">
+        <appender-ref ref="APPENDER_DAO"/>
+    </logger>
+
     <!-- Для JMS-->
     <logger name="ru.cip.ws.erp.jms" level="DEBUG" additivity="true">
         <appender-ref ref="APPENDER_JMS"/>
