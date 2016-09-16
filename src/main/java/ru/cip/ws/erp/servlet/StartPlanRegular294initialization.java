@@ -1,16 +1,17 @@
 package ru.cip.ws.erp.servlet;
 
-import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.HttpRequestHandler;
 import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.factory.XMLFactory;
-import ru.cip.ws.erp.generated.erptypes.LetterToERPType;
+import ru.cip.ws.erp.generated.erptypes.RequestMsg;
+import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
+import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
 import ru.cip.ws.erp.jms.MQMessageSender;
 
@@ -44,17 +45,20 @@ public class StartPlanRegular294initialization implements HttpRequestHandler {
     private XMLFactory messageFactory;
     @Autowired
     private CheckPlanRecordDaoImpl checkPlanRecordDao;
+    @Autowired
+    private CheckPlanDaoImpl checkPlanDao;
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final int requestNumber = counter.incrementAndGet();
-        Integer param_check_plan_id_parsed;
-        Integer param_year_parsed;
-        final String param_check_plan_id = request.getParameter(PARAM_NAME_CHECK_PLAN_ID);
-        final String param_year = request.getParameter(PARAM_NAME_YEAR);
-        final String param_accepted_name = request.getParameter(PARAM_NAME_ACCEPTED_NAME);
+        response.setContentType("text/html");
+        response.setCharacterEncoding("UTF-8");
+        logger.info("#{} Call StartErpUpdateServlet", requestNumber);
+        final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
+        final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
+        final String param_accepted_name = getStringParameter(request, PARAM_NAME_ACCEPTED_NAME);
         logger.info(
-                "#{} Call StartErpUpdateServlet({}='{}', {}='{}', {}='{}')",
+                "#{} Parsed params ({}='{}', {}='{}', {}='{}')",
                 requestNumber,
                 PARAM_NAME_CHECK_PLAN_ID,
                 param_check_plan_id,
@@ -63,63 +67,40 @@ public class StartPlanRegular294initialization implements HttpRequestHandler {
                 PARAM_NAME_ACCEPTED_NAME,
                 param_accepted_name
         );
-        response.setContentType("text/html");
-        response.setCharacterEncoding("UTF-8");
-        if (StringUtils.isEmpty(param_check_plan_id)) {
-            logger.warn("#{} End. Parameter {} is empty", requestNumber, PARAM_NAME_CHECK_PLAN_ID);
-            response.getWriter().println(
-                    String.format("Необходимо указать в качестве параметра идентификатор плана проверки [%s]", PARAM_NAME_CHECK_PLAN_ID)
-            );
+        if (param_year == null && param_check_plan_id == null) {
+            logger.warn("#{} End. Not '{}' or '{}' set", requestNumber, PARAM_NAME_YEAR, PARAM_NAME_CHECK_PLAN_ID);
+            response.getWriter().print("Не указан ни идентифкатор плана проверки, ни год (один из параметров должен быть указан, год приоритетнее)");
             response.setStatus(400);
-            response.flushBuffer();
+            return;
+        }
+        final CipCheckPlan checkPlan = (param_year != null) ? checkPlanDao.getByYear(param_year) : checkPlanDao.getById(param_check_plan_id);
+        if (checkPlan == null) {
+            logger.warn("#{} End. CheckPlan not found", requestNumber);
+            response.getWriter().print("Не найден план проверки " + (param_year != null ? "(по году)" : "(по идентификатору)"));
+            response.setStatus(404);
             return;
         } else {
-            param_check_plan_id_parsed = NumberUtils.createInteger(param_check_plan_id);
-            if(param_check_plan_id_parsed == null){
-                logger.warn("#{} End. Parameter {}[value='{}'] is not integer", requestNumber, PARAM_NAME_CHECK_PLAN_ID, param_check_plan_id);
-                response.getWriter().println(
-                        String.format("Параметр идентификатора плана проверки [%s] должен быть целочисленным", PARAM_NAME_CHECK_PLAN_ID)
-                );
-                response.setStatus(400);
-                response.flushBuffer();
-                return;
-            }
+            logger.debug("#{} founded CheckPlan: {}", requestNumber, checkPlan);
         }
-        if (StringUtils.isEmpty(param_year)) {
-            logger.warn("#{} End. Parameter {} is empty", requestNumber, PARAM_NAME_YEAR);
-            response.getWriter().println(String.format("Необходимо указать в качестве параметра год [%s]", PARAM_NAME_YEAR));
-            response.setStatus(400);
+        final List<CipCheckPlanRecord> checkPlanRecords = checkPlanRecordDao.getRecordsByPlanId(checkPlan.getCHECK_PLAN_ID());
+        if (checkPlanRecords.isEmpty()) {
+            logger.warn("#{} End. Not found any PlanRecords by check_plan_id = {}", requestNumber, checkPlan.getCHECK_PLAN_ID());
+            response.getWriter().println(String.format("По плану проверок [%d] не найдено проверок", checkPlan.getCHECK_PLAN_ID()));
+            response.setStatus(404);
             response.flushBuffer();
             return;
-        } else {
-            param_year_parsed = NumberUtils.createInteger(param_year);
-            if( param_year_parsed == null){
-                logger.warn("#{} End. Parameter {}[value='{}'] is not integer", requestNumber, PARAM_NAME_YEAR, param_year);
-                response.getWriter().println(String.format("Параметр год [%s] должен быть целочисленным", PARAM_NAME_YEAR));
-                response.setStatus(400);
-                response.flushBuffer();
-                return;
-            }
-        }
-
-        final List<CipCheckPlanRecord> checkPlanRecords = checkPlanRecordDao.getRecordsByPlanId(param_check_plan_id_parsed);
-        if(checkPlanRecords.isEmpty()){
-            logger.warn("#{} End. Not found any PlanRecords by check_plan_id = {}", requestNumber, param_check_plan_id_parsed);
-            response.getWriter().println(String.format("По идентифкатору плана проверок [%d] не найдено проверок", param_check_plan_id_parsed));
-            response.setStatus(400);
-            response.flushBuffer();
-            return;
-        }
-        if (logger.isDebugEnabled()) {
+        } else if (logger.isDebugEnabled()) {
             for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
                 logger.debug("#{} Founded record: {}", requestNumber, checkPlanRecord);
             }
         }
-        final JAXBElement<LetterToERPType> letterToERPTypeJAXBElement = messageFactory.constructPlanRegular294initialization(
-                param_accepted_name, param_year_parsed, checkPlanRecords
+        final JAXBElement<RequestMsg> jaxb_messsage = messageFactory.constructPlanRegular294initialization(
+                StringUtils.defaultString(param_accepted_name, checkPlan.getACCEPTED_NAME()),
+                param_year != null ? param_year : checkPlan.getYEAR(),
+                checkPlanRecords
         );
         try {
-            final String result = JAXBMarshallerUtil.marshalAsString(letterToERPTypeJAXBElement);
+            final String result = JAXBMarshallerUtil.marshalAsString(jaxb_messsage);
             if (!StringUtils.isEmpty(result)) {
                 final String messageId = mqMessageSender.send(result);
                 response.setContentType("text/xml");
@@ -138,5 +119,23 @@ public class StartPlanRegular294initialization implements HttpRequestHandler {
             response.getWriter().println("Ошибка при формировании сообщения");
         }
         logger.info("#{} End of StartErpUpdateServlet", requestNumber);
+    }
+
+    private String getStringParameter(final HttpServletRequest request, final String parameterName) {
+        return request.getParameter(parameterName);
+    }
+
+    private Integer getIntegerParameter(final HttpServletRequest request, final String parameterName) {
+        final String parameterValueStr = request.getParameter(parameterName);
+        if (StringUtils.isNotEmpty(parameterValueStr)) {
+            try {
+                return Integer.valueOf(parameterValueStr);
+            } catch (NumberFormatException e) {
+                logger.warn("Cannot cast parameter \'{}\' with value \'{}\' to integer", parameterName, parameterValueStr);
+            }
+        }
+        logger.warn("Parameter \'{}\' is not set", parameterName);
+        return null;
+
     }
 }

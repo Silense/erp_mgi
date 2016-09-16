@@ -16,6 +16,7 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Author: Upatov Egor <br>
@@ -43,7 +44,12 @@ public class XMLFactory {
         return result;
     }
 
-    public JAXBElement<LetterToERPType> constructPlanRegular294initialization(final String acceptedName, final int year, final List<CipCheckPlanRecord> checkPlanRecords){
+    public JAXBElement<RequestMsg> constructPlanRegular294initialization(final String acceptedName, final int year, final List<CipCheckPlanRecord> checkPlanRecords){
+        final RequestMsg requestMsg = of.createRequestMsg();
+        requestMsg.setRequestId(UUID.randomUUID().toString());
+        requestMsg.setRequestDate(wrapDateTime(new Date()));
+        final RequestBody requestBody = of.createRequestBody();
+
         final LetterToERPType letterToERPType = of.createLetterToERPType();
         final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
 
@@ -52,6 +58,7 @@ public class XMLFactory {
         message.setKONAME(prop.MGI_ORG_NAME);
         message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
         message.setYEAR(year);
+        message.setDATEFORM(wrapDate(new Date()));
         message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
         final List<InspectionRegular294InitializationType> inspectionList = message.getInspectionRegular294Initialization();
         for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
@@ -59,7 +66,10 @@ public class XMLFactory {
         }
         messageToERP294Type.setPlanRegular294Initialization(message);
         letterToERPType.setMessage294(messageToERP294Type);
-        return createRequest(letterToERPType);
+
+        requestBody.setRequest(letterToERPType);
+        requestMsg.setRequestBody(requestBody);
+        return of.createRequestMsg(requestMsg);
     }
 
     private InspectionRegular294InitializationType constructInspectionRegular294InitializationType(final CipCheckPlanRecord record) {
@@ -75,16 +85,18 @@ public class XMLFactory {
         result.setREASONSECI(wrapDate(record.getREASON_SEC_I()));
         result.setREASONSECII(wrapDate(record.getREASON_SEC_II()));
         result.setREASONSECIII(wrapDate(record.getREASON_SEC_III()));
-        result.setREASONSECIV(String.valueOf(record.getREASON_SEC_IV()));
+        if(record.getREASON_SEC_IV() != null) {
+            result.setREASONSECIV(String.valueOf(record.getREASON_SEC_IV()));
+        }
         result.setSTARTDATE(wrapDate(record.getSTART_DATE()));
         result.setDURATIONSECI(NumberUtils.createBigInteger(record.getDURATION_SEC_I().split(" ")[0])); //todo
         result.setDURATIONSECII(BigInteger.valueOf(record.getDURATION_SEC_II()));
         result.setKINDOFINSP(TypeOfInspection.fromValue(record.getKIND_OF_INSP().toLowerCase()));
-        result.setKOJOINTLY(record.getKO_JOINTLY());
+        result.setKOJOINTLY(StringUtils.defaultString(record.getKO_JOINTLY(), ""));
         result.setREASONSECIDENY(BooleanUtils.toBooleanObject(record.getREASON_SEC_I_DENY()));
         result.setREASONSECIIDENY(BooleanUtils.toBooleanObject(record.getREASON_SEC_II_DENY()));
         result.setREASONSECIIIDENY(BooleanUtils.toBooleanObject(record.getREASON_SEC_III_DENY()));
-        result.setREASONSECIVDENY(String.valueOf(record.getREASON_SEC_IV_DENY()));
+        result.setREASONSECIVDENY(record.getREASON_SEC_IV_DENY());
         result.setUSERNOTE(record.getUSER_NOTE());
         result.setFRGUNUM(record.getFRGU_NUM());
         result.setNOTICEDATE(wrapDate(record.getNOTICE_DATE()));
@@ -94,21 +106,6 @@ public class XMLFactory {
         return result;
     }
 
-    private XMLGregorianCalendar wrapDate(final Date date) {
-        try {
-            return date==null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat("yyyy-MM-dd").format(date));
-        } catch (DatatypeConfigurationException e) {
-            return null;
-        }
-    }
-
-    private XMLGregorianCalendar wrapDateTime(final Date date) {
-        try {
-            return date==null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(date));
-        } catch (DatatypeConfigurationException e) {
-            return null;
-        }
-    }
 
 
     private LawBook294Type constructLawBook294(final long lawBase, final InspectionFormulationType inspectionFormulation) {
@@ -135,5 +132,23 @@ public class XMLFactory {
         result.setFRGUSERVID(BigInteger.valueOf(FRGUSERVID));
         return result;
     }
+
+
+    private XMLGregorianCalendar wrapDate(final Date date) {
+        try {
+            return date==null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat("yyyy-MM-dd").format(date));
+        } catch (DatatypeConfigurationException e) {
+            return null;
+        }
+    }
+
+    private XMLGregorianCalendar wrapDateTime(final Date date) {
+        try {
+            return date==null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(date));
+        } catch (DatatypeConfigurationException e) {
+            return null;
+        }
+    }
+
 
 }

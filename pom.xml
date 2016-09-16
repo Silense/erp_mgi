@@ -69,31 +69,30 @@
 
         <plugins>
             <!--TODO need manual fixes after run
-             @see http://blog.bdoughan.com/2011/12/reusing-generated-jaxb-classes.html
-           <plugin>
-               <groupId>org.codehaus.mojo</groupId>
-               <artifactId>jaxb2-maven-plugin</artifactId>
-               <executions>
-                   <execution>
-                       <goals>
-                           <goal>xjc</goal>
-                       </goals>
-                   </execution>
-               </executions>
-               <configuration>
-                   <addGeneratedAnnotation>false</addGeneratedAnnotation>
-                   <clearOutputDir>false</clearOutputDir>
-                   <enableIntrospection>true</enableIntrospection>
-                   <noPackageLevelAnnotations>true</noPackageLevelAnnotations>
-                   <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
-                   <packageName>ru.cip.ws.erp.generated.erptypes</packageName>
-                   <laxSchemaValidation>true</laxSchemaValidation>
-                   <sources>
-                       <source>src/main/resources/xsd/</source>
-                   </sources>
-               </configuration>
-           </plugin>
-       -->
+             @see http://blog.bdoughan.com/2011/12/reusing-generated-jaxb-classes.html -->
+           <!--<plugin>-->
+               <!--<groupId>org.codehaus.mojo</groupId>-->
+               <!--<artifactId>jaxb2-maven-plugin</artifactId>-->
+               <!--<executions>-->
+                   <!--<execution>-->
+                       <!--<goals>-->
+                           <!--<goal>xjc</goal>-->
+                       <!--</goals>-->
+                   <!--</execution>-->
+               <!--</executions>-->
+               <!--<configuration>-->
+                   <!--<addGeneratedAnnotation>false</addGeneratedAnnotation>-->
+                   <!--<clearOutputDir>false</clearOutputDir>-->
+                   <!--<enableIntrospection>true</enableIntrospection>-->
+                   <!--<noPackageLevelAnnotations>true</noPackageLevelAnnotations>-->
+                   <!--<outputDirectory>${project.basedir}/src/main/java</outputDirectory>-->
+                   <!--<packageName>ru.cip.ws.erp.generated.erptypes</packageName>-->
+                   <!--<laxSchemaValidation>true</laxSchemaValidation>-->
+                   <!--<sources>-->
+                       <!--<source>src/main/resources/xsd/ru.mos.etp.smev.erp.xsd</source>-->
+                   <!--</sources>-->
+               <!--</configuration>-->
+           <!--</plugin>-->
         </plugins>
     </build>
 

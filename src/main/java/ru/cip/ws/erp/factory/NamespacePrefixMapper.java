@@ -7,11 +7,13 @@ package ru.cip.ws.erp.factory;
  * Description:
  */
 public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper{
-    private static final String TNS_URI = "urn://ru.gov.proc.erp.communication/2.0.5";
+    private static final String ERP_URI = "urn://ru.gov.proc.erp.communication/2.0.5";
     private static final String ERP_REQUEST_TYPES_URI = "urn://ru.gov.proc.erp.communication/types/2.0.5";
+    private static final String ETP_URI = "urn://ru.mos.etp.smev.erp/1.0.0";
 
-    private static final String TNS_NMS = "tns";
+    private static final String ERP_NMS = "erp";
     private static final String ERP_REQUEST_TYPES_NMS = "erp_types";
+    private static final String ETP_NMS="etp";
 
 
 
@@ -20,16 +22,18 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
 
     @Override
     public String getPreferredPrefix(final String namespaceUri, final String suggestion, final boolean requirePrefix) {
-        if(TNS_URI.equals(namespaceUri)) {
-            return TNS_NMS;
+        if(ERP_URI.equals(namespaceUri)) {
+            return ERP_NMS;
         } else if(ERP_REQUEST_TYPES_URI.equals(namespaceUri)) {
             return ERP_REQUEST_TYPES_NMS;
+        }  else if(ETP_URI.equals(namespaceUri)) {
+            return ETP_NMS;
         }
         return suggestion;
     }
 
     @Override
     public String[] getPreDeclaredNamespaceUris() {
-        return new String[] { ERP_REQUEST_TYPES_URI, TNS_URI };
+        return new String[] { ERP_REQUEST_TYPES_URI, ERP_URI, ETP_URI };
     }
 }
