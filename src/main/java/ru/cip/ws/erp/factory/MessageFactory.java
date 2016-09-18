@@ -16,7 +16,6 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Author: Upatov Egor <br>
@@ -24,34 +23,21 @@ import java.util.UUID;
  * Description:
  */
 @Component
-public class XMLFactory {
+public class MessageFactory {
 
     @Autowired
     private PropertiesHolder prop;
 
     private ObjectFactory of = new ObjectFactory();
 
-    public JAXBElement<LetterToERPType> createRequest(LetterToERPType value) {
-        return of.createRequest(value);
-    }
-
-    public MessageToERP294Type constructMessageToERP294Type() {
-        final MessageToERP294Type result = of.createMessageToERP294Type();
-        result.setInfoModel(prop.MESSAGETYPE_INFO_MODEL);
-        result.setPreviousInfoModel(prop.MESSAGETYPE_PREVIOUS_INFO_MODEL);
-        result.setMailer(constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID));
-        result.setAddressee(constructAdressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME));
-        return result;
-    }
-
     public JAXBElement<RequestMsg> constructPlanRegular294initialization(
             final String acceptedName,
             final int year,
             final List<CipCheckPlanRecord> checkPlanRecords,
-            final UUID uuid
+            final String requestId
     ) {
         final RequestMsg requestMsg = of.createRequestMsg();
-        requestMsg.setRequestId(uuid.toString());
+        requestMsg.setRequestId(requestId);
         requestMsg.setRequestDate(wrapDateTime(new Date()));
         final RequestBody requestBody = of.createRequestBody();
 
@@ -76,6 +62,42 @@ public class XMLFactory {
         requestMsg.setRequestBody(requestBody);
         return of.createRequestMsg(requestMsg);
     }
+
+    public JAXBElement<RequestMsg> constructProsecutorAsk(final String requestId){
+        final RequestMsg requestMsg = of.createRequestMsg();
+        requestMsg.setRequestId(requestId);
+        requestMsg.setRequestDate(wrapDateTime(new Date()));
+        final RequestBody requestBody = of.createRequestBody();
+
+        final LetterToERPType letterToERPType = of.createLetterToERPType();
+
+        final MessageToERPCommonType messageCommon = constructMessageToERPCommonType();
+        messageCommon.setProsecutorAsk(of.createProsecutorAskType());
+
+        letterToERPType.setMessageCommon(messageCommon);
+
+        requestBody.setRequest(letterToERPType);
+        requestMsg.setRequestBody(requestBody);
+        return of.createRequestMsg(requestMsg);
+    }
+
+    public MessageToERPCommonType constructMessageToERPCommonType() {
+        final MessageToERPCommonType result = of.createMessageToERPCommonType();
+        result.setInfoModel(prop.MESSAGETYPE_INFO_MODEL);
+        result.setPreviousInfoModel(prop.MESSAGETYPE_PREVIOUS_INFO_MODEL);
+        return result;
+    }
+
+
+    public MessageToERP294Type constructMessageToERP294Type() {
+        final MessageToERP294Type result = of.createMessageToERP294Type();
+        result.setInfoModel(prop.MESSAGETYPE_INFO_MODEL);
+        result.setPreviousInfoModel(prop.MESSAGETYPE_PREVIOUS_INFO_MODEL);
+        result.setMailer(constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID));
+        result.setAddressee(constructAdressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME));
+        return result;
+    }
+
 
     private InspectionRegular294InitializationType constructInspectionRegular294InitializationType(final CipCheckPlanRecord record) {
         final InspectionRegular294InitializationType result = of.createInspectionRegular294InitializationType();

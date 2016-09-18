@@ -33,7 +33,7 @@ public class ExportSessionDaoImpl {
     private EntityManager em;
 
 
-    public ExpSession createNewExportSession(final String description, final String message, final String requestId) {
+    public ExpSession createExportSession(final String description, final String message, final String requestId) {
         final Date now = new Date();
         final ExpSession result = new ExpSession();
         result.setSYSTEM_SERVICE_ID(appID);
@@ -50,11 +50,10 @@ public class ExportSessionDaoImpl {
         result.setCREATE_SYSTEM(appID);
         result.setUPDATE_SYSTEM(appID);
         em.persist(result);
-        em.flush();
         return result;
     }
 
-    public ExpSessionEvent createNewExportEvent(final String message, final ExpSession exp_session) {
+    public ExpSessionEvent createExportEvent(final String message, final ExpSession exp_session) {
         final Date now = new Date();
         final ExpSessionEvent result = new ExpSessionEvent();
         result.setEVENT_DT(now);
@@ -62,7 +61,6 @@ public class ExportSessionDaoImpl {
         result.setEVENT_USER_ID(appID);
         result.setEXP_SESSION_ID(exp_session.getEXP_SESSION_ID());
         em.persist(result);
-        em.flush();
         return result;
 
     }
@@ -72,5 +70,16 @@ public class ExportSessionDaoImpl {
                 .setParameter("ext_pakage_id", ext_package_id)
                 .getResultList();
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
+    }
+
+    public void setSessionInfo(final ExpSession session, final String status, final String message) {
+        session.setSESSION_MSG(message);
+        setSessionStatus(session, status);
+    }
+
+    public void setSessionStatus(final ExpSession session, final String status) {
+        session.setEND_DATE(new Date());
+        session.setENUM_EXP_SESSION_STATUS(status);
+        em.merge(session);
     }
 }

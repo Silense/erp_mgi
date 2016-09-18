@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MQMessageSender {
 
     private static final Logger logger = LoggerFactory.getLogger(MQMessageSender.class);
-    private static AtomicInteger counter  = new AtomicInteger(0);
+    private static AtomicInteger counter = new AtomicInteger(0);
 
     @Autowired
     private JmsTemplate jmsTemplate;
@@ -48,31 +48,39 @@ public class MQMessageSender {
 
     /**
      * Use injected destinationQueue as target.
+     *
      * @param message
      */
-    public String send(final String message) throws JMSException {
+    public String send(final String message) {
         final int requestNumber = counter.incrementAndGet();
         logger.info("#{} Start send message to \'{}\'", requestNumber, getDestinationQueue());
-        final String result = send(message, getDestinationQueue(), requestNumber);
-        logger.info("#{} Sent. Result is \'{}\'", requestNumber, result);
-        return result;
+        try {
+            final String result = send(message, getDestinationQueue(), requestNumber);
+            logger.info("#{} Sent. Result is \'{}\'", requestNumber, result);
+            return result;
+        } catch (final JMSException e) {
+            logger.error("#{} Error in JMS session  : ", requestNumber, e);
+            return null;
+        }
     }
 
     public final String send(final String message, final String destinationQueue, final int requestNumber) throws JMSException {
         final AtomicReference<TextMessage> messageAtomicReference = new AtomicReference<>();
-        jmsTemplate.send(destinationQueue, new MessageCreator() {
-                             @Override
-                             public Message createMessage(Session session) throws JMSException {
-                                 TextMessage tm = session.createTextMessage();
-                                 tm.setText(message);
-                                 if (needReply()) {
-                                     tm.setJMSReplyTo(jmsTemplate.getDestinationResolver().resolveDestinationName(session, getReplyToQueue(), false));
-                                 }
-                                 messageAtomicReference.set(tm);
-                                 logger.debug("#{} Message is \n{}", requestNumber, tm.getText());
-                                 return tm;
-                             }
-                         });
+        jmsTemplate.send(
+                destinationQueue, new MessageCreator() {
+                    @Override
+                    public Message createMessage(Session session) throws JMSException {
+                        TextMessage tm = session.createTextMessage();
+                        tm.setText(message);
+                        if (needReply()) {
+                            tm.setJMSReplyTo(jmsTemplate.getDestinationResolver().resolveDestinationName(session, getReplyToQueue(), false));
+                        }
+                        messageAtomicReference.set(tm);
+                        logger.debug("#{} Message is \n{}", requestNumber, tm.getText());
+                        return tm;
+                    }
+                }
+        );
         return messageAtomicReference.get().getJMSMessageID();
     }
 

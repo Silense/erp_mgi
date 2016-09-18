@@ -1,5 +1,8 @@
 package ru.cip.ws.erp.factory;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.xml.transform.StringSource;
 import ru.cip.ws.erp.generated.erptypes.ObjectFactory;
 import ru.cip.ws.erp.generated.erptypes.ResponseMsg;
@@ -15,14 +18,32 @@ import java.io.StringWriter;
  * Description:
  */
 public class JAXBMarshallerUtil {
-    public static String marshalAsString(Object item) throws JAXBException {
-        final JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
-        final Marshaller marshaller = context.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper());
-        final StringWriter sw = new StringWriter();
-        marshaller.marshal(item, sw);
-        return sw.toString();
+
+    private final static Logger logger = LoggerFactory.getLogger(JAXBMarshallerUtil.class);
+
+
+    public static String marshalAsString(final Object item, final String requestId ) {
+        if(item ==null){
+            logger.error("{} End. Error: Marshalling called with NULL as item", requestId);
+            return null;
+        }
+        try {
+            final JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
+            final Marshaller marshaller = context.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper());
+            final StringWriter sw = new StringWriter();
+            marshaller.marshal(item, sw);
+            final String result = sw.toString();
+            if(StringUtils.isEmpty(result)){
+                logger.error("{} End. Error: After marshalling result message is null or empty", requestId);
+                return null;
+            }
+            return result;
+        } catch (final JAXBException e){
+            logger.error("{} End. Error: Marshalling failed with error", requestId, e);
+            return null;
+        }
     }
 
     public static ResponseMsg unmarshalResponse(final String raw) throws JAXBException {

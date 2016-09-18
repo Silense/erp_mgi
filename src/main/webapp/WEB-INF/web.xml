@@ -35,12 +35,12 @@
 
     <!-- Сервлеты -->
     <servlet>
-        <servlet-name>startPlanRegular294initialization</servlet-name>
+        <servlet-name>startErpUpdateService</servlet-name>
         <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>startPlanRegular294initialization</servlet-name>
-        <url-pattern>/update/startPlanRegular294initialization</url-pattern>
+        <servlet-name>startErpUpdateService</servlet-name>
+        <url-pattern>/update/start</url-pattern>
     </servlet-mapping>
 
     <!--<servlet>-->
