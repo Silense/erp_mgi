@@ -36,12 +36,12 @@ public class CheckPlanRecordDaoImpl {
 
     public PlanCheckRecErp createPlanCheckRecErp(final PlanCheckErp plan, final CipCheckPlanRecord record){
         final PlanCheckRecErp result = new PlanCheckRecErp();
-        result.setIdCheckPlanRecErp(plan.getIdCheckPlanErp());
-        result.setIdCheckPlanRecErp(record.getCorrelationId());
+        result.setIdCheckPlanErp(plan.getIdCheckPlanErp());
         result.setCodeCheckPlanRecErp(null);
         result.setCheckPlanRecStatusErp("WAIT");
         result.setCipChPlRecCorrelId(record.getCorrelationId());
         em.persist(result);
+        em.flush();
         return result;
     }
 
@@ -54,5 +54,11 @@ public class CheckPlanRecordDaoImpl {
     public void setStatus(final PlanCheckRecErp record, final String status){
         record.setCheckPlanRecStatusErp(status);
         em.merge(record);
+        em.flush();
+    }
+
+    public List<PlanCheckRecErp> getRecordsByPlanId(final Integer planId) {
+        return em.createQuery("SELECT a FROM PlanCheckRecErp a WHERE a.idCheckPlanErp = :plan_id", PlanCheckRecErp.class)
+                .setParameter("plan_id", planId).getResultList();
     }
 }

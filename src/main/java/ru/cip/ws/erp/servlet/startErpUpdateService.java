@@ -11,6 +11,8 @@ import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
+import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
+import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -28,11 +30,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class startErpUpdateService implements HttpRequestHandler {
 
-    private final static Logger logger = LoggerFactory.getLogger(startErpUpdateService.class);
-    private final static String PARAM_NAME_DATA_KIND = "DATA_KIND";
+    private static final Logger logger = LoggerFactory.getLogger(startErpUpdateService.class);
+    private static final String PARAM_NAME_DATA_KIND = "DATA_KIND";
 
-    private final static String DATA_KIND_PROSECUTOR_ACK = "PROSECUTOR_ACK";
-    private static final String DATA_KIND_CHECK_PLAN = "CHECK_PLAN";
+    private static final String DATA_KIND_PROSECUTOR_ACK = "PROSECUTOR_ACK";
+    private static final String DATA_KIND_PLAN_REGULAR_294_INITIALIZATION = "PLAN_REGULAR_294_INITIALIZATION";
+    private static final String DATA_KIND_PLAN_REGULAR_294_CORRECTION = "PLAN_REGULAR_294_CORRECTION";
+    private static final String DATA_KIND_PLAN_RESULT_294_INITIALIZATION = "PLAN_RESULT_294_INITIALIZATION";
+    private static final String DATA_KIND_PLAN_RESULT_294_CORRECTION = "PLAN_RESULT_294_CORRECTION";
+    private static final String DATA_KIND_UPLAN_UNREGULAR_294_INITIALIZATION = "UPLAN_UNREGULAR_294_INITIALIZATION";
+    private static final String DATA_KIND_UPLAN_UNREGULAR_294_CORRECTION = "UPLAN_UNREGULAR_294_CORRECTION";
+    private static final String DATA_KIND_UPLAN_RESULT_294_INITIALIZATION = "UPLAN_RESULT_294_INITIALIZATION";
+    private static final String DATA_KIND_UPLAN_RESULT_294_CORRECTION = "UPLAN_RESULT_294_CORRECTION";
+
 
     private static final String PARAM_NAME_CHECK_PLAN_ID = "CHECK_PLAN_ID";
     private static final String PARAM_NAME_YEAR = "YEAR";
@@ -56,19 +66,150 @@ public class startErpUpdateService implements HttpRequestHandler {
         logger.info("#{} Call StartErpUpdateServlet. {}=\'{}\'", requestNumber, PARAM_NAME_DATA_KIND);
         if (DATA_KIND_PROSECUTOR_ACK.equalsIgnoreCase(param_data_kind)) {
             processProsecutorAsk(request, response, requestNumber);
-        } else if (DATA_KIND_CHECK_PLAN.equalsIgnoreCase(param_data_kind)) {
-            processCheckPlan(request, response, requestNumber);
+        } else if (DATA_KIND_PLAN_REGULAR_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+            processPlanRegular294Initialization(request, response, requestNumber);
+        } else if (DATA_KIND_PLAN_REGULAR_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+            processPlanRegular294Correction(request, response, requestNumber);
+        } else if (DATA_KIND_PLAN_RESULT_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+            processPlanResult294Initialization(request, response, requestNumber);
+        } else if (DATA_KIND_PLAN_RESULT_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+            processPlanResult294Correction(request, response, requestNumber);
+        }  else if (DATA_KIND_UPLAN_UNREGULAR_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+            processUplanUnRegular294Initialization(request, response, requestNumber);
+        } else if (DATA_KIND_UPLAN_UNREGULAR_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+            processUplanUnRegular294Correction(request, response, requestNumber);
+        } else if (DATA_KIND_UPLAN_RESULT_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+            processUplanResult294Initialization(request, response, requestNumber);
+        } else if (DATA_KIND_UPLAN_RESULT_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+            processUplanResult294Correction(request, response, requestNumber);
         }
         logger.info("#{} End of StartErpUpdateServlet", requestNumber);
     }
 
+    private void processUplanResult294Correction(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+        //TODO
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
 
-    private void processCheckPlan(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) throws IOException {
+    private void processUplanResult294Initialization(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+        //TODO
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private void processUplanUnRegular294Correction(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+        //TODO
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private void processUplanUnRegular294Initialization(
+            final HttpServletRequest request, final HttpServletResponse response, final int requestNumber
+    ) {
+        //TODO
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private void processPlanResult294Correction(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+        //TODO
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private void processPlanResult294Initialization(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+        //TODO
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private void processPlanRegular294Correction(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber)
+            throws IOException {
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
         final String param_accepted_name = getStringParameter(request, PARAM_NAME_ACCEPTED_NAME);
         logger.info(
-                "#{} CheckPlan : parsed params ({}='{}', {}='{}', {}='{}')",
+                "#{} PlanRegular294Correction : parsed params ({}='{}', {}='{}', {}='{}')",
+                requestNumber,
+                PARAM_NAME_CHECK_PLAN_ID,
+                param_check_plan_id,
+                PARAM_NAME_YEAR,
+                param_year,
+                PARAM_NAME_ACCEPTED_NAME,
+                param_accepted_name
+        );
+        if (param_check_plan_id == null) {
+            logger.warn("#{} End. Not '{}' set", requestNumber, PARAM_NAME_YEAR, PARAM_NAME_CHECK_PLAN_ID);
+            response.getWriter().print("Не указан идентифкатор плана проверки");
+            response.setStatus(400);
+            return;
+        }
+        final CipCheckPlan checkPlan = checkPlanDao.getByIdFromView(param_check_plan_id);
+        if (checkPlan == null) {
+            logger.warn("#{} End. CheckPlan not found", requestNumber);
+            response.getWriter().print("Не найден план проверки  (по идентификатору)");
+            response.setStatus(404);
+            return;
+        } else {
+            logger.debug("#{} founded CheckPlan: {}", requestNumber, checkPlan);
+        }
+        final PlanCheckErp planCheckErp = checkPlanDao.getById(checkPlan.getCHECK_PLAN_ID());
+        if (planCheckErp == null) {
+            logger.warn("#{} End. PLAN[{}] is not send for ERP", requestNumber, checkPlan.getCHECK_PLAN_ID());
+            response.getWriter().print(
+                    String.format("Нельзя корректировать план: План %d еще не был первично выгружен в ЕРП", checkPlan.getCHECK_PLAN_ID())
+            );
+            response.setStatus(400);
+            return;
+        } else {
+            logger.debug("#{} founded PlanCheckErp: {}", requestNumber, planCheckErp);
+        }
+        if (planCheckErp.getCodeCheckPlanErp() == null) {
+            logger.warn("#{} End. PLAN[{}] is not send for ERP", requestNumber, checkPlan.getCHECK_PLAN_ID());
+            response.getWriter().print(
+                    String.format(
+                            "Нельзя корректировать план: По первичному размещению плана %d еще не было ответа из ЕРП",
+                            checkPlan.getCHECK_PLAN_ID()
+                    )
+            );
+            response.setStatus(400);
+            return;
+        }
+        final List<CipCheckPlanRecord> checkPlanRecords = checkPlanRecordDao.getRecordsFromViewByPlanId(checkPlan.getCHECK_PLAN_ID());
+        if (checkPlanRecords.isEmpty()) {
+            logger.warn("#{} End. Not found any PlanRecords by check_plan_id = {}", requestNumber, checkPlan.getCHECK_PLAN_ID());
+            response.getWriter().println(String.format("По плану проверок [%d] не найдено проверок", checkPlan.getCHECK_PLAN_ID()));
+            response.setStatus(404);
+            response.flushBuffer();
+            return;
+        } else if (logger.isDebugEnabled()) {
+            for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
+                logger.debug("#{} Founded record: {}", requestNumber, checkPlanRecord);
+            }
+        }
+        final List<PlanCheckRecErp> sentCheckPlanRecords = checkPlanRecordDao.getRecordsByPlanId(planCheckErp.getIdCheckPlanErp());
+        final String result = messageService.sendPlanRegular294Correction(
+                checkPlan,
+                checkPlanRecords,
+                planCheckErp,
+                sentCheckPlanRecords,
+                param_accepted_name,
+                param_year
+        );
+        if (StringUtils.isNotEmpty(result)) {
+            response.setContentType("text/xml");
+            response.getWriter().println(result);
+            response.setStatus(200);
+        } else {
+            response.setContentType("text/xml");
+            response.getWriter().println("Ошибка");
+            response.setStatus(500);
+        }
+    }
+
+
+    private void processPlanRegular294Initialization(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber)
+            throws IOException {
+        final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
+        final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
+        final String param_accepted_name = getStringParameter(request, PARAM_NAME_ACCEPTED_NAME);
+        logger.info(
+                "#{} PlanRegular294Initialization : parsed params ({}='{}', {}='{}', {}='{}')",
                 requestNumber,
                 PARAM_NAME_CHECK_PLAN_ID,
                 param_check_plan_id,
@@ -83,8 +224,9 @@ public class startErpUpdateService implements HttpRequestHandler {
             response.setStatus(400);
             return;
         }
-        final CipCheckPlan checkPlan = (param_year != null) ?
-                checkPlanDao.getByYearFromView(param_year) : checkPlanDao.getByIdFromView(param_check_plan_id);
+        final CipCheckPlan checkPlan = (param_year != null) ? checkPlanDao.getByYearFromView(param_year) : checkPlanDao.getByIdFromView(
+                param_check_plan_id
+        );
         if (checkPlan == null) {
             logger.warn("#{} End. CheckPlan not found", requestNumber);
             response.getWriter().print("Не найден план проверки " + (param_year != null ? "(по году)" : "(по идентификатору)"));
@@ -105,7 +247,7 @@ public class startErpUpdateService implements HttpRequestHandler {
                 logger.debug("#{} Founded record: {}", requestNumber, checkPlanRecord);
             }
         }
-        final String result = messageService.sendPlanRegular294initialization(checkPlan, param_accepted_name, param_year, checkPlanRecords);
+        final String result = messageService.sendPlanRegular294Initialization(checkPlan, param_accepted_name, param_year, checkPlanRecords);
         if (StringUtils.isNotEmpty(result)) {
             response.setContentType("text/xml");
             response.getWriter().println(result);

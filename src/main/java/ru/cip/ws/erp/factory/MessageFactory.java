@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.cip.ws.erp.generated.erptypes.*;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
+import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
+import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -30,11 +32,55 @@ public class MessageFactory {
 
     private ObjectFactory of = new ObjectFactory();
 
-    public JAXBElement<RequestMsg> constructPlanRegular294initialization(
+    public JAXBElement<RequestMsg> constructPlanRegular294Correction(
             final String acceptedName,
-            final int year,
+            final Integer year,
             final List<CipCheckPlanRecord> checkPlanRecords,
+            final PlanCheckErp planCheckErp,
+            final List<PlanCheckRecErp> planCheckRecErpList,
             final String requestId
+    ) {
+        final RequestMsg requestMsg = of.createRequestMsg();
+        requestMsg.setRequestId(requestId);
+        requestMsg.setRequestDate(wrapDateTime(new Date()));
+        final RequestBody requestBody = of.createRequestBody();
+
+        final LetterToERPType letterToERPType = of.createLetterToERPType();
+        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
+
+        final MessageToERP294Type.PlanRegular294Correction message = of.createMessageToERP294TypePlanRegular294Correction();
+        message.setKONAME(prop.MGI_ORG_NAME);
+        message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
+        message.setYEAR(year);
+        message.setDATEFORM(wrapDate(new Date()));
+        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
+        // ИД из уже отосланного плана
+        message.setID(BigInteger.valueOf(planCheckErp.getCodeCheckPlanErp()));
+
+        final List<InspectionRegular294CorrectionType> inspectionList = message.getInspectionRegular294Correction();
+        for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
+            PlanCheckRecErp correlated = null;
+            for (PlanCheckRecErp checkRecErp : planCheckRecErpList) {
+               if(checkPlanRecord.getCorrelationId().equals(checkRecErp.getCipChPlRecCorrelId())){
+                   correlated = checkRecErp;
+                   break;
+               }
+            }
+            inspectionList.add(constructInspectionRegular294CorrectionType(checkPlanRecord, correlated));
+        }
+        messageToERP294Type.setPlanRegular294Correction(message);
+
+        letterToERPType.setMessage294(messageToERP294Type);
+
+        requestBody.setRequest(letterToERPType);
+        requestMsg.setRequestBody(requestBody);
+        return of.createRequestMsg(requestMsg);
+    }
+
+
+
+    public JAXBElement<RequestMsg> constructPlanRegular294Initialization(
+            final String acceptedName, final int year, final List<CipCheckPlanRecord> checkPlanRecords, final String requestId
     ) {
         final RequestMsg requestMsg = of.createRequestMsg();
         requestMsg.setRequestId(requestId);
@@ -63,7 +109,9 @@ public class MessageFactory {
         return of.createRequestMsg(requestMsg);
     }
 
-    public JAXBElement<RequestMsg> constructProsecutorAsk(final String requestId){
+
+
+    public JAXBElement<RequestMsg> constructProsecutorAsk(final String requestId) {
         final RequestMsg requestMsg = of.createRequestMsg();
         requestMsg.setRequestId(requestId);
         requestMsg.setRequestDate(wrapDateTime(new Date()));
@@ -130,6 +178,45 @@ public class MessageFactory {
         result.setORDERNUM(record.getORDER_NUM());
         result.setLASTVIOLATIONDATE(wrapDate(record.getLAST_VIOLATION_DATE()));
         result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
+        return result;
+    }
+
+    private InspectionRegular294CorrectionType constructInspectionRegular294CorrectionType(
+            final CipCheckPlanRecord record, final PlanCheckRecErp correlated
+    ) {
+        final InspectionRegular294CorrectionType result = of.createInspectionRegular294CorrectionType();
+        result.setORGNAME(record.getORG_NAME());
+        result.setADRSECI(record.getADR_SEC_I());
+        result.setADRSECII(record.getADR_SEC_II());
+        result.setADRSECIII(record.getADR_SEC_III());
+        result.setADRSECIV(record.getADR_SEC_IV());
+        result.setOGRN(record.getOGRN());
+        result.setINN(record.getINN());
+        result.setINSPTARGET(record.getINSP_TARGET());
+        result.setREASONSECI(wrapDate(record.getREASON_SEC_I()));
+        result.setREASONSECII(wrapDate(record.getREASON_SEC_II()));
+        result.setREASONSECIII(wrapDate(record.getREASON_SEC_III()));
+        if (record.getREASON_SEC_IV() != null) {
+            result.setREASONSECIV(String.valueOf(record.getREASON_SEC_IV()));
+        }
+        result.setSTARTDATE(wrapDate(record.getSTART_DATE()));
+        result.setDURATIONSECI(NumberUtils.createBigInteger(record.getDURATION_SEC_I().split(" ")[0])); //todo
+        result.setDURATIONSECII(BigInteger.valueOf(record.getDURATION_SEC_II()));
+        result.setKINDOFINSP(TypeOfInspection.fromValue(record.getKIND_OF_INSP().toLowerCase()));
+        result.setKOJOINTLY(StringUtils.defaultString(record.getKO_JOINTLY(), ""));
+        result.setREASONSECIDENY(BooleanUtils.toBooleanObject(record.getREASON_SEC_I_DENY()));
+        result.setREASONSECIIDENY(BooleanUtils.toBooleanObject(record.getREASON_SEC_II_DENY()));
+        result.setREASONSECIIIDENY(BooleanUtils.toBooleanObject(record.getREASON_SEC_III_DENY()));
+        result.setREASONSECIVDENY(record.getREASON_SEC_IV_DENY());
+        result.setUSERNOTE(record.getUSER_NOTE());
+        result.setFRGUNUM(record.getFRGU_NUM());
+        result.setNOTICEDATE(wrapDate(record.getNOTICE_DATE()));
+        result.setORDERNUM(record.getORDER_NUM());
+        result.setLASTVIOLATIONDATE(wrapDate(record.getLAST_VIOLATION_DATE()));
+        result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
+        if(correlated !=null) {
+            result.setID(BigInteger.valueOf(correlated.getCodeCheckPlanRecErp()));
+        }
         return result;
     }
 

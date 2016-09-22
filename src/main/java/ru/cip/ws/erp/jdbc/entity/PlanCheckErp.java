@@ -1,9 +1,6 @@
 package ru.cip.ws.erp.jdbc.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Author: Upatov Egor <br>
@@ -12,11 +9,13 @@ import javax.persistence.Table;
  * Description:
  */
 @Entity
-@Table(name = "PLANCHECK_ERP", schema = "ODOPM_SRC", catalog = "")
+@Table(name = "CIP_PLANCHECK_ERP", schema = "ODOPM_SRC", catalog = "")
 public class PlanCheckErp {
 
     @Id
     @Column(name = "ID_CHECK_PLAN_ERP")
+    @GeneratedValue(strategy=GenerationType.AUTO, generator = "CIP_PLANCHECK_ERP_SEQ")
+    @SequenceGenerator(name="CIP_PLANCHECK_ERP_SEQ", sequenceName = "ODOPM_SRC.CIP_PLANCHECK_ERP_SEQ")
     private Integer idCheckPlanErp;
 
     @Column(name = "ID_PROSECUTORS")

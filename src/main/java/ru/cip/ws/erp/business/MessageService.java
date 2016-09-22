@@ -44,12 +44,77 @@ public class MessageService {
     @Autowired
     private ExportSessionDaoImpl exportSessionDao;
 
-    public String sendPlanRegular294initialization(
+    public String sendPlanRegular294Correction(
+            final CipCheckPlan checkPlan,
+            final List<CipCheckPlanRecord> planRecords,
+            final PlanCheckErp planCheckErp,
+            final List<PlanCheckRecErp> planCheckRecErpList,
+            final String acceptedName,
+            final Integer year
+    ) {
+        final String requestId = UUID.randomUUID().toString();
+        logger.info("{} : Start processing PlanRegular294Correction message", requestId);
+        final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Correction(
+                StringUtils.defaultString(acceptedName, checkPlan.getACCEPTED_NAME()),
+                year != null ? year : checkPlan.getYEAR(),
+                planRecords,
+                planCheckErp,
+                planCheckRecErpList,
+                requestId
+        );
+        if (requestMessage == null) {
+            logger.error("{} : End. Error: message from Factory is NULL", requestId);
+            return null;
+        }
+        final String description = "4.1.3 Запрос на размещение корректировки плана плановых проверок";
+        final String messageType = MessageToERP294Type.PlanRegular294Correction.class.getSimpleName();
+
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
+        if (StringUtils.isEmpty(result)) {
+            return null;
+        }
+
+        final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
+        logger.info("{} : Create new ExportSession: {}", requestId, exportSession);
+        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(result, exportSession);
+        logger.info("{} : Create new ExportEvent: {}", requestId, exportEvent);
+        checkPlanDao.setExportSessionAndStatus(planCheckErp, "WAIT FOR CORRECTON RESPONSE", exportSession);
+        logger.info("{} : Update PlanCheckErp: {}", requestId, planCheckErp);
+        for (CipCheckPlanRecord record : planRecords) {
+            PlanCheckRecErp correlated = null;
+            for (PlanCheckRecErp checkRecErp : planCheckRecErpList) {
+                if (record.getCorrelationId().equals(checkRecErp.getCipChPlRecCorrelId())) {
+                    correlated = checkRecErp;
+                    break;
+                }
+            }
+            if(correlated == null){
+                final PlanCheckRecErp planCheckRecErp = checkPlanRecordDao.createPlanCheckRecErp(planCheckErp, record);
+                logger.info("{} : Create new PlanCheckRecErp: {}", requestId, planCheckRecErp);
+            } else {
+                checkPlanRecordDao.setStatus(correlated, "WAIT FOR CORRECTION RESPONSE");
+                logger.info("{} : Update PlanCheckRecErp: {}", requestId, correlated);
+            }
+        }
+        final String messageId = messageSender.send(result);
+        logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+        if (StringUtils.isEmpty(messageId)) {
+            exportSessionDao.setSessionInfo(exportSession, "ERROR", "Not sent to JMS");
+            checkPlanDao.setStatus(planCheckErp, "ERROR");
+            checkPlanRecordDao.setStatus(planCheckRecErpList, "ERROR");
+            return null;
+        } else {
+            exportSessionDao.setSessionStatus(exportSession, "DONE");
+            return result;
+        }
+    }
+
+    public String sendPlanRegular294Initialization(
             final CipCheckPlan checkPlan, final String acceptedName, final Integer year, final List<CipCheckPlanRecord> planRecords
     ) {
         final String requestId = UUID.randomUUID().toString();
-        logger.info("{} : Start processing ProsecutorAsk message", requestId);
-        final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294initialization(
+        logger.info("{} : Start processing PlanRegular294Initialization message", requestId);
+        final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Initialization(
                 StringUtils.defaultString(acceptedName, checkPlan.getACCEPTED_NAME()),
                 year != null ? year : checkPlan.getYEAR(),
                 planRecords,
@@ -126,6 +191,7 @@ public class MessageService {
         }
         return null;
     }
+
 
 
 }

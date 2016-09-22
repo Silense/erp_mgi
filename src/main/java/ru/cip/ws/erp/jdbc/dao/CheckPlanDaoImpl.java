@@ -42,18 +42,28 @@ public class CheckPlanDaoImpl {
 
     public PlanCheckErp createPlanCheckErp(final int id, final Integer prosecutorId, final ExpSession expSession){
         final PlanCheckErp result = new PlanCheckErp();
-        result.setIdCheckPlanErp(id);
         result.setIdProsecutors(prosecutorId);
         result.setCodeCheckPlanErp(null);
         result.setCheckPlanStatusErp("WAIT");
-        result.setCipChPlLglApprvdId(null);
+        result.setCipChPlLglApprvdId(id);
         result.setExpSessionId(expSession.getEXP_SESSION_ID());
         em.persist(result);
+        em.flush();
         return result;
     }
 
     public void setStatus(final PlanCheckErp planCheckErp, final String status) {
         planCheckErp.setCheckPlanStatusErp(status);
         em.merge(planCheckErp);
+        em.flush();
+    }
+
+    public PlanCheckErp getById(final Integer id) {
+        return em.find(PlanCheckErp.class, id);
+    }
+
+    public void setExportSessionAndStatus(final PlanCheckErp planCheckErp, final String status, final ExpSession exportSession) {
+        planCheckErp.setExpSessionId(exportSession.getEXP_SESSION_ID());
+        setStatus(planCheckErp, status);
     }
 }

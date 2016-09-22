@@ -72,7 +72,7 @@ public class ImportSessionDaoImpl {
         result.setIMP_SESSION_ID(imp_session.getIMP_SESSION_ID());
         result.setEVENT_TEXT(message);
         result.setEVENT_USER_ID(appID);
-         em.persist(result);
+        em.persist(result);
         em.flush();
         return result;
 

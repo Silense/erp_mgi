@@ -1,9 +1,6 @@
 package ru.cip.ws.erp.jdbc.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Author: Upatov Egor <br>
@@ -12,12 +9,18 @@ import javax.persistence.Table;
  * Description:
  */
 @Entity
-@Table(name = "PLANCHECKREC_ERP", schema = "ODOPM_SRC", catalog = "")
+@Table(name = "CIP_PLANCHECK_REC_ERP", schema = "ODOPM_SRC", catalog = "")
 public class PlanCheckRecErp {
 
     @Id
     @Column(name = "ID_CHECK_PLAN_REC_ERP")
+    @GeneratedValue(strategy=GenerationType.AUTO, generator = "CIP_PLANCHECK_REC_ERP_SEQ")
+    @SequenceGenerator(name="CIP_PLANCHECK_REC_ERP_SEQ", sequenceName = "ODOPM_SRC.CIP_PLANCHECK_REC_ERP_SEQ")
     private Integer idCheckPlanRecErp;
+
+    @Column(name = "ID_CHECK_PLAN_ERP")
+    private Integer idCheckPlanErp;
+
 
     @Column(name = "CODE_CHECK_PLAN_REC_ERP")
     private Integer codeCheckPlanRecErp;
@@ -63,6 +66,14 @@ public class PlanCheckRecErp {
         this.cipChPlRecCorrelId = cipChPlRecCorrelId;
     }
 
+    public Integer getIdCheckPlanErp() {
+        return idCheckPlanErp;
+    }
+
+    public void setIdCheckPlanErp(final Integer idCheckPlanErp) {
+        this.idCheckPlanErp = idCheckPlanErp;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -100,6 +111,7 @@ public class PlanCheckRecErp {
     public String toString() {
         final StringBuilder sb = new StringBuilder("PlanCheckRecErp{");
         sb.append("idCheckPlanRecErp=").append(idCheckPlanRecErp);
+        sb.append(", idCheckPlanErp=").append(idCheckPlanErp);
         sb.append(", codeCheckPlanRecErp=").append(codeCheckPlanRecErp);
         sb.append(", checkPlanRecStatusErp='").append(checkPlanRecStatusErp).append('\'');
         sb.append(", cipChPlRecCorrelId=").append(cipChPlRecCorrelId);
