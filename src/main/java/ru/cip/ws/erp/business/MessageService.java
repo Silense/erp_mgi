@@ -45,6 +45,7 @@ public class MessageService {
     private ExportSessionDaoImpl exportSessionDao;
 
     public String sendPlanRegular294Correction(
+            final String requestId,
             final CipCheckPlan checkPlan,
             final List<CipCheckPlanRecord> planRecords,
             final PlanCheckErp planCheckErp,
@@ -52,8 +53,7 @@ public class MessageService {
             final String acceptedName,
             final Integer year
     ) {
-        final String requestId = UUID.randomUUID().toString();
-        logger.info("{} : Start processing PlanRegular294Correction message", requestId);
+        logger.info("{} : Start construct PlanRegular294Correction message", requestId);
         final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Correction(
                 StringUtils.defaultString(acceptedName, checkPlan.getACCEPTED_NAME()),
                 year != null ? year : checkPlan.getYEAR(),
@@ -88,7 +88,7 @@ public class MessageService {
                     break;
                 }
             }
-            if(correlated == null){
+            if (correlated == null) {
                 final PlanCheckRecErp planCheckRecErp = checkPlanRecordDao.createPlanCheckRecErp(planCheckErp, record);
                 logger.info("{} : Create new PlanCheckRecErp: {}", requestId, planCheckRecErp);
             } else {
@@ -157,8 +157,7 @@ public class MessageService {
         }
     }
 
-    public String sendProsecutorAck() {
-        final String requestId = UUID.randomUUID().toString();
+    public String sendProsecutorAck(final String requestId) {
         logger.info("{} : Start processing ProsecutorAsk message", requestId);
         final JAXBElement<RequestMsg> requestMessage = messageFactory.constructProsecutorAsk(requestId);
         if (requestMessage == null) {
@@ -191,7 +190,6 @@ public class MessageService {
         }
         return null;
     }
-
 
 
 }
