@@ -5,9 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
+import ru.cip.ws.erp.business.IncomingMessageProcessor;
 import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.generated.erptypes.*;
+import ru.cip.ws.erp.jdbc.dao.ExportSessionDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.ImportSessionDaoImpl;
+import ru.cip.ws.erp.jdbc.entity.ExpSession;
 import ru.cip.ws.erp.jdbc.entity.ImpSession;
 import ru.cip.ws.erp.jdbc.entity.ImpSessionEvent;
 
@@ -30,6 +33,10 @@ public class MQMessageListener implements MessageListener {
 
     @Autowired
     private ImportSessionDaoImpl importSessionDao;
+    @Autowired
+    private ExportSessionDaoImpl exportSessionDao;
+    @Autowired
+    private IncomingMessageProcessor messageProcessor;
 
     @Override
     public void onMessage(Message message) {
@@ -50,7 +57,7 @@ public class MQMessageListener implements MessageListener {
                 logger.info("#{} Message of type \'{}\'", requestNumber, messageType);
                 final ImpSessionEvent importEvent = importSessionDao.createNewImportEvent(messageType, importSession);
                 logger.info("#{} Create new ImportEvent: {}", requestNumber, importEvent);
-                processMessage(msg, requestNumber);
+                processMessage(msg, importSession, requestNumber);
                 // ready for reply
                 final Destination replyTo = message.getJMSReplyTo();
                 if (replyTo == null) { // quite eating messages without JMSReplyTo
@@ -70,8 +77,57 @@ public class MQMessageListener implements MessageListener {
         }
     }
 
-    private void processMessage(final ResponseMsg msg, final int requestNumber) {
-
+    private void processMessage(final ResponseMsg msg, final ImpSession importSession, final int requestNumber) {
+        logger.debug("#{} Start processing", requestNumber);
+        if (importSession.getEXP_SESSION_ID() != null ){
+            final ExpSession expSession = exportSessionDao.getSessionById(importSession.getEXP_SESSION_ID());
+            if(expSession != null) {
+                expSession.setIMP_SESSION_ID(importSession.getIMP_SESSION_ID());
+                expSession.setSESSION_MSG(msg.getStatusCode().toString());
+                exportSessionDao.merge(expSession);
+            }
+        }
+        final ResponseBody responseBody = msg.getResponseBody();
+        if (responseBody != null) {
+            final LetterFromERPType response = responseBody.getResponse();
+            if (response != null) {
+                final MessageFromERPCommonType messageCommon = response.getMessageCommon();
+                if (messageCommon != null) {
+                    if (messageCommon.getFindInspectionResponse() != null) {
+                        messageProcessor.process(messageCommon.getFindInspectionResponse());
+                    } else if (messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse() != null) {
+                       messageProcessor.process(messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse());
+                    } else if (messageCommon.getERPResponse() != null) {
+                       messageProcessor.process(messageCommon.getERPResponse());
+                    } else {
+                        logger.warn("#{} Unknown messageType no processing", requestNumber);
+                    }
+                }
+                final MessageFromERP294Type message294 = response.getMessage294();
+                if (message294 != null) {
+                    if (message294.getPlanRegular294Notification() != null) {
+                        messageProcessor.process(message294.getPlanRegular294Notification());
+                    } else if (message294.getPlanRegular294Response() != null) {
+                        messageProcessor.process(message294.getPlanRegular294Response());
+                    } else if (message294.getPlanResult294Notification() != null) {
+                        messageProcessor.process(message294.getPlanResult294Notification());
+                    } else if (message294.getPlanResult294Response() != null) {
+                        messageProcessor.process(message294.getPlanResult294Response());
+                    } else if (message294.getUplanResult294Notification() != null) {
+                        messageProcessor.process(message294.getUplanResult294Notification());
+                    } else if (message294.getUplanResult294Response() != null) {
+                        messageProcessor.process(message294.getUplanResult294Response());
+                    } else if (message294.getUplanUnregular294Notification() != null) {
+                        messageProcessor.process(message294.getUplanUnregular294Notification());
+                    } else if (message294.getUplanUnregular294Response() != null) {
+                        messageProcessor.process(message294.getUplanUnregular294Response());
+                    } else {
+                        logger.warn("#{} Unknown messageType no processing", requestNumber);
+                    }
+                }
+            }
+        }
+        logger.debug("#{} End processing", requestNumber);
     }
 
     private String getMessageType(final ResponseMsg msg) {

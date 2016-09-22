@@ -57,6 +57,7 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <includes>
+                    <include>testMessages/**</include>
                     <include>logback.xml</include>
                     <include>applicationContext.xml</include>
                     <include>wmq.properties</include>

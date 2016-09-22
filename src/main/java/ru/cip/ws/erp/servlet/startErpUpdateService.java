@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestHandler;
 import ru.cip.ws.erp.business.MessageService;
+import ru.cip.ws.erp.business.TestMessageService;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
@@ -31,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class startErpUpdateService implements HttpRequestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(startErpUpdateService.class);
+    private static final String PARAM_NAME_TEST = "TEST";
     private static final String PARAM_NAME_DATA_KIND = "DATA_KIND";
 
     private static final String DATA_KIND_PROSECUTOR_ACK = "PROSECUTOR_ACK";
@@ -53,6 +55,8 @@ public class startErpUpdateService implements HttpRequestHandler {
     @Autowired
     private MessageService messageService;
     @Autowired
+    private TestMessageService testMessageService;
+    @Autowired
     private CheckPlanRecordDaoImpl checkPlanRecordDao;
     @Autowired
     private CheckPlanDaoImpl checkPlanDao;
@@ -63,40 +67,70 @@ public class startErpUpdateService implements HttpRequestHandler {
         response.setContentType("text/html");
         response.setCharacterEncoding("UTF-8");
         final String param_data_kind = getStringParameter(request, PARAM_NAME_DATA_KIND);
-        logger.info("#{} Call StartErpUpdateServlet. {}=\'{}\'", requestNumber, PARAM_NAME_DATA_KIND);
-        if (DATA_KIND_PROSECUTOR_ACK.equalsIgnoreCase(param_data_kind)) {
-            processProsecutorAsk(request, response, requestNumber);
-        } else if (DATA_KIND_PLAN_REGULAR_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
-            processPlanRegular294Initialization(request, response, requestNumber);
-        } else if (DATA_KIND_PLAN_REGULAR_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
-            processPlanRegular294Correction(request, response, requestNumber);
-        } else if (DATA_KIND_PLAN_RESULT_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
-            processPlanResult294Initialization(request, response, requestNumber);
-        } else if (DATA_KIND_PLAN_RESULT_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
-            processPlanResult294Correction(request, response, requestNumber);
-        }  else if (DATA_KIND_UPLAN_UNREGULAR_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
-            processUplanUnRegular294Initialization(request, response, requestNumber);
-        } else if (DATA_KIND_UPLAN_UNREGULAR_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
-            processUplanUnRegular294Correction(request, response, requestNumber);
-        } else if (DATA_KIND_UPLAN_RESULT_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
-            processUplanResult294Initialization(request, response, requestNumber);
-        } else if (DATA_KIND_UPLAN_RESULT_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
-            processUplanResult294Correction(request, response, requestNumber);
+        final boolean isTest = StringUtils.equalsIgnoreCase(getStringParameter(request, PARAM_NAME_TEST), "true");
+        if(!isTest) {
+            logger.info("#{} Call StartErpUpdateServlet. {}=\'{}\'", requestNumber, PARAM_NAME_DATA_KIND, param_data_kind);
+            if (DATA_KIND_PROSECUTOR_ACK.equalsIgnoreCase(param_data_kind)) {
+                processProsecutorAsk(request, response, requestNumber);
+            } else if (DATA_KIND_PLAN_REGULAR_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+                processPlanRegular294Initialization(request, response, requestNumber);
+            } else if (DATA_KIND_PLAN_REGULAR_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+                processPlanRegular294Correction(request, response, requestNumber);
+            } else if (DATA_KIND_PLAN_RESULT_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+                processPlanResult294Initialization(request, response, requestNumber);
+            } else if (DATA_KIND_PLAN_RESULT_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+                processPlanResult294Correction(request, response, requestNumber);
+            } else if (DATA_KIND_UPLAN_UNREGULAR_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+                processUplanUnRegular294Initialization(request, response, requestNumber);
+            } else if (DATA_KIND_UPLAN_UNREGULAR_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+                processUplanUnRegular294Correction(request, response, requestNumber);
+            } else if (DATA_KIND_UPLAN_RESULT_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+                processUplanResult294Initialization(request, response, requestNumber);
+            } else if (DATA_KIND_UPLAN_RESULT_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+                processUplanResult294Correction(request, response, requestNumber);
+            }
+        } else {
+            logger.info("#{} Call StartErpUpdateServlet IN TEST MODE. {}=\'{}\'", requestNumber, PARAM_NAME_DATA_KIND, param_data_kind);
+            if (DATA_KIND_PROSECUTOR_ACK.equalsIgnoreCase(param_data_kind)) {
+                testMessageService.processProsecutorAsk(requestNumber);
+            } else if (DATA_KIND_PLAN_REGULAR_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+                testMessageService.processPlanRegular294Initialization(requestNumber);
+            } else if (DATA_KIND_PLAN_REGULAR_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+                testMessageService.processPlanRegular294Correction(requestNumber);
+            } else if (DATA_KIND_PLAN_RESULT_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+                testMessageService.processPlanResult294Initialization(requestNumber);
+            } else if (DATA_KIND_PLAN_RESULT_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+                testMessageService.processPlanResult294Correction(requestNumber);
+            } else if (DATA_KIND_UPLAN_UNREGULAR_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+                testMessageService.processUplanUnRegular294Initialization(requestNumber);
+            } else if (DATA_KIND_UPLAN_UNREGULAR_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+                testMessageService.processUplanUnRegular294Correction(requestNumber);
+            } else if (DATA_KIND_UPLAN_RESULT_294_INITIALIZATION.equalsIgnoreCase(param_data_kind)) {
+                testMessageService.processUplanResult294Initialization(requestNumber);
+            } else if (DATA_KIND_UPLAN_RESULT_294_CORRECTION.equalsIgnoreCase(param_data_kind)) {
+                testMessageService.processUplanResult294Correction(requestNumber);
+            }
         }
         logger.info("#{} End of StartErpUpdateServlet", requestNumber);
     }
 
-    private void processUplanResult294Correction(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+    private void processUplanResult294Correction(
+            final HttpServletRequest request, final HttpServletResponse response, final int requestNumber
+    ) {
         //TODO
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    private void processUplanResult294Initialization(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+    private void processUplanResult294Initialization(
+            final HttpServletRequest request, final HttpServletResponse response, final int requestNumber
+    ) {
         //TODO
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    private void processUplanUnRegular294Correction(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+    private void processUplanUnRegular294Correction(
+            final HttpServletRequest request, final HttpServletResponse response, final int requestNumber
+    ) {
         //TODO
         throw new UnsupportedOperationException("Not implemented yet");
     }
@@ -108,17 +142,23 @@ public class startErpUpdateService implements HttpRequestHandler {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    private void processPlanResult294Correction(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+    private void processPlanResult294Correction(
+            final HttpServletRequest request, final HttpServletResponse response, final int requestNumber
+    ) {
         //TODO
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    private void processPlanResult294Initialization(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber) {
+    private void processPlanResult294Initialization(
+            final HttpServletRequest request, final HttpServletResponse response, final int requestNumber
+    ) {
         //TODO
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    private void processPlanRegular294Correction(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber)
+    private void processPlanRegular294Correction(
+            final HttpServletRequest request, final HttpServletResponse response, final int requestNumber
+    )
             throws IOException {
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
@@ -203,7 +243,9 @@ public class startErpUpdateService implements HttpRequestHandler {
     }
 
 
-    private void processPlanRegular294Initialization(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber)
+    private void processPlanRegular294Initialization(
+            final HttpServletRequest request, final HttpServletResponse response, final int requestNumber
+    )
             throws IOException {
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
@@ -259,7 +301,9 @@ public class startErpUpdateService implements HttpRequestHandler {
         }
     }
 
-    private void processProsecutorAsk(final HttpServletRequest request, final HttpServletResponse response, final int requestNumber)
+    private void processProsecutorAsk(
+            final HttpServletRequest request, final HttpServletResponse response, final int requestNumber
+    )
             throws IOException {
         logger.info("#{} ProsecutorAsk", requestNumber);
         final String result = messageService.sendProsecutorAck();

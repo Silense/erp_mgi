@@ -85,4 +85,12 @@ public class ExportSessionDaoImpl {
         em.merge(session);
         em.flush();
     }
+
+    public ExpSession getSessionById(final Integer id) {
+        return em.find(ExpSession.class, id);
+    }
+
+    public ExpSession merge(final ExpSession expSession) {
+        return em.merge(expSession);
+    }
 }
