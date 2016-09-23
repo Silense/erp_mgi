@@ -22,7 +22,7 @@ public class ImpSessionEvent {
     private Integer IMP_SESSION_ID;
 
     @Column(name = "EVENT_DT", nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date EVENT_DT;
 
     @Column(name = "SYSTEM_ID", nullable = false)

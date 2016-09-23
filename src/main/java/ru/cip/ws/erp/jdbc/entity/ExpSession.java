@@ -19,11 +19,11 @@ public class ExpSession {
     private Integer EXP_SESSION_ID;
 
     @Column(name = "START_DATE")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date START_DATE;
 
     @Column(name = "END_DATE")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date END_DATE;
 
     @Column(name = "EXT_PACKAGE_CNT")
@@ -33,11 +33,11 @@ public class ExpSession {
     private Integer RV;
 
     @Column(name = "CREATE_DATE")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date CREATE_DATE;
 
     @Column(name = "UPDATE_DATE")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date UPDATE_DATE;
 
     @Column(name = "IMP_SESSION_ID")
@@ -76,9 +76,9 @@ public class ExpSession {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ExpSession{");
-        sb.append("EXP_SESSION_ID=").append(EXP_SESSION_ID);
-        sb.append(", START_DATE=").append(START_DATE);
+        final StringBuilder sb = new StringBuilder("ExpSession[");
+        sb.append(EXP_SESSION_ID);
+        sb.append("]{ START_DATE=").append(START_DATE);
         sb.append(", END_DATE=").append(END_DATE);
         sb.append(", EXT_PACKAGE_CNT=").append(EXT_PACKAGE_CNT);
         sb.append(", RV=").append(RV);

@@ -36,7 +36,7 @@ public class MessageProcessor {
     private CheckPlanRecordDaoImpl checkPlanRecordDao;
 
     public void processPlanRegular294Correction(
-            final HttpServletResponse response, final String requestId, final Integer checkPlanId, final Integer year, final String acceptedName
+            final String requestId, final HttpServletResponse response, final Integer checkPlanId, final Integer year, final String acceptedName
     ) throws IOException {
         final CipCheckPlan checkPlan = checkPlanDao.getByIdFromView(checkPlanId);
         if (checkPlan == null) {
@@ -104,25 +104,24 @@ public class MessageProcessor {
     ) throws IOException {
         final CipCheckPlan checkPlan = (year != null) ? checkPlanDao.getByYearFromView(year) : checkPlanDao.getByIdFromView(checkPlanId);
         if (checkPlan == null) {
-            logger.warn("#{} End. CheckPlan not found", requestId);
+            logger.warn("{} : End. CheckPlan not found", requestId);
             response.getWriter().print("Не найден план проверки " + (year != null ? "(по году)" : "(по идентификатору)"));
             response.setStatus(404);
             return;
         }
-        logger.debug("#{} founded CheckPlan: {}", requestId, checkPlan);
+        logger.debug("{} : founded CheckPlan: {}", requestId, checkPlan);
         final List<CipCheckPlanRecord> checkPlanRecords = checkPlanRecordDao.getRecordsFromViewByPlanId(checkPlan.getCHECK_PLAN_ID());
         if (checkPlanRecords.isEmpty()) {
-            logger.warn("#{} End. Not found any PlanRecords by check_plan_id = {}", requestId, checkPlan.getCHECK_PLAN_ID());
+            logger.warn("{} : End. Not found any PlanRecords by check_plan_id = {}", requestId, checkPlan.getCHECK_PLAN_ID());
             response.getWriter().println(String.format("По плану проверок [%d] не найдено проверок", checkPlan.getCHECK_PLAN_ID()));
             response.setStatus(404);
-            response.flushBuffer();
             return;
         } else if (logger.isDebugEnabled()) {
             for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
-                logger.debug("#{} Founded record: {}", requestId, checkPlanRecord);
+                logger.debug("{} : Founded record: {}", requestId, checkPlanRecord);
             }
         }
-        final String result = messageService.sendPlanRegular294Initialization(checkPlan, acceptedName, year, checkPlanRecords);
+        final String result = messageService.sendPlanRegular294Initialization(requestId, checkPlan, acceptedName, year, checkPlanRecords);
         if (StringUtils.isNotEmpty(result)) {
             response.setContentType("text/xml");
             response.getWriter().println(result);

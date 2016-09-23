@@ -24,7 +24,7 @@
         <!-- Формат записи в лог -->
         <log.format>%5p [%d][%thread][%logger{0}] %msg%n</log.format>
         <!-- Уровень записи лога по умолчанию -->
-        <logs.level>INFO</logs.level>
+        <logs.level>DEBUG</logs.level>
         <!--Уровень логов для разных типов документов-->
         <logs.document.level>DEBUG</logs.document.level>
         <!--Аддитивность для лога документов-->

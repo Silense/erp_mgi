@@ -22,7 +22,7 @@ public class ExpSessionEvent {
     private Integer EXP_SESSION_ID;
 
     @Column(name = "EVENT_DT", nullable = false)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date EVENT_DT;
 
     @Column(name = "EVENT_USER_ID", nullable = false)
@@ -76,12 +76,12 @@ public class ExpSessionEvent {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ExpSessionEvent{");
-        sb.append("EXP_SESSION_EVENT_ID=").append(EXP_SESSION_EVENT_ID);
-        sb.append(", EXP_SESSION_ID=").append(EXP_SESSION_ID);
+        final StringBuilder sb = new StringBuilder("ExpSessionEvent[");
+        sb.append(EXP_SESSION_EVENT_ID);
+        sb.append("] { EXP_SESSION_ID=").append(EXP_SESSION_ID);
         sb.append(", EVENT_DT=").append(EVENT_DT);
         sb.append(", EVENT_USER_ID='").append(EVENT_USER_ID).append('\'');
-        sb.append(", EVENT_TEXT=").append(EVENT_TEXT);
+        //sb.append(", EVENT_TEXT=").append(EVENT_TEXT);
         sb.append('}');
         return sb.toString();
     }

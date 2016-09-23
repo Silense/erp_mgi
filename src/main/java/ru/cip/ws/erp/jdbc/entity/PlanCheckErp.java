@@ -126,9 +126,9 @@ public class PlanCheckErp {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("PlanCheckErp{");
-        sb.append("idCheckPlanErp=").append(idCheckPlanErp);
-        sb.append(", idProsecutors=").append(idProsecutors);
+        final StringBuilder sb = new StringBuilder("PlanCheckErp[");
+        sb.append(idCheckPlanErp);
+        sb.append("]{ idProsecutors=").append(idProsecutors);
         sb.append(", codeCheckPlanErp=").append(codeCheckPlanErp);
         sb.append(", checkPlanStatusErp='").append(checkPlanStatusErp).append('\'');
         sb.append(", cipChPlLglApprvdId=").append(cipChPlLglApprvdId);

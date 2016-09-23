@@ -19,7 +19,6 @@ import ru.cip.ws.erp.jms.MQMessageSender;
 import javax.xml.bind.JAXBElement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Author: Upatov Egor <br>
@@ -40,7 +39,6 @@ public class MessageService {
     private CheckPlanDaoImpl checkPlanDao;
     @Autowired
     private CheckPlanRecordDaoImpl checkPlanRecordDao;
-
     @Autowired
     private ExportSessionDaoImpl exportSessionDao;
 
@@ -66,18 +64,20 @@ public class MessageService {
             logger.error("{} : End. Error: message from Factory is NULL", requestId);
             return null;
         }
-        final String description = "4.1.3 Запрос на размещение корректировки плана плановых проверок";
-        final String messageType = MessageToERP294Type.PlanRegular294Correction.class.getSimpleName();
-
+        logger.debug("{} : End construct PlanRegular294Correction message", requestId);
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
+        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-
-        final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
-        logger.info("{} : Create new ExportSession: {}", requestId, exportSession);
+        final ExpSession exportSession = exportSessionDao.createExportSession(
+                "4.1.3 Запрос на размещение корректировки плана плановых проверок",
+                MessageToERP294Type.PlanRegular294Correction.class.getSimpleName(),
+                requestId
+        );
+        logger.info("{} : Created ExportSession: {}", requestId, exportSession);
         final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(result, exportSession);
-        logger.info("{} : Create new ExportEvent: {}", requestId, exportEvent);
+        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
         checkPlanDao.setExportSessionAndStatus(planCheckErp, "WAIT FOR CORRECTON RESPONSE", exportSession);
         logger.info("{} : Update PlanCheckErp: {}", requestId, planCheckErp);
         for (CipCheckPlanRecord record : planRecords) {
@@ -110,10 +110,13 @@ public class MessageService {
     }
 
     public String sendPlanRegular294Initialization(
-            final CipCheckPlan checkPlan, final String acceptedName, final Integer year, final List<CipCheckPlanRecord> planRecords
+            final String requestId,
+            final CipCheckPlan checkPlan,
+            final String acceptedName,
+            final Integer year,
+            final List<CipCheckPlanRecord> planRecords
     ) {
-        final String requestId = UUID.randomUUID().toString();
-        logger.info("{} : Start processing PlanRegular294Initialization message", requestId);
+        logger.debug("{} : Start construct PlanRegular294Initialization message", requestId);
         final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Initialization(
                 StringUtils.defaultString(acceptedName, checkPlan.getACCEPTED_NAME()),
                 year != null ? year : checkPlan.getYEAR(),
@@ -124,37 +127,39 @@ public class MessageService {
             logger.error("{} : End. Error: message from Factory is NULL", requestId);
             return null;
         }
-        final String description = "4.1.2 Запрос на первичное размещение плана плановых проверок";
-        final String messageType = MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName();
-
+        logger.debug("{} : End construct PlanRegular294Initialization message", requestId);
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
+        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-
-        final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
-        logger.info("{} : Create new ExportSession: {}", requestId, exportSession);
+        final ExpSession exportSession = exportSessionDao.createExportSession(
+                "4.1.2 Запрос на первичное размещение плана плановых проверок",
+                MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName(),
+                requestId
+        );
+        logger.info("{} : Created ExportSession: {}", requestId, exportSession);
         final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(result, exportSession);
-        logger.info("{} : Create new ExportEvent: {}", requestId, exportEvent);
+        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
         final PlanCheckErp planCheckErp = checkPlanDao.createPlanCheckErp(checkPlan.getCHECK_PLAN_ID(), null, exportSession);
-        logger.info("{} : Create new PlanCheckErp: {}", requestId, planCheckErp);
+        logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
         final List<PlanCheckRecErp> planCheckRecErpList = new ArrayList<>(planRecords.size());
         for (CipCheckPlanRecord record : planRecords) {
             final PlanCheckRecErp planCheckRecErp = checkPlanRecordDao.createPlanCheckRecErp(planCheckErp, record);
             planCheckRecErpList.add(planCheckRecErp);
-            logger.info("{} : Create new PlanCheckRecErp: {}", requestId, planCheckRecErp);
+            logger.info("{} : Created PlanCheckRecErp: {}", requestId, planCheckRecErp);
         }
-        final String messageId = messageSender.send(result);
-        logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
-        if (StringUtils.isEmpty(messageId)) {
-            exportSessionDao.setSessionInfo(exportSession, "ERROR", "Not sent to JMS");
+        try {
+            final String messageId = messageSender.send(result);
+            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+        } catch (final Exception e) {
+            exportSessionDao.setSessionInfo(exportSession, "ERROR", "Not sent to JMS: " + e.getMessage());
             checkPlanDao.setStatus(planCheckErp, "ERROR");
             checkPlanRecordDao.setStatus(planCheckRecErpList, "ERROR");
             return null;
-        } else {
-            exportSessionDao.setSessionStatus(exportSession, "DONE");
-            return result;
         }
+        exportSessionDao.setSessionStatus(exportSession, "DONE");
+        return result;
     }
 
     public String sendProsecutorAck(final String requestId) {
@@ -164,32 +169,35 @@ public class MessageService {
             logger.error("{} : End. Error: message from Factory is NULL", requestId);
             return null;
         }
-        final String description = "4.1.1 Запрос на получение справочника территориальных юрисдикций прокуратур Российской Федерации";
-        final String messageType = ProsecutorAskType.class.getSimpleName();
-        return sendMessage(requestId, requestMessage, description, messageType);
+        return sendMessage(
+                requestId,
+                requestMessage,
+                "4.1.1 Запрос на получение справочника территориальных юрисдикций прокуратур Российской Федерации",
+                ProsecutorAskType.class.getSimpleName()
+        );
     }
 
     private <T> String sendMessage(
             final String requestId, final JAXBElement<T> requestMessage, final String description, final String messageType
     ) {
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
-        if (!StringUtils.isEmpty(result)) {
-            final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
-            logger.info("{} : Create new ExportSession: {}", requestId, exportSession);
-            final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(result, exportSession);
-            logger.info("{} : Create new ExportEvent: {}", requestId, exportEvent);
+        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        if (StringUtils.isEmpty(result)) {
+            return null;
+        }
+        final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
+        logger.info("{} : Created ExportSession: {}", requestId, exportSession);
+        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(result, exportSession);
+        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
+        try {
             final String messageId = messageSender.send(result);
             logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
-            if (StringUtils.isEmpty(messageId)) {
-                exportSessionDao.setSessionInfo(exportSession, "ERROR", "Not sent to JMS");
-                return null;
-            } else {
-                exportSessionDao.setSessionInfo(exportSession, "DONE", "Sent to JMS");
-                return result;
-            }
+        } catch (final Exception e) {
+            exportSessionDao.setSessionInfo(exportSession, "ERROR", "Not sent to JMS: " + e.getMessage());
+            return null;
         }
-        return null;
+        exportSessionDao.setSessionStatus(exportSession, "DONE");
+        return result;
     }
-
 
 }

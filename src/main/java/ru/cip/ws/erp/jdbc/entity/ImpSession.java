@@ -19,11 +19,11 @@ public class ImpSession {
     private Integer IMP_SESSION_ID;
 
     @Column(name = "START_DATE")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date START_DATE;
 
     @Column(name = "END_DATE")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date END_DATE;
 
     @Column(name = "EXT_PACKAGE_CNT")
@@ -33,11 +33,11 @@ public class ImpSession {
     private Integer RV;
 
     @Column(name = "CREATE_DATE")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date CREATE_DATE;
 
     @Column(name = "UPDATE_DATE")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date UPDATE_DATE;
 
     @Column(name = "EXP_SESSION_ID")
