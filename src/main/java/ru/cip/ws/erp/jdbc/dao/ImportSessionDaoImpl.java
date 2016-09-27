@@ -13,6 +13,7 @@ import ru.cip.ws.erp.jdbc.entity.ImpSessionEvent;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Author: Upatov Egor <br>
@@ -36,12 +37,11 @@ public class ImportSessionDaoImpl {
     private EntityManager em;
 
 
-
     public ImpSession createNewImportSession(final String description, final String message, final String requestId) {
         final Date now = new Date();
         final ExpSession exportSesssion = exportSessionDao.getSessionByEXT_PACKAGE_ID(requestId);
         logger.debug("For new ImportSession founded export session: {}", exportSesssion);
-        final ImpSession  result = new ImpSession();
+        final ImpSession result = new ImpSession();
         result.setSYSTEM_SERVICE_ID(appID);
         result.setSYSTEM_ID(appID);
         result.setSTART_DATE(now);
@@ -56,7 +56,7 @@ public class ImportSessionDaoImpl {
         result.setUPDATE_DATE(now);
         result.setCREATE_SYSTEM(appID);
         result.setUPDATE_SYSTEM(appID);
-        if(exportSesssion != null){
+        if (exportSesssion != null) {
             result.setEXP_SESSION_ID(exportSesssion.getEXP_SESSION_ID());
         }
         em.persist(result);
@@ -64,9 +64,9 @@ public class ImportSessionDaoImpl {
         return result;
     }
 
-    public ImpSessionEvent createNewImportEvent(final String message, final ImpSession imp_session){
+    public ImpSessionEvent createNewImportEvent(final String message, final ImpSession imp_session) {
         final Date now = new Date();
-        final ImpSessionEvent  result = new ImpSessionEvent();
+        final ImpSessionEvent result = new ImpSessionEvent();
         result.setSYSTEM_ID(appID);
         result.setEVENT_DT(now);
         result.setIMP_SESSION_ID(imp_session.getIMP_SESSION_ID());
@@ -76,5 +76,11 @@ public class ImportSessionDaoImpl {
         em.flush();
         return result;
 
+    }
+
+    public ImpSession getByEXT_PACKAGE_ID(final String requestId) {
+        final List<ImpSession> resultList = em.createQuery("SELECT a FROM ImpSession a WHERE a.EXT_PACKAGE_ID = :requestId", ImpSession.class)
+                .setParameter("requestId", requestId).getResultList();
+        return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
 }

@@ -58,7 +58,7 @@ public class ExportSessionDaoImpl {
         final Date now = new Date();
         final ExpSessionEvent result = new ExpSessionEvent();
         result.setEVENT_DT(now);
-        result.setEVENT_TEXT(message.length() <= 1000 ? message : message.substring(0, 1000));
+        result.setEVENT_TEXT(message);
         result.setEVENT_USER_ID(appID);
         result.setEXP_SESSION_ID(exp_session.getEXP_SESSION_ID());
         em.persist(result);

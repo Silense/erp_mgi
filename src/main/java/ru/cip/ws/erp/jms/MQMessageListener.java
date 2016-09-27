@@ -47,17 +47,33 @@ public class MQMessageListener implements MessageListener {
             if (isTextMessage(message)) {
                 // Process text message
                 final TextMessage textMessage = (TextMessage) message;
-                logger.debug("MessageBody:\n{}\n", textMessage.getText().substring(0, Math.min(1200, textMessage.getText().length())));
-                final ResponseMsg msg = JAXBMarshallerUtil.unmarshalResponse(textMessage.getText());
-                final ImpSession importSession = importSessionDao.createNewImportSession(
-                        "Ответ от ЕРП", msg.getStatusMessage(), msg.getRequestId()
+                logger.info(
+                        "#{} MessageBody:\n{}\n", requestNumber, textMessage.getText().substring(
+                                0, Math.min(
+                                        1200,
+                                        textMessage.getText().length()
+                                )
+                        )
                 );
-                logger.info("#{} Create new ImportSession: {}", requestNumber, importSession);
+                final ResponseMsg msg = JAXBMarshallerUtil.unmarshalResponse(textMessage.getText());
+                if (msg == null) {
+                    logger.error("#{} End. Cannot marshal to ResponseMsg", requestNumber);
+                    return;
+                }
+                final String requestId = msg.getRequestId();
+                logger.info("#{} RequestId = \'{}\'", requestNumber, requestId);
+                ImpSession importSession = importSessionDao.getByEXT_PACKAGE_ID(requestId);
+                if (importSession != null) {
+                    logger.info("{} : Found existed ImportSession[EXT_PACKAGE_ID]: {}", requestId, importSession);
+                } else {
+                    importSession = importSessionDao.createNewImportSession("Ответ от ЕРП", msg.getStatusMessage(), requestId);
+                    logger.info("{} : Created ImportSession: {}", requestId, importSession);
+                }
                 final String messageType = getMessageType(msg);
-                logger.info("#{} Message of type \'{}\'", requestNumber, messageType);
+                logger.info("{} : Message of type \'{}\'", requestId, messageType);
                 final ImpSessionEvent importEvent = importSessionDao.createNewImportEvent(messageType, importSession);
-                logger.info("#{} Create new ImportEvent: {}", requestNumber, importEvent);
-                processMessage(msg, importSession, requestNumber);
+                logger.info("{} : Created ImportEvent: {}", requestId, importEvent);
+                processMessage(requestId, msg, importSession);
                 // ready for reply
                 final Destination replyTo = message.getJMSReplyTo();
                 if (replyTo == null) { // quite eating messages without JMSReplyTo
@@ -73,15 +89,15 @@ public class MQMessageListener implements MessageListener {
         } catch (JMSException e) {
             logger.error("#{} Exception in onMessage : ", requestNumber, e);
         } catch (JAXBException e) {
-            logger.error("#{} Cant parse to JAXB (XML type) ", e);
+            logger.error("#{} Cant parse to JAXB (XML type) ", requestNumber, e);
         }
     }
 
-    private void processMessage(final ResponseMsg msg, final ImpSession importSession, final int requestNumber) {
-        logger.debug("#{} Start processing", requestNumber);
-        if (importSession.getEXP_SESSION_ID() != null ){
+    private void processMessage(final String requestId, final ResponseMsg msg, final ImpSession importSession) {
+        logger.debug("{} : Start processing", requestId);
+        if (importSession.getEXP_SESSION_ID() != null) {
             final ExpSession expSession = exportSessionDao.getSessionById(importSession.getEXP_SESSION_ID());
-            if(expSession != null) {
+            if (expSession != null) {
                 expSession.setIMP_SESSION_ID(importSession.getIMP_SESSION_ID());
                 expSession.setSESSION_MSG(msg.getStatusCode().toString());
                 exportSessionDao.merge(expSession);
@@ -94,19 +110,21 @@ public class MQMessageListener implements MessageListener {
                 final MessageFromERPCommonType messageCommon = response.getMessageCommon();
                 if (messageCommon != null) {
                     if (messageCommon.getFindInspectionResponse() != null) {
-                        messageProcessor.process(messageCommon.getFindInspectionResponse());
+                        messageProcessor.process(requestId, messageCommon.getFindInspectionResponse(), msg.getStatusMessage());
                     } else if (messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse() != null) {
-                       messageProcessor.process(messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse());
+                        messageProcessor.process(
+                                requestId, messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse(), msg.getStatusMessage()
+                        );
                     } else if (messageCommon.getERPResponse() != null) {
-                       messageProcessor.process(messageCommon.getERPResponse());
+                        messageProcessor.process(requestId, messageCommon.getERPResponse(), msg.getStatusMessage());
                     } else {
-                        logger.warn("#{} Unknown messageType no processing", requestNumber);
+                        logger.warn("{} : Unknown messageType no processing", requestId);
                     }
                 }
                 final MessageFromERP294Type message294 = response.getMessage294();
                 if (message294 != null) {
                     if (message294.getPlanRegular294Notification() != null) {
-                        messageProcessor.process(message294.getPlanRegular294Notification());
+                        messageProcessor.process(requestId, message294.getPlanRegular294Notification(), msg.getStatusMessage());
                     } else if (message294.getPlanRegular294Response() != null) {
                         messageProcessor.process(message294.getPlanRegular294Response());
                     } else if (message294.getPlanResult294Notification() != null) {
@@ -122,12 +140,12 @@ public class MQMessageListener implements MessageListener {
                     } else if (message294.getUplanUnregular294Response() != null) {
                         messageProcessor.process(message294.getUplanUnregular294Response());
                     } else {
-                        logger.warn("#{} Unknown messageType no processing", requestNumber);
+                        logger.warn("{} : Unknown messageType no processing", requestId);
                     }
                 }
             }
         }
-        logger.debug("#{} End processing", requestNumber);
+        logger.debug("{} : End processing", requestId);
     }
 
     private String getMessageType(final ResponseMsg msg) {

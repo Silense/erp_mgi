@@ -49,7 +49,7 @@ public class TestMessageProcessor {
         }
         final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
         logger.info("{} : Created ExportSession: {}", requestId, exportSession);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(result, exportSession);
+        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
         try {
             final String messageId = messageSender.send(result);

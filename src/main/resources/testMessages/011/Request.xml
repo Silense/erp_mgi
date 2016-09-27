@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etp:requestMsg xmlns:etp="urn://ru.mos.etp.smev.erp/1.0.0" xmlns:erp="urn://ru.gov.proc.erp.communication/2.0.5"
+                xmlns:erp_types="urn://ru.gov.proc.erp.communication/types/2.0.5"
+                xmlns:erp_base="urn://ru.gov.proc.erp.communication/base/2.0.5">
+    <etp:requestId>%s</etp:requestId>
+    <etp:requestDate>%s</etp:requestDate>
+    <etp:requestBody>
+        <erp:Request>
+            <erp_types:MessageCommon InfoModel="20150201" PreviousInfoModel="0">
+                <erp_types:FindInspectionAsk>
+                    <erp_types:SubjectInspectionFRI INN="490911988305" OGRN="306491031700014">
+                        <erp_base:YearAnnualPlan>2016</erp_base:YearAnnualPlan>
+                    </erp_types:SubjectInspectionFRI>
+                </erp_types:FindInspectionAsk>
+            </erp_types:MessageCommon>
+        </erp:Request>
+    </etp:requestBody>
+</etp:requestMsg>
+

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etp:requestMsg xmlns:etp="urn://ru.mos.etp.smev.erp/1.0.0" xmlns:erp="urn://ru.gov.proc.erp.communication/2.0.5"
+                xmlns:erp_types="urn://ru.gov.proc.erp.communication/types/2.0.5">
+    <etp:requestId>%s</etp:requestId>
+    <etp:requestDate>%s</etp:requestDate>
+    <etp:requestBody>
+        <erp:Request>
+            <erp_types:Message294 InfoModel="20150201" PreviousInfoModel="0">
+                <!--Пример первичного размещения результата плановых проверок-->
+                <erp_types:Mailer Name="ФНС России" OGRN="1047707030513" FRGU_ORG_ID="10000001169" FRGU_SERV_ID="10000037754"/>
+                <erp_types:Addressee Code="1020500000" Name="Прокуратура Московской области "/>
+                <erp_types:PlanResult294Correction YEAR="2016" ID="2016000109">
+                    <erp_types:InspectionResult294Correction ID="201600000535" ACT_DATE_CREATE="2015-07-29" ACT_TIME_CREATE="15:45:00"
+                                                             ACT_PLACE_CREATE="Место составления акта - адрес" ACT_WAS_READ="1"
+                                                             WRONG_DATA_REASON_SEC_I="" WRONG_DATA_ANOTHER="" NAME_OF_OWNER="Петров П.П."
+                                                             UNIMPOSSIBLE_REASON_I="" START_DATE="2015-08-20T16:00:00.000000" DURATION="123"
+                                                             ADR_INSPECTION="Фактический адрес проведения" INSPECTORS="Иванов И.И." UNDOIG_SEC_I="">
+                        <erp_types:InspectionViolation294Correction VIOLATION_ID="1"
+                                                                    VIOLATION_NOTE="Нарушено столько то раз там-то там -то правовой акт №1"
+                                                                    VIOLATION_ACT="Правовой акт №1"
+                                                                    VIOLATION_ACTORS_NAME="Иванов И.И., Петров П.П., Смит С.С. " INJUNCTION_CODES=""
+                                                                    INJUNCTION_NOTE="Устранить нарушения Правового акта №1 - нарушенного № раз "
+                                                                    INJUNCTION_DATE_CREATE="2015-08-03" INJUNCTION_DEADLINE="2015-09-07"
+                                                                    INJUNCTION_EXECUTION="" LAWSUIT_SEC_I="" LAWSUIT_SEC_II="" LAWSUIT_SEC_III=""
+                                                                    LAWSUIT_SEC_IV="" LAWSUIT_SEC_V="" LAWSUIT_SEC_VI="" LAWSUIT_SEC_VII=""/>
+                    </erp_types:InspectionResult294Correction>
+                </erp_types:PlanResult294Correction>
+            </erp_types:Message294>
+        </erp:Request>
+    </etp:requestBody>
+</etp:requestMsg>

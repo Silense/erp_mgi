@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2007 rel. 3 (http://www.altova.com) by USER (EMBRACE) -->
+<tns:Response xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tns="urn://ru.gov.proc.erp.communication/2.0.5" xmlns:erp_types="urn://ru.gov.proc.erp.communication/types/2.0.5" xsi:schemaLocation="urn://ru.gov.proc.erp.communication/2.0.5 \\psf\Dropbox\GIT\GITSPPIVP2\gp-erp-smev\InfoModel\2.0.5\ru.gov.proc.erp.communication.smev.xsd">
+	<erp_types:Message294 InfoModel="20150201" PreviousInfoModel="0">
+		<erp_types:Mailer Name="ФНС России" OGRN="1047707030513" FRGU_ORG_ID="10000001169" FRGU_SERV_ID="10000037754"/>
+		<erp_types:PlanResult294Notification YEAR="2016" ID="2016000109">
+			<erp_types:InspectionResult294Notification ID="201600000534" ACT_DATE_CREATE="2015-07-29" ACT_TIME_CREATE="15:45:00" ACT_PLACE_CREATE="Место составления акта - адрес" ACT_WAS_READ="0" WRONG_DATA_REASON_SEC_I="" WRONG_DATA_ANOTHER="" NAME_OF_OWNER="Петров П.П." UNIMPOSSIBLE_REASON_I="" START_DATE="2015-08-20T16:00:00.000000" DURATION="123" ADR_INSPECTION="Фактический адрес проведения" INSPECTORS="Иванов И.И." LOCATION="Локация проверок на стороне Витрины АС ЕРП">
+				<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ РЕЗУЛЬТАТА ПРОВЕРКИ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+				<erp_types:ACT_DATE_CREATE ValidationCode="1"/>
+				<erp_types:ACT_TIME_CREATE ValidationCode="1"/>
+				<erp_types:ACT_WAS_READ ValidationCode="1"/>
+				<erp_types:START_DATE ValidationCode="1"/>
+				<erp_types:DURATION ValidationCode="1"/>
+				<erp_types:InspectionViolation294Notification VIOLATION_ID="1" VIOLATION_NOTE="Нарушено столько то раз там-то там -то правовой акт №1" VIOLATION_ACT="Правовой акт №1" VIOLATION_ACTORS_NAME="Иванов И.И., Петров П.П., Смит С.С. " INJUNCTION_CODES="" INJUNCTION_NOTE="Устранить нарушения Правового акта №1 - нарушенного № раз " INJUNCTION_DATE_CREATE="2015-08-03" INJUNCTION_DEADLINE="2015-09-07" INJUNCTION_EXECUTION="" LAWSUIT_SEC_I="" LAWSUIT_SEC_II="" LAWSUIT_SEC_III="" LAWSUIT_SEC_IV="" LAWSUIT_SEC_V="" LAWSUIT_SEC_VI="" LAWSUIT_SEC_VII="">
+					<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ ВЫЯВЛЕННОГО НАРУШЕНИЯ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+					<erp_types:INJUNCTION_DATE_CREATE ValidationCode="1"/>
+					<erp_types:INJUNCTION_DEADLINE ValidationCode="1"/>
+				</erp_types:InspectionViolation294Notification>
+				<erp_types:InspectionViolation294Notification VIOLATION_ID="2" VIOLATION_NOTE="Нарушено столько то раз там-то там -то правовой акт №2" VIOLATION_ACT="Правовой акт №2" VIOLATION_ACTORS_NAME="Иванов И.И., Петров П.П., Смит С.С. " INJUNCTION_CODES="" INJUNCTION_NOTE="Устранить нарушения Правового акта №2 - нарушенного № раз " INJUNCTION_DATE_CREATE="2015-08-03" INJUNCTION_DEADLINE="2015-09-07" INJUNCTION_EXECUTION="" LAWSUIT_SEC_I="" LAWSUIT_SEC_II="" LAWSUIT_SEC_III="" LAWSUIT_SEC_IV="" LAWSUIT_SEC_V="" LAWSUIT_SEC_VI="" LAWSUIT_SEC_VII="">
+					<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ ВЫЯВЛЕННОГО НАРУШЕНИЯ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+					<erp_types:INJUNCTION_DATE_CREATE ValidationCode="1"/>
+					<erp_types:INJUNCTION_DEADLINE ValidationCode="1"/>
+				</erp_types:InspectionViolation294Notification>
+			</erp_types:InspectionResult294Notification>
+			<erp_types:InspectionResult294Notification ID="201600000535" ACT_DATE_CREATE="2015-07-29" ACT_TIME_CREATE="15:45:00" ACT_PLACE_CREATE="Место составления акта - адрес" ACT_WAS_READ="0" WRONG_DATA_REASON_SEC_I="" WRONG_DATA_ANOTHER="" NAME_OF_OWNER="Петров П.П." UNIMPOSSIBLE_REASON_I="" START_DATE="2015-08-20T16:00:00.000000" DURATION="123" ADR_INSPECTION="Фактический адрес проведения" INSPECTORS="Иванов И.И." LOCATION="Локация проверок на стороне Витрины АС ЕРП">
+				<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ РЕЗУЛЬТАТА ПРОВЕРКИ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+				<erp_types:ACT_DATE_CREATE ValidationCode="1"/>
+				<erp_types:ACT_TIME_CREATE ValidationCode="1"/>
+				<erp_types:ACT_WAS_READ ValidationCode="1"/>
+				<erp_types:START_DATE ValidationCode="1"/>
+				<erp_types:DURATION ValidationCode="1"/>
+				<erp_types:InspectionViolation294Notification VIOLATION_ID="1" VIOLATION_NOTE="Нарушено столько то раз там-то там -то правовой акт №1" VIOLATION_ACT="Правовой акт №1" VIOLATION_ACTORS_NAME="Иванов И.И., Петров П.П., Смит С.С. " INJUNCTION_CODES="" INJUNCTION_NOTE="Устранить нарушения Правового акта №1 - нарушенного № раз " INJUNCTION_DATE_CREATE="2015-08-03" INJUNCTION_DEADLINE="2015-09-07" INJUNCTION_EXECUTION="" LAWSUIT_SEC_I="" LAWSUIT_SEC_II="" LAWSUIT_SEC_III="" LAWSUIT_SEC_IV="" LAWSUIT_SEC_V="" LAWSUIT_SEC_VI="" LAWSUIT_SEC_VII="">
+					<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ ВЫЯВЛЕННОГО НАРУШЕНИЯ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+					<erp_types:INJUNCTION_DATE_CREATE ValidationCode="1"/>
+					<erp_types:INJUNCTION_DEADLINE ValidationCode="1"/>
+				</erp_types:InspectionViolation294Notification>
+			</erp_types:InspectionResult294Notification>
+		</erp_types:PlanResult294Notification>
+	</erp_types:Message294>
+</tns:Response>

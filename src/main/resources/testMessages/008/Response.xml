@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2007 rel. 3 (http://www.altova.com) by USER (EMBRACE) -->
+<tns:Response xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tns="urn://ru.gov.proc.erp.communication/2.0.5" xmlns:erp_types="urn://ru.gov.proc.erp.communication/types/2.0.5">
+	<erp_types:Message294 InfoModel="20150201" PreviousInfoModel="0">
+		<erp_types:Mailer Name="ФНС России" OGRN="1047707030513" FRGU_ORG_ID="10000001169" FRGU_SERV_ID="10001696877"/>
+		<erp_types:UplanUnregular294Notification ID="2016000119" KO_NAME="Федеральная налоговая служба" REQUEST_NUM="Номер решения №" REQUEST_DATE="2015-08-12" START_DATE="2015-08-13" END_DATE="2015-08-20" DECISION_DATE="2015-08-13" ORDER_NUM="Номер приказа о проведении" ORDER_DATE="2015-08-01" INSP_TARGET="Цель проверки" REASON_SEC_I="Основание проверки" KIND_OF_INSP="документарная" SIGNER_TITLE="Инспектор" SIGNER_NAME="Петров П.П." KO_ADDRESS="" KO_RECIPIENT_TITLE_DC="Инспектор" KO_RECIPIENT_NAME_DC="Иванов И.И." DECISION_PLACE="Место вынесения решения" YEAR="2015" FRGU_NUM="10001696877" NOTICE_WAY="Почтой" TYPE_OF_INSP="Заявление КО" LOCATION="Локация проверок на стороне Витрины АС ЕРП">
+			<erp_types:LawBook294>
+				<erp_types:Law_I FORMULATION="Проверки: 294ФЗ в отношении ЮЛ/ИП" LAW_BASE="294"/>
+			</erp_types:LawBook294>
+			<erp_types:TOTAL_VALID ValidationCode="-1" ValidationMessage="ВНЕПЛАНОВАЯ ПРОВЕРКА БЫЛА ПЕРЕМЕЩЕНА В ЛОКАЦИЮ ВИТРИНЫ АС ЕРП, И ПОДЛЕЖИТ ПУБЛИКАЦИИ В ОТКРЫТЫЙ СЕГМЕНТ, ТЕКУЩИЙ СТАТУС ПРОВЕРКИ: НЕИЗВЕСТНОЕ СОСТОЯНИЕ"/>
+			<erp_types:REQUEST_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+			<erp_types:ORDER_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+			<erp_types:START_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+			<erp_types:END_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+			<erp_types:DECISION_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+			<erp_types:ORDER_NUM ValidationCode="-1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА ОБРАБОТАНО С ПРЕДУПРЕЖДЕНИЕМ"/>
+			<erp_types:REQUEST_NUM ValidationCode="-1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА ОБРАБОТАНО С ПРЕДУПРЕЖДЕНИЕМ" ValidationWrongValue="ПРЕДУПРЕЖДЕНИЕ! ОБНАРУЖЕНО ЗАДВОЕНИЕ ИСХОДЯЩЕГО НОМЕРА С ПРОВЕРКОЙ № 151020500000000087 :Номер решения №"/>
+			<erp_types:NOTICE_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+			<erp_types:LAST_VIOLATION_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО" ValidationWrongValue=""/>
+			<erp_types:UinspectionUnregular294Notification ID="201600000859" ORG_NAME="ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;" INN="7729138352" OGRN="1034230001882" ADR_SEC_I="" ADR_SEC_II="Адрес объекта проведения №1">
+				<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="МЕСТО ПРОВЕДЕНИЯ ПОДЛЕЖИТ ПУБЛИКАЦИИ В СOСТАВЕ ВНЕПЛАНОВОЙ ПРОВЕРКИ"/>
+				<erp_types:INN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:OGRN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+			</erp_types:UinspectionUnregular294Notification>
+			<erp_types:UinspectionUnregular294Notification ID="201600000860" ORG_NAME="ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;" INN="7729138352" OGRN="1034230001882" ADR_SEC_I="" ADR_SEC_II="Фактический адрес места проведения №2">
+				<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="МЕСТО ПРОВЕДЕНИЯ ПОДЛЕЖИТ ПУБЛИКАЦИИ В СOСТАВЕ ВНЕПЛАНОВОЙ ПРОВЕРКИ"/>
+				<erp_types:INN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:OGRN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+			</erp_types:UinspectionUnregular294Notification>
+		</erp_types:UplanUnregular294Notification>
+	</erp_types:Message294>
+</tns:Response>

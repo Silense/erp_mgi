@@ -78,7 +78,7 @@ public class MessageProcessor {
                 logger.debug("#{} Founded record: {}", requestId, checkPlanRecord);
             }
         }
-        final List<PlanCheckRecErp> sentCheckPlanRecords = checkPlanRecordDao.getRecordsByPlanId(planCheckErp.getIdCheckPlanErp());
+        final List<PlanCheckRecErp> sentCheckPlanRecords = checkPlanRecordDao.getRecordsByPlan(planCheckErp);
         final String result = messageService.sendPlanRegular294Correction(
                 requestId,
                 checkPlan,

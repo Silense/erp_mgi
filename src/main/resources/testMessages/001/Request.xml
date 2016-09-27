@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etp:requestMsg xmlns:etp="urn://ru.mos.etp.smev.erp/1.0.0" xmlns:erp="urn://ru.gov.proc.erp.communication/2.0.5"
+                xmlns:erp_types="urn://ru.gov.proc.erp.communication/types/2.0.5">
+    <etp:requestId>%s</etp:requestId>
+    <etp:requestDate>%s</etp:requestDate>
+    <etp:requestBody>
+        <!--Запрос справочника территориальных юрисдикций прокуратур-->
+        <erp:Request>
+            <erp_types:MessageCommon InfoModel="20150201" PreviousInfoModel="0">
+                <erp_types:ProsecutorAsk/>
+            </erp_types:MessageCommon>
+        </erp:Request>
+    </etp:requestBody>
+</etp:requestMsg>

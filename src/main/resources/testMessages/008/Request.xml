@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<etp:requestMsg xmlns:etp="urn://ru.mos.etp.smev.erp/1.0.0" xmlns:erp="urn://ru.gov.proc.erp.communication/2.0.5"
+                xmlns:erp_types="urn://ru.gov.proc.erp.communication/types/2.0.5">
+    <etp:requestId>%s</etp:requestId>
+    <etp:requestDate>%s</etp:requestDate>
+    <etp:requestBody>
+        <erp:Request>
+            <erp_types:Message294 InfoModel="20150201" PreviousInfoModel="0">
+                <!--Пример размещения корректировки внеплановой проверки-->
+                <erp_types:Mailer Name="ФНС России" OGRN="1047707030513" FRGU_ORG_ID="10000001169" FRGU_SERV_ID="10001696877"/>
+                <erp_types:Addressee Code="1020500000" Name="Прокуратура Московской области "/>
+                <erp_types:UplanUnregular294Correction ID="2016000119" KO_NAME="Федеральная налоговая служба" REQUEST_NUM="Номер решения №"
+                                                       REQUEST_DATE="2015-08-12" START_DATE="2015-08-13" END_DATE="2015-08-20"
+                                                       DECISION_DATE="2015-08-13" INSP_TARGET="Цель проверки" REASON_SEC_I="Основание проверки"
+                                                       KIND_OF_INSP="документарная" SIGNER_TITLE="Инспектор" SIGNER_NAME="Петров П.П." KO_ADDRESS=""
+                                                       KO_RECIPIENT_TITLE_DC="Инспектор" KO_RECIPIENT_NAME_DC="Иванов И.И."
+                                                       DECISION_PLACE="Место вынесения решения" YEAR="2015" FRGU_NUM="10001696877"
+                                                       NOTICE_DATE="2015-08-05" NOTICE_WAY="Почтой" TYPE_OF_INSP="Заявление КО"
+                                                       ORDER_DATE="2015-08-01" ORDER_NUM="Номер приказа о проведении">
+                    <erp_types:LawBook294>
+                        <erp_types:Law_I FORMULATION="Проверки: 294ФЗ в отношении ЮЛ/ИП" LAW_BASE="294"/>
+                    </erp_types:LawBook294>
+                    <erp_types:UinspectionUnregular294Correction ID="201600000859" ORG_NAME="ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;" INN="7729138352"
+                                                                 OGRN="1034230001882" ADR_SEC_I="" ADR_SEC_II="Адрес объекта проведения №1"/>
+                    <erp_types:UinspectionUnregular294Correction ID="201600000860" ORG_NAME="ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;" INN="7729138352"
+                                                                 OGRN="1034230001882" ADR_SEC_I=""
+                                                                 ADR_SEC_II="Фактический адрес места проведения №2"/>
+                </erp_types:UplanUnregular294Correction>
+            </erp_types:Message294>
+        </erp:Request>
+    </etp:requestBody>
+</etp:requestMsg>
+

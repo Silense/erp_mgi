@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2007 rel. 3 (http://www.altova.com) by USER (EMBRACE) -->
+<tns:Response xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tns="urn://ru.gov.proc.erp.communication/2.0.5" xmlns:erp_types="urn://ru.gov.proc.erp.communication/types/2.0.5" xsi:schemaLocation="urn://ru.gov.proc.erp.communication/2.0.5 \\psf\Dropbox\GIT\GITSPPIVP2\gp-erp-smev\InfoModel\2.0.5\ru.gov.proc.erp.communication.smev.xsd">
+	<erp_types:Message294 InfoModel="20150201" PreviousInfoModel="0">
+		<erp_types:Mailer Name="ФНС России" OGRN="1047707030513" FRGU_ORG_ID="10000001169" FRGU_SERV_ID="10000037754"/>
+		<erp_types:PlanRegular294Response KO_NAME="Управление Роскомнадзора по Приволжскому федеральному округу" ACCEPTED_NAME="" YEAR="2016" ID="2016000109">
+			<erp_types:LawBook294>
+				<erp_types:Law_I FORMULATION="Проверки: 294ФЗ в отношении ЮЛ/ИП" LAW_BASE="294"/>
+			</erp_types:LawBook294>
+			<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ПЛАН БЫЛ ПЕРЕМЕЩЕН В ЛОКАЦИЮ КОНТРОЛИРУЮЩЕГО ОРГАНА ДЛЯ КОРРЕКТИРОВКИ ДАННЫХ, ПОСЛЕ ПРАВКИ ДАННЫХ ТРЕБУЕТСЯ РАЗМЕСТИТЬ СООБЩЕНИЕ ВИДА PlanRegular294Correction"/>
+			<erp_types:DATE_FORM ValidationCode="0" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА НЕ КОРРЕКТНО" ValidationWrongValue="22007 :"/>
+			<erp_types:InspectionRegular294Response ID="201600000533" ORG_NAME="Общество с ограниченной ответственностью ;Информационный вычислительный центр;" ADR_SEC_I="603104, Нижегородская область, г. Нижний Новгород, ул. Нартова, д.6" ADR_SEC_II="" ADR_SEC_III="603104, Нижегородская область, г. Нижний Новгород, ул. Нартова, д.6" ADR_SEC_IV="" OGRN="1025203758580" INN="5262067308" INSP_TARGET="проверка соблюдения лицензионных условий в области связи 126-ФЗ от 07.07.2003, 99-ФЗ от 04.05.2011" REASON_SEC_II="2010-03-25" REASON_SEC_IV="п.1 ч. 9 ст. 19 Федерального закона от 04.05.2011  № 99-ФЗ" START_DATE="2016-01-01" DURATION_SEC_I="15" DURATION_SEC_II="0" KIND_OF_INSP="документарная" KO_JOINTLY="" REASON_SEC_I_DENY="1" REASON_SEC_II_DENY="0" REASON_SEC_III_DENY="0" USER_NOTE="" CORRELATION_ID="10001">
+				<erp_types:TOTAL_VALID ValidationCode="0" ValidationMessage="ПРОВЕРКА ОТКЛОНЕНА В ПРОВЕДЕНИИ: Отказ по основанию: ;Истечение 3-х лет со дня гос. регистрации;"/>
+				<erp_types:INN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:OGRN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:ORG_NAME ValidationCode="-1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА ОБРАБОТАНО С ПРЕДУПРЕЖДЕНИЕМ" ValidationWrongValue="ПО ДАННОМУ СОЧЕТАНИЮ ИНН И ОГРН В РЕЕСТРЕ ОТСУТСТВУЕТ ЗАПИСЬ"/>
+				<erp_types:START_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:DURATION_SEC_I ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:DURATION_SEC_II ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:REASON_SEC_I ValidationCode="0" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА НЕ КОРРЕКТНО"/>
+				<erp_types:REASON_SEC_II ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:REASON_SEC_III ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:ORDER_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:NOTICE_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:LAST_VIOLATION_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО" ValidationWrongValue=""/>
+			</erp_types:InspectionRegular294Response>
+			<erp_types:InspectionRegular294Response ID="201600000534" ORG_NAME="ФГУП ;Главный центр специальной связи; филиал Управление специальной связи по Нижегородской области" ADR_SEC_I="603000, Нижегородская область, г. Нижний Новгород, ул. Большая Покровская, д. 56" ADR_SEC_II="" ADR_SEC_III="603000, Нижегородская область, г. Нижний Новгород, ул. Большая Покровская, д. 56" ADR_SEC_IV="" OGRN="1027700041830" INN="7717043113" INSP_TARGET="проверка соблюдения лицензионных условий в области связи 126-ФЗ от 07.07.2003, 99-ФЗ от 04.05.2011" REASON_SEC_IV="п.1 ч. 9 ст. 19 Федерального закона от 04.05.2011  № 99-ФЗ" START_DATE="2015-04-01" DURATION_SEC_I="20" DURATION_SEC_II="0" KIND_OF_INSP="выездная" KO_JOINTLY="1) ПЛАН №2016000104 Управление Роскомнадзора по Приволжскому федеральному округу;2) ПЛАН №2016000108 Управление Роскомнадзора по Приволжскому федеральному округу1) ПЛАН №2016000104 Управление Роскомнадзора по Приволжскому федеральному округу;2) ПЛАН №2016000108 Управление Роскомнадзора по Приволжскому федеральному округу;1) ПЛАН №2016000090 Управление Роскомнадзора по Приволжскому федеральному округу;2) ПЛАН №2016000104 Управление Роскомнадзора по Приволжскому федеральному округу;3) ПЛАН №2016000108 Управление Роскомнадзора по Приволжскому федеральному округу;" REASON_SEC_I_DENY="0" REASON_SEC_II_DENY="0" REASON_SEC_III_DENY="0" USER_NOTE="" CORRELATION_ID="10002">
+				<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ПРОВЕРКА УТВЕРЖДЕНА В ПРОВЕДЕНИИ И ПОДЛЕЖИТ ПУБЛИКАЦИИ В АС ЕРП ПОСЛЕ УКАЗАНИЯ ДАТЫ И НОМЕРА ПРИКАЗА ( ORDER_DATE, ORDER_NUM)"/>
+				<erp_types:INN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:OGRN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:ORG_NAME ValidationCode="-1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА ОБРАБОТАНО С ПРЕДУПРЕЖДЕНИЕМ" ValidationWrongValue="ПО ДАННОМУ СОЧЕТАНИЮ ИНН И ОГРН В РЕЕСТРЕ ОТСУТСТВУЕТ ЗАПИСЬ"/>
+				<erp_types:START_DATE ValidationCode="0" ValidationMessage="ДАТА НАЧАЛА ПРОВЕДЕНИЯ ПРОВЕРКИ НЕ ПРЕНАДЛЕЖИТ ГОДУ СВОДНОГО ПЛАНА!" ValidationWrongValue="2015-04-01"/>
+				<erp_types:DURATION_SEC_I ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:DURATION_SEC_II ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:REASON_SEC_I ValidationCode="0" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА НЕ КОРРЕКТНО"/>
+				<erp_types:REASON_SEC_II ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:REASON_SEC_III ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:ORDER_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:NOTICE_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:LAST_VIOLATION_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО" ValidationWrongValue=""/>
+			</erp_types:InspectionRegular294Response>
+			<erp_types:InspectionRegular294Response ID="201600000535" ORG_NAME="Якоби Виктор Владимирович" ADR_SEC_I="" ADR_SEC_II="Адрес местонахождения  ИП" ADR_SEC_III="Фактический адрес местонахождения  ИП" ADR_SEC_IV="" OGRN="306491031700014" INN="490911988305" INSP_TARGET="исполнение требований Федерального закона от 30.03.1999 № 52-ФЗ ;О санитарно-эпидемиологическом благополучии населения; Закона Российской Федерации от 07.02.1992 № 2300-1 ;О защите прав потребителей; Федерального закона от 23.02.2013 N 15-ФЗ ;Об охране здоровья граждан от воздействия окружающего табачного дыма и последствий потребления табака; Технических регламентов Технических регламентов Таможенного союз" REASON_SEC_II="2011-03-05" REASON_SEC_IV="" START_DATE="2016-11-01" DURATION_SEC_I="0" DURATION_SEC_II="15" KIND_OF_INSP="выездная" KO_JOINTLY="1) ПЛАН №2016000104 Управление Роскомнадзора по Приволжскому федеральному округу;2) ПЛАН №2016000108 Управление Роскомнадзора по Приволжскому федеральному округу1) ПЛАН №2016000104 Управление Роскомнадзора по Приволжскому федеральному округу;2) ПЛАН №2016000108 Управление Роскомнадзора по Приволжскому федеральному округу;1) ПЛАН №2016000090 Управление Роскомнадзора по Приволжскому федеральному округу;2) ПЛАН №2016000104 Управление Роскомнадзора по Приволжскому федеральному округу;3) ПЛАН №2016000108 Управление Роскомнадзора по Приволжскому федеральному округу;" REASON_SEC_I_DENY="0" REASON_SEC_II_DENY="0" REASON_SEC_III_DENY="0" USER_NOTE="" CORRELATION_ID="10003">
+				<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ПРОВЕРКА УТВЕРЖДЕНА В ПРОВЕДЕНИИ И ПОДЛЕЖИТ ПУБЛИКАЦИИ В АС ЕРП ПОСЛЕ УКАЗАНИЯ ДАТЫ И НОМЕРА ПРИКАЗА ( ORDER_DATE, ORDER_NUM)"/>
+				<erp_types:INN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:OGRN ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:ORG_NAME ValidationCode="-1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА ОБРАБОТАНО С ПРЕДУПРЕЖДЕНИЕМ" ValidationWrongValue="ПО ДАННОМУ СОЧЕТАНИЮ ИНН И ОГРН В РЕЕСТРЕ ОТСУТСТВУЕТ ЗАПИСЬ"/>
+				<erp_types:START_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:DURATION_SEC_I ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:DURATION_SEC_II ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:REASON_SEC_I ValidationCode="0" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА НЕ КОРРЕКТНО"/>
+				<erp_types:REASON_SEC_II ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:REASON_SEC_III ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:ORDER_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:NOTICE_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО"/>
+				<erp_types:LAST_VIOLATION_DATE ValidationCode="1" ValidationMessage="ЗНАЧЕНИЕ АТРИБУТА КОРРЕКТНО" ValidationWrongValue=""/>
+			</erp_types:InspectionRegular294Response>
+		</erp_types:PlanRegular294Response>
+	</erp_types:Message294>
+</tns:Response>

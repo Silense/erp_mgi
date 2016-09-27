@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2007 rel. 3 (http://www.altova.com) by USER (EMBRACE) -->
+<tns:Response xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tns="urn://ru.gov.proc.erp.communication/2.0.5" xmlns:erp_types="urn://ru.gov.proc.erp.communication/types/2.0.5">
+	<erp_types:Message294 InfoModel="20150201" PreviousInfoModel="0">
+		<erp_types:Mailer Name="ФНС России" OGRN="1047707030513" FRGU_ORG_ID="10000001169" FRGU_SERV_ID="10001696877"/>
+		<erp_types:UplanResult294Notification YEAR="2015" ID="2016000119">
+			<erp_types:UinspectionResult294Notification ID="201600000859" ACT_DATE_CREATE="2015-08-25" ACT_TIME_CREATE="13:00:00" ACT_PLACE_CREATE="Место составления акта ( адрес)" ACT_WAS_READ="0" WRONG_DATA_REASON_SEC_I="" WRONG_DATA_ANOTHER="" NAME_OF_OWNER="ФИО уполномоченных представителей проверяемого лица, присутствывавш" UNIMPOSSIBLE_REASON_I="Информация о причинах невозможности проведения проверки" START_DATE="2015-08-18T13:15:00.000000" DURATION="1" ADR_INSPECTION="Адрес места проведения проверки" INSPECTORS="ФИО и должности должностного лица или должностных лиц, проводивших проверку" LOCATION="Локация проверок на стороне Витрины АС ЕРП">
+				<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ РЕЗУЛЬТАТА ПРОВЕРКИ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+				<erp_types:ACT_DATE_CREATE ValidationCode="1"/>
+				<erp_types:ACT_TIME_CREATE ValidationCode="1"/>
+				<erp_types:ACT_WAS_READ ValidationCode="1"/>
+				<erp_types:START_DATE ValidationCode="1"/>
+				<erp_types:DURATION ValidationCode="1"/>
+				<erp_types:UinspectionViolation294Notification VIOLATION_ID="1" VIOLATION_NOTE="Нарушение такое-то, выявлено в № случаях на территории такой-то" VIOLATION_ACT="Правовой акт №1" VIOLATION_ACTORS_NAME="Смит Смит Смитович" INJUNCTION_CODES="Предписание № 1" INJUNCTION_NOTE="Устранить нарушение такое-то, выявленое в № случаях на территории такой-то" INJUNCTION_DATE_CREATE="2015-09-09" INJUNCTION_DEADLINE="2015-10-01" INJUNCTION_EXECUTION="" LAWSUIT_SEC_I="" LAWSUIT_SEC_II="" LAWSUIT_SEC_III="" LAWSUIT_SEC_IV="" LAWSUIT_SEC_V="" LAWSUIT_SEC_VI="" LAWSUIT_SEC_VII="">
+					<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ ВЫЯВЛЕННОГО НАРУШЕНИЯ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+					<erp_types:INJUNCTION_DATE_CREATE ValidationCode="1"/>
+					<erp_types:INJUNCTION_DEADLINE ValidationCode="1"/>
+				</erp_types:UinspectionViolation294Notification>
+				<erp_types:UinspectionViolation294Notification VIOLATION_ID="2" VIOLATION_NOTE="Нарушение такое-то, выявлено в № случаях на территории такой-то" VIOLATION_ACT="Правовой акт №2" VIOLATION_ACTORS_NAME="Смит Смит Смитович" INJUNCTION_CODES="Предписание №2, №3, №4" INJUNCTION_NOTE="" INJUNCTION_DATE_CREATE="2015-09-07" INJUNCTION_DEADLINE="2015-10-10" INJUNCTION_EXECUTION="" LAWSUIT_SEC_I="" LAWSUIT_SEC_II="" LAWSUIT_SEC_III="" LAWSUIT_SEC_IV="" LAWSUIT_SEC_V="" LAWSUIT_SEC_VI="" LAWSUIT_SEC_VII="">
+					<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ ВЫЯВЛЕННОГО НАРУШЕНИЯ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+					<erp_types:INJUNCTION_DATE_CREATE ValidationCode="1"/>
+					<erp_types:INJUNCTION_DEADLINE ValidationCode="1"/>
+				</erp_types:UinspectionViolation294Notification>
+			</erp_types:UinspectionResult294Notification>
+			<erp_types:UinspectionResult294Notification ID="201600000860" ACT_DATE_CREATE="2015-08-25" ACT_TIME_CREATE="13:00:00" ACT_PLACE_CREATE="Место составления акта ( адрес)" ACT_WAS_READ="0" WRONG_DATA_REASON_SEC_I="" WRONG_DATA_ANOTHER="" NAME_OF_OWNER="ФИО уполномоченных представителей проверяемого лица, присутствывавш" UNIMPOSSIBLE_REASON_I="Информация о причинах невозможности проведения проверки" START_DATE="2015-08-18T13:15:00.000000" DURATION="1" ADR_INSPECTION="Адрес места проведения проверки" INSPECTORS="ФИО и должности должностного лица или должностных лиц, проводивших проверку" LOCATION="Локация проверок на стороне Витрины АС ЕРП">
+				<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ РЕЗУЛЬТАТА ПРОВЕРКИ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+				<erp_types:ACT_DATE_CREATE ValidationCode="1"/>
+				<erp_types:ACT_TIME_CREATE ValidationCode="1"/>
+				<erp_types:ACT_WAS_READ ValidationCode="1"/>
+				<erp_types:START_DATE ValidationCode="1"/>
+				<erp_types:DURATION ValidationCode="1"/>
+				<erp_types:UinspectionViolation294Notification VIOLATION_ID="1" VIOLATION_NOTE="Нарушение такое-то, выявлено в № случаях на территории такой-то" VIOLATION_ACT="Правовой акт №1" VIOLATION_ACTORS_NAME="Смит Смит Смитович" INJUNCTION_CODES="Предписание № 1" INJUNCTION_NOTE="Устранить нарушение такое-то, выявленое в № случаях на территории такой-то" INJUNCTION_DATE_CREATE="2015-09-09" INJUNCTION_DEADLINE="2015-10-01" INJUNCTION_EXECUTION="" LAWSUIT_SEC_I="" LAWSUIT_SEC_II="" LAWSUIT_SEC_III="" LAWSUIT_SEC_IV="" LAWSUIT_SEC_V="" LAWSUIT_SEC_VI="" LAWSUIT_SEC_VII="">
+					<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ ВЫЯВЛЕННОГО НАРУШЕНИЯ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+					<erp_types:INJUNCTION_DATE_CREATE ValidationCode="1"/>
+					<erp_types:INJUNCTION_DEADLINE ValidationCode="1"/>
+				</erp_types:UinspectionViolation294Notification>
+				<erp_types:UinspectionViolation294Notification VIOLATION_ID="2" VIOLATION_NOTE="Нарушение такое-то, выявлено в № случаях на территории такой-то" VIOLATION_ACT="Правовой акт №2" VIOLATION_ACTORS_NAME="Смит Смит Смитович" INJUNCTION_CODES="Предписание №2, №3, №4" INJUNCTION_NOTE="" INJUNCTION_DATE_CREATE="2015-09-07" INJUNCTION_DEADLINE="2015-10-10" INJUNCTION_EXECUTION="" LAWSUIT_SEC_I="" LAWSUIT_SEC_II="" LAWSUIT_SEC_III="" LAWSUIT_SEC_IV="" LAWSUIT_SEC_V="" LAWSUIT_SEC_VI="" LAWSUIT_SEC_VII="">
+					<erp_types:TOTAL_VALID ValidationCode="1" ValidationMessage="ЗАПИСЬ ВЫЯВЛЕННОГО НАРУШЕНИЯ НАХОДИТСЯ В ВАЛИДНОМ СОСТОЯНИИ"/>
+					<erp_types:INJUNCTION_DATE_CREATE ValidationCode="1"/>
+					<erp_types:INJUNCTION_DEADLINE ValidationCode="1"/>
+				</erp_types:UinspectionViolation294Notification>
+			</erp_types:UinspectionResult294Notification>
+		</erp_types:UplanResult294Notification>
+	</erp_types:Message294>
+</tns:Response>

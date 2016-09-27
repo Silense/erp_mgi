@@ -8,6 +8,7 @@ import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,13 +29,14 @@ public class CheckPlanRecordDaoImpl {
     }
 
     public List<CipCheckPlanRecord> getRecordsFromViewByPlanId(final int check_plan_id) {
-       return em.createQuery("SELECT a FROM CipCheckPlanRecord a WHERE a.CHECK_PLAN_ID = :check_plan_id", CipCheckPlanRecord.class)
-               .setParameter("check_plan_id", check_plan_id)
-               .getResultList();
+        return em.createQuery("SELECT a FROM CipCheckPlanRecord a WHERE a.CHECK_PLAN_ID = :check_plan_id", CipCheckPlanRecord.class).setParameter(
+                "check_plan_id",
+                check_plan_id
+        ).getResultList();
     }
 
 
-    public PlanCheckRecErp createPlanCheckRecErp(final PlanCheckErp plan, final CipCheckPlanRecord record){
+    public PlanCheckRecErp createPlanCheckRecErp(final PlanCheckErp plan, final CipCheckPlanRecord record) {
         final PlanCheckRecErp result = new PlanCheckRecErp();
         result.setIdCheckPlanErp(plan.getIdCheckPlanErp());
         result.setCodeCheckPlanRecErp(null);
@@ -51,14 +53,21 @@ public class CheckPlanRecordDaoImpl {
         }
     }
 
-    public void setStatus(final PlanCheckRecErp record, final String status){
+    public void setStatus(final PlanCheckRecErp record, final String status) {
         record.setCheckPlanRecStatusErp(status);
         em.merge(record);
         em.flush();
     }
 
-    public List<PlanCheckRecErp> getRecordsByPlanId(final Integer planId) {
+    public List<PlanCheckRecErp> getRecordsByPlan(final Integer planId) {
         return em.createQuery("SELECT a FROM PlanCheckRecErp a WHERE a.idCheckPlanErp = :plan_id", PlanCheckRecErp.class)
                 .setParameter("plan_id", planId).getResultList();
+    }
+
+    public List<PlanCheckRecErp> getRecordsByPlan(final PlanCheckErp planCheckErp) {
+        if (null != planCheckErp) {
+            return getRecordsByPlan(planCheckErp.getIdCheckPlanErp());
+        }
+        return new ArrayList<>(0);
     }
 }
