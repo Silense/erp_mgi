@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.factory.MessageFactory;
 import ru.cip.ws.erp.generated.erptypes.MessageToERP294Type;
@@ -51,6 +53,7 @@ public class MessageService {
             final String acceptedName,
             final Integer year
     ) {
+        final String messageType = MessageToERP294Type.PlanRegular294Correction.class.getSimpleName();
         logger.info("{} : Start construct PlanRegular294Correction message", requestId);
         final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Correction(
                 StringUtils.defaultString(acceptedName, checkPlan.getACCEPTED_NAME()),
@@ -72,11 +75,11 @@ public class MessageService {
         }
         final ExpSession exportSession = exportSessionDao.createExportSession(
                 "4.1.3 Запрос на размещение корректировки плана плановых проверок",
-                MessageToERP294Type.PlanRegular294Correction.class.getSimpleName(),
+                messageType,
                 requestId
         );
         logger.info("{} : Created ExportSession: {}", requestId, exportSession);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(result, exportSession);
+        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
         checkPlanDao.setExportSessionAndStatus(planCheckErp, "WAIT FOR CORRECTON RESPONSE", exportSession);
         logger.info("{} : Update PlanCheckErp: {}", requestId, planCheckErp);
@@ -109,6 +112,7 @@ public class MessageService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String sendPlanRegular294Initialization(
             final String requestId,
             final CipCheckPlan checkPlan,
@@ -116,6 +120,7 @@ public class MessageService {
             final Integer year,
             final List<CipCheckPlanRecord> planRecords
     ) {
+        final String messageType =  MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName();
         logger.debug("{} : Start construct PlanRegular294Initialization message", requestId);
         final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Initialization(
                 StringUtils.defaultString(acceptedName, checkPlan.getACCEPTED_NAME()),
@@ -135,11 +140,11 @@ public class MessageService {
         }
         final ExpSession exportSession = exportSessionDao.createExportSession(
                 "4.1.2 Запрос на первичное размещение плана плановых проверок",
-                MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName(),
+               messageType,
                 requestId
         );
         logger.info("{} : Created ExportSession: {}", requestId, exportSession);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(result, exportSession);
+        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
         final PlanCheckErp planCheckErp = checkPlanDao.createPlanCheckErp(checkPlan.getCHECK_PLAN_ID(), null, exportSession);
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
@@ -187,7 +192,7 @@ public class MessageService {
         }
         final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
         logger.info("{} : Created ExportSession: {}", requestId, exportSession);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(result, exportSession);
+        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
         try {
             final String messageId = messageSender.send(result);

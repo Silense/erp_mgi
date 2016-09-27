@@ -8,15 +8,10 @@
 
 package ru.cip.ws.erp.generated.erptypes;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
 
 
 /**
@@ -43,7 +38,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PlanRegular294ResponseType", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", propOrder = {
-    "rest"
+    "rest", "responses"
 })
 @XmlSeeAlso({
     ru.cip.ws.erp.generated.erptypes.MessageFromERP294Type.PlanRegular294Response.class,
@@ -58,6 +53,11 @@ public class PlanRegular294ResponseType
         @XmlElementRef(name = "DATE_FORM", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", type = JAXBElement.class, required = false)
     })
     protected List<JAXBElement<ERPResponseType>> rest;
+
+    @XmlElementRefs({
+            @XmlElementRef(name = "InspectionRegular294Response", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", type = InspectionRegular294ResponseType.class, required = false)
+    })
+    protected List<InspectionRegular294ResponseType> responses;
 
     /**
      * Gets the rest of the content model. 
@@ -99,4 +99,10 @@ public class PlanRegular294ResponseType
         return this.rest;
     }
 
+    public List<InspectionRegular294ResponseType> getResponses() {
+        if (responses == null) {
+            responses = new ArrayList<>();
+        }
+        return this.responses;
+    }
 }

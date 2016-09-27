@@ -53,7 +53,7 @@ public class CipCheckPlanRecord {
     private Date REASON_SEC_III;
 
     @Column(name = "REASON_SEC_IV")
-    private Date REASON_SEC_IV;
+    private String REASON_SEC_IV;
 
     @Column(name = "START_DATE")
     private Date START_DATE;
@@ -206,11 +206,11 @@ public class CipCheckPlanRecord {
         this.REASON_SEC_III = REASON_SEC_III;
     }
 
-    public Date getREASON_SEC_IV() {
+    public String getREASON_SEC_IV() {
         return REASON_SEC_IV;
     }
 
-    public void setREASON_SEC_IV(final Date REASON_SEC_IV) {
+    public void setREASON_SEC_IV(final String REASON_SEC_IV) {
         this.REASON_SEC_IV = REASON_SEC_IV;
     }
 

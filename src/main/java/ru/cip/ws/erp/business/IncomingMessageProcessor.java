@@ -67,7 +67,20 @@ public class IncomingMessageProcessor {
 
     }
 
-    public void process(final MessageFromERP294Type.PlanRegular294Response planRegular294Response) {
+    public void process(final String requestId, final MessageFromERP294Type.PlanRegular294Response planRegular294Response, final String statusMessage) {
+        //TRY to find CIP_PLANCHECK_ERP by requestId
+        final PlanCheckErp planCheckErp = checkPlanDao.getByRequestId(requestId);
+        if(planCheckErp == null){
+            logger.warn("{} : Skip. No PlanCheckErp found", requestId);
+            return;
+        }
+        logger.info("{} : is message for {}", requestId, planCheckErp);
+        checkPlanDao.setIDFromErp(planCheckErp, planRegular294Response.getID(), statusMessage);
+        final List<InspectionRegular294ResponseType> responseList = new ArrayList<>();
+        for (JAXBElement<ERPResponseType> jaxbElement : planRegular294Response.getRest()) {
+            logger.error(jaxbElement.getValue().getClass().getName());
+        }
+        final List<PlanCheckRecErp> records = checkPlanRecordDao.getRecordsByPlan(planCheckErp);
 
     }
 

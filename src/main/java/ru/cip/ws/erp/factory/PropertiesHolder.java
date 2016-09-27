@@ -25,6 +25,9 @@ public class PropertiesHolder {
     @Value("${messagetype.previous_info_model}")
     public BigInteger MESSAGETYPE_PREVIOUS_INFO_MODEL;
 
+    @Value("${ko.name}")
+    public String KO_NAME;
+
     @Value("${mgi.org.orgn}")
     public String MGI_OGRN;
 

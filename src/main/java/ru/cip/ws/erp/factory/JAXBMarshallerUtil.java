@@ -28,11 +28,10 @@ public class JAXBMarshallerUtil {
             return null;
         }
         try {
+            final StringWriter sw = new StringWriter();
             final JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
             final Marshaller marshaller = context.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", new NamespacePrefixMapper());
-            final StringWriter sw = new StringWriter();
             marshaller.marshal(item, sw);
             final String result = sw.toString();
             if(StringUtils.isEmpty(result)){

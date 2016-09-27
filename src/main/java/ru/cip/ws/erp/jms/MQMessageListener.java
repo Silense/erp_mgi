@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class MQMessageListener implements MessageListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(MQMessageSender.class);
+    private static final Logger logger = LoggerFactory.getLogger(MQMessageListener.class);
     private static AtomicInteger counter = new AtomicInteger(0);
 
     @Autowired
@@ -50,8 +50,7 @@ public class MQMessageListener implements MessageListener {
                 logger.info(
                         "#{} MessageBody:\n{}\n", requestNumber, textMessage.getText().substring(
                                 0, Math.min(
-                                        1200,
-                                        textMessage.getText().length()
+                                        1200, textMessage.getText().length()
                                 )
                         )
                 );
@@ -94,7 +93,8 @@ public class MQMessageListener implements MessageListener {
     }
 
     private void processMessage(final String requestId, final ResponseMsg msg, final ImpSession importSession) {
-        logger.debug("{} : Start processing", requestId);
+        final String statusMessage = msg.getStatusMessage();
+        logger.debug("{} : Start processing with statusMessage=\'{}\'", requestId, statusMessage);
         if (importSession.getEXP_SESSION_ID() != null) {
             final ExpSession expSession = exportSessionDao.getSessionById(importSession.getEXP_SESSION_ID());
             if (expSession != null) {
@@ -110,13 +110,13 @@ public class MQMessageListener implements MessageListener {
                 final MessageFromERPCommonType messageCommon = response.getMessageCommon();
                 if (messageCommon != null) {
                     if (messageCommon.getFindInspectionResponse() != null) {
-                        messageProcessor.process(requestId, messageCommon.getFindInspectionResponse(), msg.getStatusMessage());
+                        messageProcessor.process(requestId, messageCommon.getFindInspectionResponse(), statusMessage);
                     } else if (messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse() != null) {
                         messageProcessor.process(
-                                requestId, messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse(), msg.getStatusMessage()
+                                requestId, messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse(), statusMessage
                         );
                     } else if (messageCommon.getERPResponse() != null) {
-                        messageProcessor.process(requestId, messageCommon.getERPResponse(), msg.getStatusMessage());
+                        messageProcessor.process(requestId, messageCommon.getERPResponse(), statusMessage);
                     } else {
                         logger.warn("{} : Unknown messageType no processing", requestId);
                     }
@@ -124,9 +124,9 @@ public class MQMessageListener implements MessageListener {
                 final MessageFromERP294Type message294 = response.getMessage294();
                 if (message294 != null) {
                     if (message294.getPlanRegular294Notification() != null) {
-                        messageProcessor.process(requestId, message294.getPlanRegular294Notification(), msg.getStatusMessage());
+                        messageProcessor.process(requestId, message294.getPlanRegular294Notification(), statusMessage);
                     } else if (message294.getPlanRegular294Response() != null) {
-                        messageProcessor.process(message294.getPlanRegular294Response());
+                        messageProcessor.process(requestId, message294.getPlanRegular294Response(), statusMessage);
                     } else if (message294.getPlanResult294Notification() != null) {
                         messageProcessor.process(message294.getPlanResult294Notification());
                     } else if (message294.getPlanResult294Response() != null) {
