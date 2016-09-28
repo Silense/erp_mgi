@@ -1,6 +1,7 @@
 package ru.cip.ws.erp.jdbc.entity;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 
 /**
  * Author: Upatov Egor <br>
@@ -23,7 +24,7 @@ public class PlanCheckRecErp {
 
 
     @Column(name = "CODE_CHECK_PLAN_REC_ERP")
-    private Integer codeCheckPlanRecErp;
+    private BigInteger codeCheckPlanRecErp;
 
     @Column(name = "CHECK_PLAN_REC_STATUS_ERP")
     private String checkPlanRecStatusErp;
@@ -42,11 +43,11 @@ public class PlanCheckRecErp {
         this.idCheckPlanRecErp = idCheckPlanRecErp;
     }
 
-    public Integer getCodeCheckPlanRecErp() {
+    public BigInteger getCodeCheckPlanRecErp() {
         return codeCheckPlanRecErp;
     }
 
-    public void setCodeCheckPlanRecErp(final Integer codeCheckPlanRecErp) {
+    public void setCodeCheckPlanRecErp(final BigInteger codeCheckPlanRecErp) {
         this.codeCheckPlanRecErp = codeCheckPlanRecErp;
     }
 

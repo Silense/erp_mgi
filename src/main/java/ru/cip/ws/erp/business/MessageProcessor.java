@@ -102,10 +102,10 @@ public class MessageProcessor {
     public void processPlanRegular294Initialization(
             final HttpServletResponse response, final String requestId, final Integer checkPlanId, final Integer year, final String acceptedName
     ) throws IOException {
-        final CipCheckPlan checkPlan = (year != null) ? checkPlanDao.getByYearFromView(year) : checkPlanDao.getByIdFromView(checkPlanId);
+        final CipCheckPlan checkPlan = checkPlanDao.getByIdFromView(checkPlanId);
         if (checkPlan == null) {
-            logger.warn("{} : End. CheckPlan not found", requestId);
-            response.getWriter().print("Не найден план проверки " + (year != null ? "(по году)" : "(по идентификатору)"));
+            logger.warn("{} : End. CheckPlan[{}] not found ", requestId, checkPlanId);
+            response.getWriter().print(String.format("Не найден план проверки [%s]", checkPlanId));
             response.setStatus(404);
             return;
         }

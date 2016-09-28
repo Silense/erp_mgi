@@ -1,5 +1,6 @@
 package ru.cip.ws.erp.jms;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +94,7 @@ public class MQMessageListener implements MessageListener {
     }
 
     private void processMessage(final String requestId, final ResponseMsg msg, final ImpSession importSession) {
-        final String statusMessage = msg.getStatusMessage();
+        final String statusMessage = StringUtils.defaultString(msg.getStatusMessage(), msg.getStatusCode().toString());
         logger.debug("{} : Start processing with statusMessage=\'{}\'", requestId, statusMessage);
         if (importSession.getEXP_SESSION_ID() != null) {
             final ExpSession expSession = exportSessionDao.getSessionById(importSession.getEXP_SESSION_ID());

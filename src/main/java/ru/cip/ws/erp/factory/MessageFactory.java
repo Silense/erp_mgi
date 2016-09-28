@@ -215,8 +215,8 @@ public class MessageFactory {
         result.setORDERNUM(record.getORDER_NUM());
         result.setLASTVIOLATIONDATE(wrapDate(record.getLAST_VIOLATION_DATE()));
         result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
-        if(correlated !=null) {
-            result.setID(BigInteger.valueOf(correlated.getCodeCheckPlanRecErp()));
+        if(correlated != null) {
+            result.setID(correlated.getCodeCheckPlanRecErp());
         }
         return result;
     }

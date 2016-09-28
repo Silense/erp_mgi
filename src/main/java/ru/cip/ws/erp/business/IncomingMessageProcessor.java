@@ -1,5 +1,6 @@
 package ru.cip.ws.erp.business;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,8 @@ import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
 import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
 
 import javax.xml.bind.JAXBElement;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Author: Upatov Egor <br>
@@ -52,35 +53,55 @@ public class IncomingMessageProcessor {
     ) {
         //TRY to find CIP_PLANCHECK_ERP by requestId
         final PlanCheckErp planCheckErp = checkPlanDao.getByRequestId(requestId);
-        if(planCheckErp == null){
+        if (planCheckErp == null) {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
         logger.info("{} : is message for {}", requestId, planCheckErp);
         checkPlanDao.setIDFromErp(planCheckErp, planRegular294Notification.getID(), statusMessage);
-        final List<InspectionRegular294ResponseType> responseList = new ArrayList<>();
         for (JAXBElement<ERPResponseType> jaxbElement : planRegular294Notification.getRest()) {
-            logger.error(jaxbElement.getValue().getClass().getName());
+            final String validationMessage = jaxbElement.getValue().getValidationMessage();
+            if (StringUtils.isNotEmpty(validationMessage)) {
+                checkPlanDao.setStatus(planCheckErp, validationMessage);
+                break;
+            }
         }
-        final List<PlanCheckRecErp> records = checkPlanRecordDao.getRecordsByPlan(planCheckErp);
 
 
     }
 
-    public void process(final String requestId, final MessageFromERP294Type.PlanRegular294Response planRegular294Response, final String statusMessage) {
+    public void process(
+            final String requestId,
+            final MessageFromERP294Type.PlanRegular294Response planRegular294Response,
+            final String statusMessage
+    ) {
         //TRY to find CIP_PLANCHECK_ERP by requestId
         final PlanCheckErp planCheckErp = checkPlanDao.getByRequestId(requestId);
-        if(planCheckErp == null){
+        if (planCheckErp == null) {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
         logger.info("{} : is message for {}", requestId, planCheckErp);
-        checkPlanDao.setIDFromErp(planCheckErp, planRegular294Response.getID(), statusMessage);
-        final List<InspectionRegular294ResponseType> responseList = new ArrayList<>();
-        for (JAXBElement<ERPResponseType> jaxbElement : planRegular294Response.getRest()) {
-            logger.error(jaxbElement.getValue().getClass().getName());
-        }
         final List<PlanCheckRecErp> records = checkPlanRecordDao.getRecordsByPlan(planCheckErp);
+        checkPlanDao.setIDFromErp(planCheckErp, planRegular294Response.getID(), statusMessage);
+        for (InspectionRegular294ResponseType responseRow : planRegular294Response.getResponses()) {
+            if (responseRow.getID() != null && responseRow.getCORRELATIONID() != null) {
+                for (PlanCheckRecErp localRow : records) {
+                    if (Objects.equals(localRow.getCipChPlRecCorrelId(), responseRow.getCORRELATIONID().intValue())) {
+                        logger.info(
+                                "{} : InspectionRegular294Response[OGRN='{}'] correlated with PlanCheckRecErp[{}]",
+                                requestId,
+                                responseRow.getOGRN(),
+                                localRow.getIdCheckPlanRecErp()
+                        );
+                        checkPlanRecordDao.setIDFromErp(localRow, responseRow.getID());
+                        break;
+                    }
+                }
+            } else {
+                logger.warn("{} : InspectionRegular294Response[OGRN='{}'] has NULL as ID or NULL correlationId", requestId, responseRow.getOGRN());
+            }
+        }
 
     }
 

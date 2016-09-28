@@ -54,10 +54,8 @@ public class PlanRegular294ResponseType
     })
     protected List<JAXBElement<ERPResponseType>> rest;
 
-    @XmlElementRefs({
-            @XmlElementRef(name = "InspectionRegular294Response", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", type = InspectionRegular294ResponseType.class, required = false)
-    })
-    protected List<InspectionRegular294ResponseType> responses;
+    @XmlElement(name = "InspectionRegular294Response", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5")
+    protected InspectionRegular294ResponseType[] responses;
 
     /**
      * Gets the rest of the content model. 
@@ -99,10 +97,7 @@ public class PlanRegular294ResponseType
         return this.rest;
     }
 
-    public List<InspectionRegular294ResponseType> getResponses() {
-        if (responses == null) {
-            responses = new ArrayList<>();
-        }
-        return this.responses;
+    public InspectionRegular294ResponseType[] getResponses() {
+        return responses;
     }
 }

@@ -8,6 +8,7 @@ import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,5 +70,10 @@ public class CheckPlanRecordDaoImpl {
             return getRecordsByPlan(planCheckErp.getIdCheckPlanErp());
         }
         return new ArrayList<>(0);
+    }
+
+    public void setIDFromErp(final PlanCheckRecErp record, final BigInteger id) {
+        record.setCodeCheckPlanRecErp(id);
+        setStatus(record, "RECEIVE ID FROM ERP");
     }
 }
