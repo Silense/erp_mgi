@@ -111,7 +111,7 @@ public class InspectionRegular294Type {
     @XmlAttribute(name = "KO_JOINTLY")
     protected String kojointly;
     @XmlAttribute(name = "REASON_SEC_I_DENY")
-    protected Boolean reasonsecideny;
+    protected Integer reasonsecideny;
     @XmlAttribute(name = "REASON_SEC_II_DENY")
     protected Boolean reasonseciideny;
     @XmlAttribute(name = "REASON_SEC_III_DENY")
@@ -575,7 +575,7 @@ public class InspectionRegular294Type {
      *     {@link Boolean }
      *     
      */
-    public Boolean getREASONSECIDENY() {
+    public Integer getREASONSECIDENY() {
         return reasonsecideny;
     }
 
@@ -587,7 +587,7 @@ public class InspectionRegular294Type {
      *     {@link Boolean }
      *     
      */
-    public void setREASONSECIDENY(Boolean value) {
+    public void setREASONSECIDENY(Integer value) {
         this.reasonsecideny = value;
     }
 

@@ -46,18 +46,17 @@ public class MessageService {
 
     public String sendPlanRegular294Correction(
             final String requestId,
-            final CipCheckPlan checkPlan,
             final List<CipCheckPlanRecord> planRecords,
             final PlanCheckErp planCheckErp,
             final List<PlanCheckRecErp> planCheckRecErpList,
             final String acceptedName,
-            final Integer year
+            final int year
     ) {
         final String messageType = MessageToERP294Type.PlanRegular294Correction.class.getSimpleName();
         logger.info("{} : Start construct PlanRegular294Correction message", requestId);
         final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Correction(
-                StringUtils.defaultString(acceptedName, checkPlan.getAcceptedName()),
-                year != null ? year : checkPlan.getYear(),
+                StringUtils.defaultString(acceptedName),
+                year,
                 planRecords,
                 planCheckErp,
                 planCheckRecErpList,

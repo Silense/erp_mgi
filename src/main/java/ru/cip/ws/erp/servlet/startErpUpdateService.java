@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.UUID;
 
 /**
@@ -171,7 +172,11 @@ public class startErpUpdateService implements HttpRequestHandler {
         logger.info("{} : is PlanRegular294Correction", requestId);
         if (isTestMode) {
             logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
-            testMessageProcessor.processPlanRegular294Correction(requestId, response);
+            try {
+                testMessageProcessor.processPlanRegular294Correction(requestId, response);
+            } catch (ParseException e) {
+                logger.error("{} : Exception", e);
+            }
             return;
         }
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);

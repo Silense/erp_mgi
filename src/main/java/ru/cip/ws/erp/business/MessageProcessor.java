@@ -7,10 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
-import ru.cip.ws.erp.jdbc.entity.*;
+import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
+import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
+import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
+import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -33,11 +37,7 @@ public class MessageProcessor {
     private CheckPlanRecordDaoImpl checkPlanRecordDao;
 
     public void processPlanRegular294Correction(
-            final String requestId,
-            final HttpServletResponse response,
-            final Integer checkPlanId,
-            final Integer year,
-            final String acceptedName
+            final String requestId, final HttpServletResponse response, final Integer checkPlanId, final Integer year, final String acceptedName
     ) throws IOException {
         final CipCheckPlan checkPlan = checkPlanDao.getByIdFromView(checkPlanId);
         if (checkPlan == null) {
@@ -47,9 +47,10 @@ public class MessageProcessor {
             return;
         }
         logger.info("#{} founded CheckPlan: {}", requestId, checkPlan);
-        final PlanCheckErp planCheckErp = checkPlanDao.getLastActiveByPlan(checkPlan);
+
+        PlanCheckErp planCheckErp = checkPlanDao.getLastActiveByPlanOrFault(checkPlan);
         logger.info("#{} founded PlanCheckErp: {}", requestId, planCheckErp);
-        if (planCheckErp == null || !StatusErp.isAnswered(planCheckErp.getStatus())) {
+        if (planCheckErp == null) {
             logger.warn("#{} End. PLAN[{}] is not send for ERP", requestId, checkPlan.getId());
             response.getWriter().print(
                     String.format("Нельзя корректировать план: План %d еще не был первично выгружен в ЕРП", checkPlan.getId())
@@ -81,7 +82,12 @@ public class MessageProcessor {
         }
         final List<PlanCheckRecErp> sentCheckPlanRecords = checkPlanRecordDao.getRecordsByPlan(planCheckErp);
         final String result = messageService.sendPlanRegular294Correction(
-                requestId, checkPlan, checkPlanRecords, planCheckErp, sentCheckPlanRecords, acceptedName, year
+                requestId,
+                checkPlanRecords,
+                planCheckErp,
+                sentCheckPlanRecords,
+                StringUtils.defaultString(checkPlan.getAcceptedName(), acceptedName),
+                year != null ? year : Calendar.getInstance().get(Calendar.YEAR)
         );
         if (StringUtils.isNotEmpty(result)) {
             response.setContentType("text/xml");
@@ -116,10 +122,10 @@ public class MessageProcessor {
             }
         }
         final PlanCheckErp lastActiveByPlan = checkPlanDao.getLastActiveByPlan(checkPlan);
-        if(lastActiveByPlan != null){
+        if (lastActiveByPlan != null) {
             response.setStatus(500);
             String message = "%d";
-            switch (lastActiveByPlan.getStatus()){
+            switch (lastActiveByPlan.getStatus()) {
                 case WAIT:
                     message = "План проверок [%d] ожидает ответа";
                     break;

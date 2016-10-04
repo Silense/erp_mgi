@@ -40,7 +40,7 @@ public class CheckPlanDaoImpl {
     }
 
     public List<CipCheckPlan> getByYearFromView(final int year) {
-       return em.createQuery("SELECT a FROM CipCheckPlan a WHERE a.year = :year", CipCheckPlan.class).setParameter("year", year).getResultList();
+        return em.createQuery("SELECT a FROM CipCheckPlan a WHERE a.year = :year", CipCheckPlan.class).setParameter("year", year).getResultList();
     }
 
 
@@ -103,9 +103,11 @@ public class CheckPlanDaoImpl {
 
     public List<PlanCheckErp> getActiveByPlan(final CipCheckPlan plan) {
         return em.createQuery(
-                "SELECT a FROM PlanCheckErp a WHERE a.cipChPlLglApprvdId = :planId AND a.status NOT IN :statuses", PlanCheckErp.class
+                "SELECT a FROM PlanCheckErp a " +
+                        "WHERE a.cipChPlLglApprvdId = :planId " +
+                        "AND a.status NOT IN :statuses" +
+                        " ORDER BY a.expSession.START_DATE DESC", PlanCheckErp.class
         ).setParameter("planId", plan.getId()).setParameter("statuses", StatusErp.incorrectStatuses()).getResultList();
-
     }
 
     public void cancel(final PlanCheckErp planCheckErp) {
@@ -116,5 +118,20 @@ public class CheckPlanDaoImpl {
     public PlanCheckErp getLastActiveByPlan(final CipCheckPlan plan) {
         final List<PlanCheckErp> resultList = getActiveByPlan(plan);
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
+    }
+
+    public PlanCheckErp getLastFaultByPlan(final CipCheckPlan plan) {
+        final List<PlanCheckErp> resultList = em.createQuery(
+                "SELECT a FROM PlanCheckErp a " +
+                        "WHERE a.cipChPlLglApprvdId = :planId " +
+                        "AND a.status = :status" +
+                        " ORDER BY a.expSession.START_DATE DESC", PlanCheckErp.class
+        ).setParameter("planId", plan.getId()).setParameter("status", StatusErp.FAULT).getResultList();
+        return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
+    }
+
+    public PlanCheckErp getLastActiveByPlanOrFault(final CipCheckPlan plan) {
+        final PlanCheckErp result = getLastActiveByPlan(plan);
+        return result != null ? result : getLastFaultByPlan(plan);
     }
 }
