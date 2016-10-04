@@ -55,13 +55,13 @@ public class MessageFactory {
         message.setDATEFORM(wrapDate(new Date()));
         message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
         // ИД из уже отосланного плана
-        message.setID(BigInteger.valueOf(planCheckErp.getCodeCheckPlanErp()));
+        message.setID(BigInteger.valueOf(planCheckErp.getErpId()));
 
         final List<InspectionRegular294CorrectionType> inspectionList = message.getInspectionRegular294Correction();
         for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
             PlanCheckRecErp correlated = null;
             for (PlanCheckRecErp checkRecErp : planCheckRecErpList) {
-               if(checkPlanRecord.getCorrelationId().equals(checkRecErp.getCipChPlRecCorrelId())){
+               if(checkPlanRecord.getCorrelationId().equals(checkRecErp.getCorrelationId())){
                    correlated = checkRecErp;
                    break;
                }
@@ -95,7 +95,7 @@ public class MessageFactory {
         message.setKONAME(prop.KO_NAME);
         message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
         message.setYEAR(year);
-        //TODO message.setDATEFORM(wrapDate(new Date()));
+        message.setDATEFORM(wrapDate(new Date()));
         message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
         final List<InspectionRegular294InitializationType> inspectionList = message.getInspectionRegular294Initialization();
         for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
@@ -216,7 +216,7 @@ public class MessageFactory {
         result.setLASTVIOLATIONDATE(wrapDate(record.getLAST_VIOLATION_DATE()));
         result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
         if(correlated != null) {
-            result.setID(correlated.getCodeCheckPlanRecErp());
+            result.setID(correlated.getErpId());
         }
         return result;
     }

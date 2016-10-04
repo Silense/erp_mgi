@@ -50,19 +50,17 @@ public class ExportSessionDaoImpl {
         result.setCREATE_SYSTEM(appID);
         result.setUPDATE_SYSTEM(appID);
         em.persist(result);
-        em.flush();
         return result;
     }
 
     public ExpSessionEvent createExportEvent(final String message, final ExpSession exp_session) {
         final Date now = new Date();
         final ExpSessionEvent result = new ExpSessionEvent();
-        result.setEVENT_DT(now);
+        result.setEventDateTime(now);
         result.setEVENT_TEXT(message);
         result.setEVENT_USER_ID(appID);
-        result.setEXP_SESSION_ID(exp_session.getEXP_SESSION_ID());
+        result.setExportSession(exp_session);
         em.persist(result);
-        em.flush();
         return result;
 
     }
@@ -83,7 +81,6 @@ public class ExportSessionDaoImpl {
         session.setEND_DATE(new Date());
         session.setENUM_EXP_SESSION_STATUS(status);
         em.merge(session);
-        em.flush();
     }
 
     public ExpSession getSessionById(final Integer id) {

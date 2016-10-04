@@ -16,14 +16,15 @@ public class ImpSessionEvent {
     @Column(name = "IMP_SESSION_EVENT_ID")
     @GeneratedValue(strategy=GenerationType.AUTO, generator = "SEQ_RSYS_IMP_SESSION_EVENT")
     @SequenceGenerator(name="SEQ_RSYS_IMP_SESSION_EVENT", sequenceName = "SEQ_RSYS_IMP_SESSION_EVENT")
-    private Integer IMP_SESSION_EVENT_ID;
+    private Integer id;
 
-    @Column(name = "IMP_SESSION_ID", nullable = false)
-    private Integer IMP_SESSION_ID;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "IMP_SESSION_ID", nullable = false)
+    private ImpSession importSession;
 
     @Column(name = "EVENT_DT", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date EVENT_DT;
+    private Date eventDateTime;
 
     @Column(name = "SYSTEM_ID", nullable = false)
     private String SYSTEM_ID;
@@ -39,10 +40,9 @@ public class ImpSessionEvent {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ImpSessionEvent{");
-        sb.append("IMP_SESSION_EVENT_ID=").append(IMP_SESSION_EVENT_ID);
-        sb.append(", IMP_SESSION_ID=").append(IMP_SESSION_ID);
-        sb.append(", EVENT_DT=").append(EVENT_DT);
+        final StringBuilder sb = new StringBuilder("ImpSessionEvent[").append(id);
+        sb.append("]{ IMP_SESSION_ID=").append(importSession != null ? importSession.getId() : null);
+        sb.append(", EVENT_DT=").append(eventDateTime);
         sb.append(", SYSTEM_ID='").append(SYSTEM_ID).append('\'');
         sb.append(", EVENT_USER_ID='").append(EVENT_USER_ID).append('\'');
         sb.append(", EVENT_TEXT=").append(EVENT_TEXT);
@@ -50,36 +50,21 @@ public class ImpSessionEvent {
         return sb.toString();
     }
 
-    public Integer getIMP_SESSION_EVENT_ID() {
-        return IMP_SESSION_EVENT_ID;
+    public Integer getId() {
+        return id;
     }
 
-    public void setIMP_SESSION_EVENT_ID(final Integer IMP_SESSION_EVENT_ID) {
-        this.IMP_SESSION_EVENT_ID = IMP_SESSION_EVENT_ID;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
-    public Integer getIMP_SESSION_ID() {
-        return IMP_SESSION_ID;
+
+    public String getEVENT_TEXT() {
+        return EVENT_TEXT;
     }
 
-    public void setIMP_SESSION_ID(final Integer IMP_SESSION_ID) {
-        this.IMP_SESSION_ID = IMP_SESSION_ID;
-    }
-
-    public Date getEVENT_DT() {
-        return EVENT_DT;
-    }
-
-    public void setEVENT_DT(final Date EVENT_DT) {
-        this.EVENT_DT = EVENT_DT;
-    }
-
-    public String getSYSTEM_ID() {
-        return SYSTEM_ID;
-    }
-
-    public void setSYSTEM_ID(final String SYSTEM_ID) {
-        this.SYSTEM_ID = SYSTEM_ID;
+    public void setEVENT_TEXT(final String EVENT_TEXT) {
+        this.EVENT_TEXT = EVENT_TEXT;
     }
 
     public String getEVENT_USER_ID() {
@@ -90,11 +75,27 @@ public class ImpSessionEvent {
         this.EVENT_USER_ID = EVENT_USER_ID;
     }
 
-    public String getEVENT_TEXT() {
-        return EVENT_TEXT;
+    public Date getEventDateTime() {
+        return eventDateTime;
     }
 
-    public void setEVENT_TEXT(final String EVENT_TEXT) {
-        this.EVENT_TEXT = EVENT_TEXT;
+    public void setEventDateTime(final Date eventDateTime) {
+        this.eventDateTime = eventDateTime;
+    }
+
+    public ImpSession getImportSession() {
+        return importSession;
+    }
+
+    public void setImportSession(final ImpSession importSession) {
+        this.importSession = importSession;
+    }
+
+    public String getSYSTEM_ID() {
+        return SYSTEM_ID;
+    }
+
+    public void setSYSTEM_ID(final String SYSTEM_ID) {
+        this.SYSTEM_ID = SYSTEM_ID;
     }
 }

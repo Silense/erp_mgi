@@ -16,7 +16,7 @@ public class ExpSession {
     @Column(name = "EXP_SESSION_ID")
     @GeneratedValue(strategy=GenerationType.AUTO, generator = "SEQ_RSYS_EXP_SESSION")
     @SequenceGenerator(name="SEQ_RSYS_EXP_SESSION", sequenceName = "SEQ_RSYS_EXP_SESSION")
-    private Integer EXP_SESSION_ID;
+    private Integer id;
 
     @Column(name = "START_DATE")
     @Temporal(TemporalType.TIMESTAMP)
@@ -40,11 +40,13 @@ public class ExpSession {
     @Temporal(TemporalType.TIMESTAMP)
     private Date UPDATE_DATE;
 
-    @Column(name = "IMP_SESSION_ID")
-    private Integer IMP_SESSION_ID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "IMP_SESSION_ID")
+    private ImpSession importSession;
 
     @Column(name = "SYSTEM_SERVICE_ID")
     private String SYSTEM_SERVICE_ID;
+
     @Column(name = "ENUM_EXP_SESSION_STATUS")
     private String ENUM_EXP_SESSION_STATUS;
 
@@ -53,6 +55,7 @@ public class ExpSession {
 
     @Column(name = "SESSION_MSG")
     private String SESSION_MSG;
+
     @Column(name = "EXT_PACKAGE_ID")
     private String EXT_PACKAGE_ID;
 
@@ -77,14 +80,14 @@ public class ExpSession {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ExpSession[");
-        sb.append(EXP_SESSION_ID);
+        sb.append(id);
         sb.append("]{ START_DATE=").append(START_DATE);
         sb.append(", END_DATE=").append(END_DATE);
         sb.append(", EXT_PACKAGE_CNT=").append(EXT_PACKAGE_CNT);
         sb.append(", RV=").append(RV);
         sb.append(", CREATE_DATE=").append(CREATE_DATE);
         sb.append(", UPDATE_DATE=").append(UPDATE_DATE);
-        sb.append(", IMP_SESSION_ID=").append(IMP_SESSION_ID);
+        sb.append(", importSession=").append(importSession != null ? importSession.getId() : null);
         sb.append(", SYSTEM_SERVICE_ID='").append(SYSTEM_SERVICE_ID).append('\'');
         sb.append(", ENUM_EXP_SESSION_STATUS='").append(ENUM_EXP_SESSION_STATUS).append('\'');
         sb.append(", SESSION_DESCRIPTION='").append(SESSION_DESCRIPTION).append('\'');
@@ -99,12 +102,12 @@ public class ExpSession {
         return sb.toString();
     }
 
-    public Integer getEXP_SESSION_ID() {
-        return EXP_SESSION_ID;
+    public Integer getId() {
+        return id;
     }
 
-    public void setEXP_SESSION_ID(final Integer EXP_SESSION_ID) {
-        this.EXP_SESSION_ID = EXP_SESSION_ID;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
     public Date getSTART_DATE() {
@@ -155,12 +158,12 @@ public class ExpSession {
         this.UPDATE_DATE = UPDATE_DATE;
     }
 
-    public Integer getIMP_SESSION_ID() {
-        return IMP_SESSION_ID;
+    public ImpSession getImportSession() {
+        return importSession;
     }
 
-    public void setIMP_SESSION_ID(final Integer IMP_SESSION_ID) {
-        this.IMP_SESSION_ID = IMP_SESSION_ID;
+    public void setImportSession(final ImpSession importSession) {
+        this.importSession = importSession;
     }
 
     public String getSYSTEM_SERVICE_ID() {

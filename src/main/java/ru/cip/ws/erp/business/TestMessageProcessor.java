@@ -71,7 +71,6 @@ public class TestMessageProcessor {
             response.getWriter().println(result);
             response.setStatus(200);
         } else {
-            response.setContentType("text/xml");
             response.getWriter().println("Ошибка");
             response.setStatus(500);
         }

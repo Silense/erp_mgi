@@ -43,14 +43,14 @@
         <url-pattern>/update/start</url-pattern>
     </servlet-mapping>
 
-    <!--<servlet>-->
-        <!--<servlet-name>shutdownErpUpdateServlet</servlet-name>-->
-        <!--<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>-->
-    <!--</servlet>-->
-    <!--<servlet-mapping>-->
-        <!--<servlet-name>shutdownErpUpdateServlet</servlet-name>-->
-        <!--<url-pattern>/update/shutdown</url-pattern>-->
-    <!--</servlet-mapping>-->
+    <servlet>
+        <servlet-name>stopErpUpdateService</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>stopErpUpdateService</servlet-name>
+        <url-pattern>/update/stop</url-pattern>
+    </servlet-mapping>
 
     <!--<servlet>-->
         <!--<servlet-name>scheduleErpServlet</servlet-name>-->

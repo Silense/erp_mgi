@@ -17,62 +17,75 @@ public class PlanCheckRecErp {
     @Column(name = "ID_CHECK_PLAN_REC_ERP")
     @GeneratedValue(strategy=GenerationType.AUTO, generator = "CIP_PLANCHECK_REC_ERP_SEQ")
     @SequenceGenerator(name="CIP_PLANCHECK_REC_ERP_SEQ", sequenceName = "ODOPM_SRC.CIP_PLANCHECK_REC_ERP_SEQ")
-    private Integer idCheckPlanRecErp;
+    private Integer id;
 
-    @Column(name = "ID_CHECK_PLAN_ERP")
-    private Integer idCheckPlanErp;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ID_CHECK_PLAN_ERP")
+    private PlanCheckErp plan;
 
 
     @Column(name = "CODE_CHECK_PLAN_REC_ERP")
-    private BigInteger codeCheckPlanRecErp;
+    private BigInteger erpId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "CHECK_PLAN_REC_STATUS_ERP")
-    private String checkPlanRecStatusErp;
+    private StatusErp status;
 
     @Column(name = "CIP_CH_PL_REC_CORREL_ID")
-    private Integer cipChPlRecCorrelId;
+    private Integer correlationId;
+
+    @Column(name = "REC_TOTAL_VALID")
+    private String totalValid;
 
     public PlanCheckRecErp() {
     }
 
-    public Integer getIdCheckPlanRecErp() {
-        return idCheckPlanRecErp;
+    public Integer getCorrelationId() {
+        return correlationId;
     }
 
-    public void setIdCheckPlanRecErp(final Integer idCheckPlanRecErp) {
-        this.idCheckPlanRecErp = idCheckPlanRecErp;
+    public void setCorrelationId(final Integer correlationId) {
+        this.correlationId = correlationId;
     }
 
-    public BigInteger getCodeCheckPlanRecErp() {
-        return codeCheckPlanRecErp;
+    public BigInteger getErpId() {
+        return erpId;
     }
 
-    public void setCodeCheckPlanRecErp(final BigInteger codeCheckPlanRecErp) {
-        this.codeCheckPlanRecErp = codeCheckPlanRecErp;
+    public void setErpId(final BigInteger erpId) {
+        this.erpId = erpId;
     }
 
-    public String getCheckPlanRecStatusErp() {
-        return checkPlanRecStatusErp;
+    public Integer getId() {
+        return id;
     }
 
-    public void setCheckPlanRecStatusErp(final String checkPlanRecStatusErp) {
-        this.checkPlanRecStatusErp = checkPlanRecStatusErp;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
-    public Integer getCipChPlRecCorrelId() {
-        return cipChPlRecCorrelId;
+    public PlanCheckErp getPlan() {
+        return plan;
     }
 
-    public void setCipChPlRecCorrelId(final Integer cipChPlRecCorrelId) {
-        this.cipChPlRecCorrelId = cipChPlRecCorrelId;
+    public void setPlan(final PlanCheckErp plan) {
+        this.plan = plan;
     }
 
-    public Integer getIdCheckPlanErp() {
-        return idCheckPlanErp;
+    public StatusErp getStatus() {
+        return status;
     }
 
-    public void setIdCheckPlanErp(final Integer idCheckPlanErp) {
-        this.idCheckPlanErp = idCheckPlanErp;
+    public void setStatus(final StatusErp status) {
+        this.status = status;
+    }
+
+    public String getTotalValid() {
+        return totalValid;
+    }
+
+    public void setTotalValid(final String totalValid) {
+        this.totalValid = totalValid;
     }
 
     @Override
@@ -86,39 +99,49 @@ public class PlanCheckRecErp {
 
         final PlanCheckRecErp that = (PlanCheckRecErp) o;
 
-        if (idCheckPlanRecErp != null ? !idCheckPlanRecErp.equals(that.idCheckPlanRecErp) : that.idCheckPlanRecErp != null) {
+        if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;
         }
-        if (codeCheckPlanRecErp != null ? !codeCheckPlanRecErp.equals(that.codeCheckPlanRecErp) : that.codeCheckPlanRecErp != null) {
+        if (plan != null ? !plan.equals(that.plan) : that.plan != null) {
             return false;
         }
-        if (checkPlanRecStatusErp != null ? !checkPlanRecStatusErp.equals(that.checkPlanRecStatusErp) : that.checkPlanRecStatusErp != null) {
+        if (erpId != null ? !erpId.equals(that.erpId) : that.erpId != null) {
             return false;
         }
-        return !(cipChPlRecCorrelId != null ? !cipChPlRecCorrelId.equals(that.cipChPlRecCorrelId) : that.cipChPlRecCorrelId != null);
+        if (status != that.status) {
+            return false;
+        }
+        if (correlationId != null ? !correlationId.equals(that.correlationId) : that.correlationId != null) {
+            return false;
+        }
+        return !(totalValid != null ? !totalValid.equals(that.totalValid) : that.totalValid != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = idCheckPlanRecErp != null ? idCheckPlanRecErp.hashCode() : 0;
-        result = 31 * result + (codeCheckPlanRecErp != null ? codeCheckPlanRecErp.hashCode() : 0);
-        result = 31 * result + (checkPlanRecStatusErp != null ? checkPlanRecStatusErp.hashCode() : 0);
-        result = 31 * result + (cipChPlRecCorrelId != null ? cipChPlRecCorrelId.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (plan != null ? plan.hashCode() : 0);
+        result = 31 * result + (erpId != null ? erpId.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (correlationId != null ? correlationId.hashCode() : 0);
+        result = 31 * result + (totalValid != null ? totalValid.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("PlanCheckRecErp[");
-        sb.append(idCheckPlanRecErp);
-        sb.append("]{ idCheckPlanErp=").append(idCheckPlanErp);
-        sb.append(", codeCheckPlanRecErp=").append(codeCheckPlanRecErp);
-        sb.append(", checkPlanRecStatusErp='").append(checkPlanRecStatusErp).append('\'');
-        sb.append(", cipChPlRecCorrelId=").append(cipChPlRecCorrelId);
+        sb.append(id);
+        sb.append("]{ plan=").append(plan != null ? plan.getId() : null);
+        sb.append(", erpId=").append(erpId);
+        sb.append(", status='").append(status).append('\'');
+        sb.append(", correlationId=").append(correlationId);
+        sb.append(", totalValid='").append(totalValid).append('\'');
         sb.append('}');
         return sb.toString();
     }
+
 
 
 }

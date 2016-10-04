@@ -14,58 +14,63 @@ public class PlanCheckErp {
 
     @Id
     @Column(name = "ID_CHECK_PLAN_ERP")
-    @GeneratedValue(strategy=GenerationType.AUTO, generator = "CIP_PLANCHECK_ERP_SEQ")
-    @SequenceGenerator(name="CIP_PLANCHECK_ERP_SEQ", sequenceName = "ODOPM_SRC.CIP_PLANCHECK_ERP_SEQ")
-    private Integer idCheckPlanErp;
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "CIP_PLANCHECK_ERP_SEQ")
+    @SequenceGenerator(name = "CIP_PLANCHECK_ERP_SEQ", sequenceName = "ODOPM_SRC.CIP_PLANCHECK_ERP_SEQ")
+    private Integer id;
 
     @Column(name = "ID_PROSECUTORS")
-    private Integer idProsecutors;
+    private Integer prosecutor;
 
     @Column(name = "CODE_CHECK_PLAN_ERP")
-    private Integer codeCheckPlanErp;
+    private Integer erpId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "CHECK_PLAN_STATUS_ERP")
-    private String checkPlanStatusErp;
+    private StatusErp status;
 
     @Column(name = "CIP_CH_PL_LGL_APPRVD_ID")
     private Integer cipChPlLglApprvdId;
 
-    @Column(name = "EXP_SESSION_ID")
-    private Integer expSessionId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "EXP_SESSION_ID", nullable = true)
+    private ExpSession expSession;
+
+    @Column(name = "PLAN_TOTAL_VALID")
+    private String totalValid;
 
     public PlanCheckErp() {
     }
 
-    public Integer getIdCheckPlanErp() {
-        return idCheckPlanErp;
+    public Integer getId() {
+        return id;
     }
 
-    public void setIdCheckPlanErp(final Integer idCheckPlanErp) {
-        this.idCheckPlanErp = idCheckPlanErp;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
-    public Integer getIdProsecutors() {
-        return idProsecutors;
+    public Integer getProsecutor() {
+        return prosecutor;
     }
 
-    public void setIdProsecutors(final Integer idProsecutors) {
-        this.idProsecutors = idProsecutors;
+    public void setProsecutor(final Integer prosecutor) {
+        this.prosecutor = prosecutor;
     }
 
-    public Integer getCodeCheckPlanErp() {
-        return codeCheckPlanErp;
+    public Integer getErpId() {
+        return erpId;
     }
 
-    public void setCodeCheckPlanErp(final Integer codeCheckPlanErp) {
-        this.codeCheckPlanErp = codeCheckPlanErp;
+    public void setErpId(final Integer erpId) {
+        this.erpId = erpId;
     }
 
-    public String getCheckPlanStatusErp() {
-        return checkPlanStatusErp;
+    public StatusErp getStatus() {
+        return status;
     }
 
-    public void setCheckPlanStatusErp(final String checkPlanStatusErp) {
-        this.checkPlanStatusErp = checkPlanStatusErp;
+    public void setStatus(final StatusErp status) {
+        this.status = status;
     }
 
     public Integer getCipChPlLglApprvdId() {
@@ -76,22 +81,32 @@ public class PlanCheckErp {
         this.cipChPlLglApprvdId = cipChPlLglApprvdId;
     }
 
-    public Integer getExpSessionId() {
-        return expSessionId;
+    public ExpSession getExpSession() {
+        return expSession;
     }
 
-    public void setExpSessionId(final Integer expSessionId) {
-        this.expSessionId = expSessionId;
+    public void setExpSession(final ExpSession expSession) {
+        this.expSession = expSession;
+    }
+
+    public String getTotalValid() {
+
+        return totalValid;
+    }
+
+    public void setTotalValid(final String totalValid) {
+        this.totalValid = totalValid;
     }
 
     @Override
     public int hashCode() {
-        int result = idCheckPlanErp != null ? idCheckPlanErp.hashCode() : 0;
-        result = 31 * result + (idProsecutors != null ? idProsecutors.hashCode() : 0);
-        result = 31 * result + (codeCheckPlanErp != null ? codeCheckPlanErp.hashCode() : 0);
-        result = 31 * result + (checkPlanStatusErp != null ? checkPlanStatusErp.hashCode() : 0);
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (prosecutor != null ? prosecutor.hashCode() : 0);
+        result = 31 * result + (erpId != null ? erpId.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (cipChPlLglApprvdId != null ? cipChPlLglApprvdId.hashCode() : 0);
-        result = 31 * result + (expSessionId != null ? expSessionId.hashCode() : 0);
+        result = 31 * result + (expSession != null ? expSession.hashCode() : 0);
+        result = 31 * result + (totalValid != null ? totalValid.hashCode() : 0);
         return result;
     }
 
@@ -106,36 +121,41 @@ public class PlanCheckErp {
 
         final PlanCheckErp that = (PlanCheckErp) o;
 
-        if (idCheckPlanErp != null ? !idCheckPlanErp.equals(that.idCheckPlanErp) : that.idCheckPlanErp != null) {
+        if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;
         }
-        if (idProsecutors != null ? !idProsecutors.equals(that.idProsecutors) : that.idProsecutors != null) {
+        if (prosecutor != null ? !prosecutor.equals(that.prosecutor) : that.prosecutor != null) {
             return false;
         }
-        if (codeCheckPlanErp != null ? !codeCheckPlanErp.equals(that.codeCheckPlanErp) : that.codeCheckPlanErp != null) {
+        if (erpId != null ? !erpId.equals(that.erpId) : that.erpId != null) {
             return false;
         }
-        if (checkPlanStatusErp != null ? !checkPlanStatusErp.equals(that.checkPlanStatusErp) : that.checkPlanStatusErp != null) {
+        if (status != null ? !status.equals(that.status) : that.status != null) {
             return false;
         }
         if (cipChPlLglApprvdId != null ? !cipChPlLglApprvdId.equals(that.cipChPlLglApprvdId) : that.cipChPlLglApprvdId != null) {
             return false;
         }
-        return !(expSessionId != null ? !expSessionId.equals(that.expSessionId) : that.expSessionId != null);
+        if (expSession != null ? !expSession.equals(that.expSession) : that.expSession != null) {
+            return false;
+        }
+        return !(totalValid != null ? !totalValid.equals(that.totalValid) : that.totalValid != null);
+
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("PlanCheckErp[");
-        sb.append(idCheckPlanErp);
-        sb.append("]{ idProsecutors=").append(idProsecutors);
-        sb.append(", codeCheckPlanErp=").append(codeCheckPlanErp);
-        sb.append(", checkPlanStatusErp='").append(checkPlanStatusErp).append('\'');
+        final StringBuilder sb = new StringBuilder("PlanCheckErp[").append(id);
+        sb.append("]{ status='").append(status).append('\'');
+        sb.append(", prosecutor=").append(prosecutor);
+        sb.append(", erpId=").append(erpId);
         sb.append(", cipChPlLglApprvdId=").append(cipChPlLglApprvdId);
-        sb.append(", expSessionId=").append(expSessionId);
+        sb.append(", expSessionId=").append(expSession != null ? expSession.getId() : null);
+        sb.append(", totalValid='").append(totalValid).append('\'');
         sb.append('}');
         return sb.toString();
     }
+
 
 
 }

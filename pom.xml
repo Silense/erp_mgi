@@ -53,6 +53,7 @@
     </profiles>
 
     <build>
+        <finalName>ERP_WS</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

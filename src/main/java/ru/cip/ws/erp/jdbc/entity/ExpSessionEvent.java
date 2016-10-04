@@ -16,14 +16,15 @@ public class ExpSessionEvent {
     @Column(name = "EXP_SESSION_EVENT_ID")
     @GeneratedValue(strategy=GenerationType.AUTO, generator = "SEQ_RSYS_EXP_SESSION_EVENT")
     @SequenceGenerator(name="SEQ_RSYS_EXP_SESSION_EVENT", sequenceName = "SEQ_RSYS_EXP_SESSION_EVENT")
-    private Integer EXP_SESSION_EVENT_ID;
+    private Integer id;
 
-    @Column(name = "EXP_SESSION_ID", nullable = false)
-    private Integer EXP_SESSION_ID;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "EXP_SESSION_ID", nullable = false)
+    private ExpSession exportSession;
 
     @Column(name = "EVENT_DT", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private Date EVENT_DT;
+    private Date eventDateTime;
 
     @Column(name = "EVENT_USER_ID", nullable = false)
     private String EVENT_USER_ID;
@@ -34,28 +35,28 @@ public class ExpSessionEvent {
     public ExpSessionEvent() {
     }
 
-    public Integer getEXP_SESSION_EVENT_ID() {
-        return EXP_SESSION_EVENT_ID;
+    public Integer getId() {
+        return id;
     }
 
-    public void setEXP_SESSION_EVENT_ID(final Integer EXP_SESSION_EVENT_ID) {
-        this.EXP_SESSION_EVENT_ID = EXP_SESSION_EVENT_ID;
+    public void setId(final Integer id) {
+        this.id = id;
     }
 
-    public Integer getEXP_SESSION_ID() {
-        return EXP_SESSION_ID;
+    public ExpSession getExportSession() {
+        return exportSession;
     }
 
-    public void setEXP_SESSION_ID(final Integer EXP_SESSION_ID) {
-        this.EXP_SESSION_ID = EXP_SESSION_ID;
+    public void setExportSession(final ExpSession exportSession) {
+        this.exportSession = exportSession;
     }
 
-    public Date getEVENT_DT() {
-        return EVENT_DT;
+    public Date getEventDateTime() {
+        return eventDateTime;
     }
 
-    public void setEVENT_DT(final Date EVENT_DT) {
-        this.EVENT_DT = EVENT_DT;
+    public void setEventDateTime(final Date eventDateTime) {
+        this.eventDateTime = eventDateTime;
     }
 
     public String getEVENT_USER_ID() {
@@ -77,9 +78,9 @@ public class ExpSessionEvent {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ExpSessionEvent[");
-        sb.append(EXP_SESSION_EVENT_ID);
-        sb.append("] { EXP_SESSION_ID=").append(EXP_SESSION_ID);
-        sb.append(", EVENT_DT=").append(EVENT_DT);
+        sb.append(id);
+        sb.append("] { exportSession=").append(exportSession != null ? exportSession.getId() : null);
+        sb.append(", eventDateTime=").append(eventDateTime);
         sb.append(", EVENT_USER_ID='").append(EVENT_USER_ID).append('\'');
         //sb.append(", EVENT_TEXT=").append(EVENT_TEXT);
         sb.append('}');

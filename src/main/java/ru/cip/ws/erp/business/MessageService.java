@@ -56,8 +56,8 @@ public class MessageService {
         final String messageType = MessageToERP294Type.PlanRegular294Correction.class.getSimpleName();
         logger.info("{} : Start construct PlanRegular294Correction message", requestId);
         final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Correction(
-                StringUtils.defaultString(acceptedName, checkPlan.getACCEPTED_NAME()),
-                year != null ? year : checkPlan.getYEAR(),
+                StringUtils.defaultString(acceptedName, checkPlan.getAcceptedName()),
+                year != null ? year : checkPlan.getYear(),
                 planRecords,
                 planCheckErp,
                 planCheckRecErpList,
@@ -81,12 +81,12 @@ public class MessageService {
         logger.info("{} : Created ExportSession: {}", requestId, exportSession);
         final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
-        checkPlanDao.setExportSessionAndStatus(planCheckErp, "WAIT FOR CORRECTON RESPONSE", exportSession);
+        checkPlanDao.setExportSessionAndStatus(planCheckErp, StatusErp.WAIT_FOR_CORRECTION, exportSession);
         logger.info("{} : Update PlanCheckErp: {}", requestId, planCheckErp);
         for (CipCheckPlanRecord record : planRecords) {
             PlanCheckRecErp correlated = null;
             for (PlanCheckRecErp checkRecErp : planCheckRecErpList) {
-                if (record.getCorrelationId().equals(checkRecErp.getCipChPlRecCorrelId())) {
+                if (record.getCorrelationId().equals(checkRecErp.getCorrelationId())) {
                     correlated = checkRecErp;
                     break;
                 }
@@ -95,7 +95,7 @@ public class MessageService {
                 final PlanCheckRecErp planCheckRecErp = checkPlanRecordDao.createPlanCheckRecErp(planCheckErp, record);
                 logger.info("{} : Create new PlanCheckRecErp: {}", requestId, planCheckRecErp);
             } else {
-                checkPlanRecordDao.setStatus(correlated, "WAIT FOR CORRECTION RESPONSE");
+                checkPlanRecordDao.setStatus(correlated, StatusErp.WAIT_FOR_CORRECTION);
                 logger.info("{} : Update PlanCheckRecErp: {}", requestId, correlated);
             }
         }
@@ -103,8 +103,8 @@ public class MessageService {
         logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
         if (StringUtils.isEmpty(messageId)) {
             exportSessionDao.setSessionInfo(exportSession, "ERROR", "Not sent to JMS");
-            checkPlanDao.setStatus(planCheckErp, "ERROR");
-            checkPlanRecordDao.setStatus(planCheckRecErpList, "ERROR");
+            checkPlanDao.setStatus(planCheckErp, StatusErp.ERROR);
+            checkPlanRecordDao.setStatus(planCheckRecErpList, StatusErp.ERROR);
             return null;
         } else {
             exportSessionDao.setSessionStatus(exportSession, "DONE");
@@ -123,8 +123,8 @@ public class MessageService {
         final String messageType =  MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName();
         logger.debug("{} : Start construct PlanRegular294Initialization message", requestId);
         final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Initialization(
-                StringUtils.defaultString(acceptedName, checkPlan.getACCEPTED_NAME()),
-                year != null ? year : checkPlan.getYEAR(),
+                StringUtils.defaultString(acceptedName, checkPlan.getAcceptedName()),
+                year != null ? year : checkPlan.getYear(),
                 planRecords,
                 requestId
         );
@@ -146,7 +146,7 @@ public class MessageService {
         logger.info("{} : Created ExportSession: {}", requestId, exportSession);
         final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
-        final PlanCheckErp planCheckErp = checkPlanDao.createPlanCheckErp(checkPlan.getCHECK_PLAN_ID(), null, exportSession);
+        final PlanCheckErp planCheckErp = checkPlanDao.createPlanCheckErp(checkPlan, null, exportSession);
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
         final List<PlanCheckRecErp> planCheckRecErpList = new ArrayList<>(planRecords.size());
         for (CipCheckPlanRecord record : planRecords) {
@@ -159,8 +159,8 @@ public class MessageService {
             logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
         } catch (final Exception e) {
             exportSessionDao.setSessionInfo(exportSession, "ERROR", "Not sent to JMS: " + e.getMessage());
-            checkPlanDao.setStatus(planCheckErp, "ERROR");
-            checkPlanRecordDao.setStatus(planCheckRecErpList, "ERROR");
+            checkPlanDao.setStatus(planCheckErp, StatusErp.ERROR);
+            checkPlanRecordDao.setStatus(planCheckRecErpList, StatusErp.ERROR);
             return null;
         }
         exportSessionDao.setSessionStatus(exportSession, "DONE");

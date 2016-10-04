@@ -44,23 +44,22 @@ public class ImportSessionDaoImpl {
         final ImpSession result = new ImpSession();
         result.setSYSTEM_SERVICE_ID(appID);
         result.setSYSTEM_ID(appID);
-        result.setSTART_DATE(now);
-        result.setEND_DATE(now);
+        result.setStartDate(now);
+        result.setEndDate(now);
         result.setENUM_IMP_SESSION_STATUS("DONE");
         result.setSESSION_DESCRIPTION(description);
         result.setSESSION_MSG(message);
         result.setRV(1);
         result.setEXT_PACKAGE_ID(requestId);
         result.setEXT_PACKAGE_CNT(1);
-        result.setCREATE_DATE(now);
-        result.setUPDATE_DATE(now);
+        result.setCreateDate(now);
+        result.setUpdateDate(now);
         result.setCREATE_SYSTEM(appID);
         result.setUPDATE_SYSTEM(appID);
         if (exportSesssion != null) {
-            result.setEXP_SESSION_ID(exportSesssion.getEXP_SESSION_ID());
+            result.setExportSession(exportSesssion);
         }
         em.persist(result);
-        em.flush();
         return result;
     }
 
@@ -68,12 +67,11 @@ public class ImportSessionDaoImpl {
         final Date now = new Date();
         final ImpSessionEvent result = new ImpSessionEvent();
         result.setSYSTEM_ID(appID);
-        result.setEVENT_DT(now);
-        result.setIMP_SESSION_ID(imp_session.getIMP_SESSION_ID());
+        result.setEventDateTime(now);
+        result.setImportSession(imp_session);
         result.setEVENT_TEXT(message);
         result.setEVENT_USER_ID(appID);
         em.persist(result);
-        em.flush();
         return result;
 
     }

@@ -1,9 +1,6 @@
 package ru.cip.ws.erp.jdbc.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 /**
@@ -103,8 +100,9 @@ public class CipCheckPlanRecord {
     @Column(name = "LAST_VIOLATION_DATE")
     private Date LAST_VIOLATION_DATE;
 
-    @Column(name = "CHECK_PLAN_ID")
-    private Integer CHECK_PLAN_ID;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "CHECK_PLAN_ID")
+    private CipCheckPlan plan;
 
 
     public CipCheckPlanRecord() {
@@ -342,19 +340,19 @@ public class CipCheckPlanRecord {
         this.LAST_VIOLATION_DATE = LAST_VIOLATION_DATE;
     }
 
-    public Integer getCHECK_PLAN_ID() {
-        return CHECK_PLAN_ID;
+    public CipCheckPlan getPlan() {
+        return plan;
     }
 
-    public void setCHECK_PLAN_ID(final Integer CHECK_PLAN_ID) {
-        this.CHECK_PLAN_ID = CHECK_PLAN_ID;
+    public void setPlan(final CipCheckPlan plan) {
+        this.plan = plan;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("CipCheckPlanRecord{");
+        final StringBuilder sb = new StringBuilder("CipCheckPlanRecord[");
         sb.append("correlationId=").append(correlationId);
-        sb.append(", ORG_NAME='").append(ORG_NAME).append('\'');
+        sb.append("]{ ORG_NAME='").append(ORG_NAME).append('\'');
         sb.append(", ADR_SEC_I='").append(ADR_SEC_I).append('\'');
         sb.append(", ADR_SEC_II='").append(ADR_SEC_II).append('\'');
         sb.append(", ADR_SEC_III='").append(ADR_SEC_III).append('\'');
@@ -382,7 +380,7 @@ public class CipCheckPlanRecord {
         sb.append(", ORDER_DATE=").append(ORDER_DATE);
         sb.append(", ORDER_NUM='").append(ORDER_NUM).append('\'');
         sb.append(", LAST_VIOLATION_DATE=").append(LAST_VIOLATION_DATE);
-        sb.append(", CHECK_PLAN_ID=").append(CHECK_PLAN_ID);
+        sb.append(", plan =").append(plan != null ? plan.getId() : null);
         sb.append('}');
         return sb.toString();
     }

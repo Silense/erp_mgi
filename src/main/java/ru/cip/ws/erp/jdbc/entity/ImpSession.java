@@ -16,15 +16,15 @@ public class ImpSession {
     @Column(name = "IMP_SESSION_ID")
     @GeneratedValue(strategy=GenerationType.AUTO, generator = "SEQ_RSYS_IMP_SESSION")
     @SequenceGenerator(name="SEQ_RSYS_IMP_SESSION", sequenceName = "SEQ_RSYS_IMP_SESSION")
-    private Integer IMP_SESSION_ID;
+    private Integer id;
 
     @Column(name = "START_DATE")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date START_DATE;
+    private Date startDate;
 
     @Column(name = "END_DATE")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date END_DATE;
+    private Date endDate;
 
     @Column(name = "EXT_PACKAGE_CNT")
     private Integer EXT_PACKAGE_CNT;
@@ -34,14 +34,15 @@ public class ImpSession {
 
     @Column(name = "CREATE_DATE")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date CREATE_DATE;
+    private Date createDate;
 
     @Column(name = "UPDATE_DATE")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date UPDATE_DATE;
+    private Date updateDate;
 
-    @Column(name = "EXP_SESSION_ID")
-    private Integer EXP_SESSION_ID;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "EXP_SESSION_ID")
+    private ExpSession exportSession;
 
     @Column(name = "SYSTEM_ID")
     private String SYSTEM_ID;
@@ -81,15 +82,14 @@ public class ImpSession {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ImpSession{");
-        sb.append("IMP_SESSION_ID=").append(IMP_SESSION_ID);
-        sb.append(", START_DATE=").append(START_DATE);
-        sb.append(", END_DATE=").append(END_DATE);
+        final StringBuilder sb = new StringBuilder("ImpSession[").append(id);
+        sb.append("]{ START_DATE=").append(startDate);
+        sb.append(", END_DATE=").append(endDate);
         sb.append(", EXT_PACKAGE_CNT=").append(EXT_PACKAGE_CNT);
         sb.append(", RV=").append(RV);
-        sb.append(", CREATE_DATE=").append(CREATE_DATE);
-        sb.append(", UPDATE_DATE=").append(UPDATE_DATE);
-        sb.append(", EXP_SESSION_ID=").append(EXP_SESSION_ID);
+        sb.append(", CREATE_DATE=").append(createDate);
+        sb.append(", UPDATE_DATE=").append(updateDate);
+        sb.append(", EXP_SESSION_ID=").append(exportSession != null ? exportSession.getId() : null);
         sb.append(", SYSTEM_ID='").append(SYSTEM_ID).append('\'');
         sb.append(", SYSTEM_SERVICE_ID='").append(SYSTEM_SERVICE_ID).append('\'');
         sb.append(", ENUM_IMP_SESSION_STATUS='").append(ENUM_IMP_SESSION_STATUS).append('\'');
@@ -105,28 +105,52 @@ public class ImpSession {
         return sb.toString();
     }
 
-    public Integer getIMP_SESSION_ID() {
-        return IMP_SESSION_ID;
+    public String getCREATE_SYSTEM() {
+        return CREATE_SYSTEM;
     }
 
-    public void setIMP_SESSION_ID(final Integer IMP_SESSION_ID) {
-        this.IMP_SESSION_ID = IMP_SESSION_ID;
+    public void setCREATE_SYSTEM(final String CREATE_SYSTEM) {
+        this.CREATE_SYSTEM = CREATE_SYSTEM;
     }
 
-    public Date getSTART_DATE() {
-        return START_DATE;
+    public String getCREATE_USER() {
+        return CREATE_USER;
     }
 
-    public void setSTART_DATE(final Date START_DATE) {
-        this.START_DATE = START_DATE;
+    public void setCREATE_USER(final String CREATE_USER) {
+        this.CREATE_USER = CREATE_USER;
     }
 
-    public Date getEND_DATE() {
-        return END_DATE;
+    public Date getCreateDate() {
+        return createDate;
     }
 
-    public void setEND_DATE(final Date END_DATE) {
-        this.END_DATE = END_DATE;
+    public void setCreateDate(final Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(final Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getENUM_IMP_SESSION_STATUS() {
+        return ENUM_IMP_SESSION_STATUS;
+    }
+
+    public void setENUM_IMP_SESSION_STATUS(final String ENUM_IMP_SESSION_STATUS) {
+        this.ENUM_IMP_SESSION_STATUS = ENUM_IMP_SESSION_STATUS;
+    }
+
+    public ExpSession getExportSession() {
+        return exportSession;
+    }
+
+    public void setExportSession(final ExpSession exportSession) {
+        this.exportSession = exportSession;
     }
 
     public Integer getEXT_PACKAGE_CNT() {
@@ -137,60 +161,28 @@ public class ImpSession {
         this.EXT_PACKAGE_CNT = EXT_PACKAGE_CNT;
     }
 
+    public String getEXT_PACKAGE_ID() {
+        return EXT_PACKAGE_ID;
+    }
+
+    public void setEXT_PACKAGE_ID(final String EXT_PACKAGE_ID) {
+        this.EXT_PACKAGE_ID = EXT_PACKAGE_ID;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(final Integer id) {
+        this.id = id;
+    }
+
     public Integer getRV() {
         return RV;
     }
 
     public void setRV(final Integer RV) {
         this.RV = RV;
-    }
-
-    public Date getCREATE_DATE() {
-        return CREATE_DATE;
-    }
-
-    public void setCREATE_DATE(final Date CREATE_DATE) {
-        this.CREATE_DATE = CREATE_DATE;
-    }
-
-    public Date getUPDATE_DATE() {
-        return UPDATE_DATE;
-    }
-
-    public void setUPDATE_DATE(final Date UPDATE_DATE) {
-        this.UPDATE_DATE = UPDATE_DATE;
-    }
-
-    public Integer getEXP_SESSION_ID() {
-        return EXP_SESSION_ID;
-    }
-
-    public void setEXP_SESSION_ID(final Integer EXP_SESSION_ID) {
-        this.EXP_SESSION_ID = EXP_SESSION_ID;
-    }
-
-    public String getSYSTEM_ID() {
-        return SYSTEM_ID;
-    }
-
-    public void setSYSTEM_ID(final String SYSTEM_ID) {
-        this.SYSTEM_ID = SYSTEM_ID;
-    }
-
-    public String getSYSTEM_SERVICE_ID() {
-        return SYSTEM_SERVICE_ID;
-    }
-
-    public void setSYSTEM_SERVICE_ID(final String SYSTEM_SERVICE_ID) {
-        this.SYSTEM_SERVICE_ID = SYSTEM_SERVICE_ID;
-    }
-
-    public String getENUM_IMP_SESSION_STATUS() {
-        return ENUM_IMP_SESSION_STATUS;
-    }
-
-    public void setENUM_IMP_SESSION_STATUS(final String ENUM_IMP_SESSION_STATUS) {
-        this.ENUM_IMP_SESSION_STATUS = ENUM_IMP_SESSION_STATUS;
     }
 
     public String getSESSION_DESCRIPTION() {
@@ -209,12 +201,28 @@ public class ImpSession {
         this.SESSION_MSG = SESSION_MSG;
     }
 
-    public String getEXT_PACKAGE_ID() {
-        return EXT_PACKAGE_ID;
+    public Date getStartDate() {
+        return startDate;
     }
 
-    public void setEXT_PACKAGE_ID(final String EXT_PACKAGE_ID) {
-        this.EXT_PACKAGE_ID = EXT_PACKAGE_ID;
+    public void setStartDate(final Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getSYSTEM_ID() {
+        return SYSTEM_ID;
+    }
+
+    public void setSYSTEM_ID(final String SYSTEM_ID) {
+        this.SYSTEM_ID = SYSTEM_ID;
+    }
+
+    public String getSYSTEM_SERVICE_ID() {
+        return SYSTEM_SERVICE_ID;
+    }
+
+    public void setSYSTEM_SERVICE_ID(final String SYSTEM_SERVICE_ID) {
+        this.SYSTEM_SERVICE_ID = SYSTEM_SERVICE_ID;
     }
 
     public String getSYSUSER() {
@@ -225,12 +233,12 @@ public class ImpSession {
         this.SYSUSER = SYSUSER;
     }
 
-    public String getCREATE_USER() {
-        return CREATE_USER;
+    public String getUPDATE_SYSTEM() {
+        return UPDATE_SYSTEM;
     }
 
-    public void setCREATE_USER(final String CREATE_USER) {
-        this.CREATE_USER = CREATE_USER;
+    public void setUPDATE_SYSTEM(final String UPDATE_SYSTEM) {
+        this.UPDATE_SYSTEM = UPDATE_SYSTEM;
     }
 
     public String getUPDATE_USER() {
@@ -241,19 +249,11 @@ public class ImpSession {
         this.UPDATE_USER = UPDATE_USER;
     }
 
-    public String getCREATE_SYSTEM() {
-        return CREATE_SYSTEM;
+    public Date getUpdateDate() {
+        return updateDate;
     }
 
-    public void setCREATE_SYSTEM(final String CREATE_SYSTEM) {
-        this.CREATE_SYSTEM = CREATE_SYSTEM;
-    }
-
-    public String getUPDATE_SYSTEM() {
-        return UPDATE_SYSTEM;
-    }
-
-    public void setUPDATE_SYSTEM(final String UPDATE_SYSTEM) {
-        this.UPDATE_SYSTEM = UPDATE_SYSTEM;
+    public void setUpdateDate(final Date updateDate) {
+        this.updateDate = updateDate;
     }
 }

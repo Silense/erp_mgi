@@ -1,6 +1,5 @@
 package ru.cip.ws.erp.jms;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,7 @@ import ru.cip.ws.erp.jdbc.dao.ImportSessionDaoImpl;
 import ru.cip.ws.erp.jdbc.entity.ExpSession;
 import ru.cip.ws.erp.jdbc.entity.ImpSession;
 import ru.cip.ws.erp.jdbc.entity.ImpSessionEvent;
+import ru.cip.ws.erp.jdbc.entity.StatusErp;
 
 import javax.jms.*;
 import javax.xml.bind.JAXBException;
@@ -82,9 +82,8 @@ public class MQMessageListener implements MessageListener {
                     reply(messageId, replyTo, requestNumber);
                 }
             } else {
-                final String wrongTypeMessage = "We don't handle messages other then TextMessage.";
                 logger.warn("#{} is not TextMessage", requestNumber);
-                throw new JMSException(wrongTypeMessage);
+                throw new JMSException("We don't handle messages other then TextMessage.");
             }
         } catch (JMSException e) {
             logger.error("#{} Exception in onMessage : ", requestNumber, e);
@@ -94,57 +93,55 @@ public class MQMessageListener implements MessageListener {
     }
 
     private void processMessage(final String requestId, final ResponseMsg msg, final ImpSession importSession) {
-        final String statusMessage = StringUtils.defaultString(msg.getStatusMessage(), msg.getStatusCode().toString());
-        logger.debug("{} : Start processing with statusMessage=\'{}\'", requestId, statusMessage);
-        if (importSession.getEXP_SESSION_ID() != null) {
-            final ExpSession expSession = exportSessionDao.getSessionById(importSession.getEXP_SESSION_ID());
-            if (expSession != null) {
-                expSession.setIMP_SESSION_ID(importSession.getIMP_SESSION_ID());
-                expSession.setSESSION_MSG(msg.getStatusCode().toString());
-                exportSessionDao.merge(expSession);
-            }
+        final StatusErp status = StatusErp.valueOf(msg.getStatusCode());
+        logger.debug("{} : Start processing with statusMessage=\'{}\'", requestId, status);
+        if (importSession.getExportSession() != null) {
+            final ExpSession expSession = importSession.getExportSession();
+            expSession.setImportSession(importSession);
+            expSession.setSESSION_MSG(msg.getStatusCode().toString());
+            exportSessionDao.merge(expSession);
         }
         final ResponseBody responseBody = msg.getResponseBody();
         if (responseBody != null) {
             final LetterFromERPType response = responseBody.getResponse();
             if (response != null) {
-                final MessageFromERPCommonType messageCommon = response.getMessageCommon();
-                if (messageCommon != null) {
-                    if (messageCommon.getFindInspectionResponse() != null) {
-                        messageProcessor.process(requestId, messageCommon.getFindInspectionResponse(), statusMessage);
-                    } else if (messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse() != null) {
-                        messageProcessor.process(
-                                requestId, messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse(), statusMessage
-                        );
-                    } else if (messageCommon.getERPResponse() != null) {
-                        messageProcessor.process(requestId, messageCommon.getERPResponse(), statusMessage);
+                final MessageFromERPCommonType mc = response.getMessageCommon();
+                if (mc != null) {
+                    if (mc.getFindInspectionResponse() != null) {
+                        messageProcessor.process(requestId, mc.getFindInspectionResponse(), status);
+                    } else if (mc.getListOfProcsecutorsTerritorialJurisdictionResponse() != null) {
+                        messageProcessor.process(requestId, mc.getListOfProcsecutorsTerritorialJurisdictionResponse(), status);
+                    } else if (mc.getERPResponse() != null) {
+                        messageProcessor.process(requestId, mc.getERPResponse(), status);
                     } else {
                         logger.warn("{} : Unknown messageType no processing", requestId);
                     }
                 }
-                final MessageFromERP294Type message294 = response.getMessage294();
-                if (message294 != null) {
-                    if (message294.getPlanRegular294Notification() != null) {
-                        messageProcessor.process(requestId, message294.getPlanRegular294Notification(), statusMessage);
-                    } else if (message294.getPlanRegular294Response() != null) {
-                        messageProcessor.process(requestId, message294.getPlanRegular294Response(), statusMessage);
-                    } else if (message294.getPlanResult294Notification() != null) {
-                        messageProcessor.process(message294.getPlanResult294Notification());
-                    } else if (message294.getPlanResult294Response() != null) {
-                        messageProcessor.process(message294.getPlanResult294Response());
-                    } else if (message294.getUplanResult294Notification() != null) {
-                        messageProcessor.process(message294.getUplanResult294Notification());
-                    } else if (message294.getUplanResult294Response() != null) {
-                        messageProcessor.process(message294.getUplanResult294Response());
-                    } else if (message294.getUplanUnregular294Notification() != null) {
-                        messageProcessor.process(message294.getUplanUnregular294Notification());
-                    } else if (message294.getUplanUnregular294Response() != null) {
-                        messageProcessor.process(message294.getUplanUnregular294Response());
+                final MessageFromERP294Type m294 = response.getMessage294();
+                if (m294 != null) {
+                    if (m294.getPlanRegular294Notification() != null) {
+                        messageProcessor.process(requestId, m294.getPlanRegular294Notification(), status);
+                    } else if (m294.getPlanRegular294Response() != null) {
+                        messageProcessor.process(requestId, m294.getPlanRegular294Response(), status);
+                    } else if (m294.getPlanResult294Notification() != null) {
+                        messageProcessor.process(m294.getPlanResult294Notification());
+                    } else if (m294.getPlanResult294Response() != null) {
+                        messageProcessor.process(m294.getPlanResult294Response());
+                    } else if (m294.getUplanResult294Notification() != null) {
+                        messageProcessor.process(m294.getUplanResult294Notification());
+                    } else if (m294.getUplanResult294Response() != null) {
+                        messageProcessor.process(m294.getUplanResult294Response());
+                    } else if (m294.getUplanUnregular294Notification() != null) {
+                        messageProcessor.process(m294.getUplanUnregular294Notification());
+                    } else if (m294.getUplanUnregular294Response() != null) {
+                        messageProcessor.process(m294.getUplanUnregular294Response());
                     } else {
                         logger.warn("{} : Unknown messageType no processing", requestId);
                     }
                 }
             }
+        } else {
+            messageProcessor.processStatusMessage(requestId, msg, status);
         }
         logger.debug("{} : End processing", requestId);
     }
@@ -154,15 +151,15 @@ public class MQMessageListener implements MessageListener {
         if (responseBody != null) {
             final LetterFromERPType response = responseBody.getResponse();
             if (response != null) {
-                final MessageFromERPCommonType messageCommon = response.getMessageCommon();
+                final MessageFromERPCommonType mc = response.getMessageCommon();
                 final StringBuilder sb = new StringBuilder();
-                if (messageCommon != null) {
+                if (mc != null) {
                     sb.append("MessageCommon.");
-                    if (messageCommon.getFindInspectionResponse() != null) {
+                    if (mc.getFindInspectionResponse() != null) {
                         return sb.append("FindInspectionResponse").toString();
-                    } else if (messageCommon.getListOfProcsecutorsTerritorialJurisdictionResponse() != null) {
+                    } else if (mc.getListOfProcsecutorsTerritorialJurisdictionResponse() != null) {
                         return sb.append("ListOfProcsecutorsTerritorialJurisdictionResponse").toString();
-                    } else if (messageCommon.getERPResponse() != null) {
+                    } else if (mc.getERPResponse() != null) {
                         return sb.append("ErpResponse<>").toString();
                     } else {
                         return sb.append("#!Unknown").toString();

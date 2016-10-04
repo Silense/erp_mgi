@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
 import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
 import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
+import ru.cip.ws.erp.jdbc.entity.StatusErp;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -30,7 +31,7 @@ public class CheckPlanRecordDaoImpl {
     }
 
     public List<CipCheckPlanRecord> getRecordsFromViewByPlanId(final int check_plan_id) {
-        return em.createQuery("SELECT a FROM CipCheckPlanRecord a WHERE a.CHECK_PLAN_ID = :check_plan_id", CipCheckPlanRecord.class).setParameter(
+        return em.createQuery("SELECT a FROM CipCheckPlanRecord a WHERE a.plan.id = :check_plan_id", CipCheckPlanRecord.class).setParameter(
                 "check_plan_id",
                 check_plan_id
         ).getResultList();
@@ -39,41 +40,40 @@ public class CheckPlanRecordDaoImpl {
 
     public PlanCheckRecErp createPlanCheckRecErp(final PlanCheckErp plan, final CipCheckPlanRecord record) {
         final PlanCheckRecErp result = new PlanCheckRecErp();
-        result.setIdCheckPlanErp(plan.getIdCheckPlanErp());
-        result.setCodeCheckPlanRecErp(null);
-        result.setCheckPlanRecStatusErp("WAIT");
-        result.setCipChPlRecCorrelId(record.getCorrelationId());
+        result.setPlan(plan);
+        result.setErpId(null);
+        result.setStatus(StatusErp.WAIT);
+        result.setCorrelationId(record.getCorrelationId());
         em.persist(result);
-        em.flush();
         return result;
     }
 
-    public void setStatus(final List<PlanCheckRecErp> records, final String status) {
+    public void setStatus(final List<PlanCheckRecErp> records, final StatusErp status) {
         for (PlanCheckRecErp record : records) {
             setStatus(record, status);
         }
     }
 
-    public void setStatus(final PlanCheckRecErp record, final String status) {
-        record.setCheckPlanRecStatusErp(status);
+    public void setStatus(final PlanCheckRecErp record, final StatusErp status) {
+        record.setStatus(status);
         em.merge(record);
-        em.flush();
     }
 
     public List<PlanCheckRecErp> getRecordsByPlan(final Integer planId) {
-        return em.createQuery("SELECT a FROM PlanCheckRecErp a WHERE a.idCheckPlanErp = :plan_id", PlanCheckRecErp.class)
+        return em.createQuery("SELECT a FROM PlanCheckRecErp a WHERE a.plan.id = :plan_id", PlanCheckRecErp.class)
                 .setParameter("plan_id", planId).getResultList();
     }
 
     public List<PlanCheckRecErp> getRecordsByPlan(final PlanCheckErp planCheckErp) {
         if (null != planCheckErp) {
-            return getRecordsByPlan(planCheckErp.getIdCheckPlanErp());
+            return getRecordsByPlan(planCheckErp.getId());
         }
         return new ArrayList<>(0);
     }
 
-    public void setIDFromErp(final PlanCheckRecErp record, final BigInteger id) {
-        record.setCodeCheckPlanRecErp(id);
-        setStatus(record, "RECEIVE ID FROM ERP");
+    public void setIDFromErp(final PlanCheckRecErp record, final BigInteger id, final StatusErp status, final String totalValid) {
+        record.setErpId(id);
+        record.setTotalValid(totalValid);
+        setStatus(record, status);
     }
 }
