@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanCheckErpDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanCheckRecordErpDaoImpl;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
 import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
@@ -14,8 +16,11 @@ import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Author: Upatov Egor <br>
@@ -32,98 +37,63 @@ public class MessageProcessor {
     private MessageService messageService;
 
     @Autowired
-    private CheckPlanDaoImpl checkPlanDao;
+    private CheckPlanDaoImpl planViewDao;
+
     @Autowired
-    private CheckPlanRecordDaoImpl checkPlanRecordDao;
+    private PlanCheckErpDaoImpl planDao;
 
-    public void processPlanRegular294Correction(
-            final String requestId, final HttpServletResponse response, final Integer checkPlanId, final Integer year, final String acceptedName
-    ) throws IOException {
-        final CipCheckPlan checkPlan = checkPlanDao.getByIdFromView(checkPlanId);
-        if (checkPlan == null) {
-            logger.warn("#{} End. CheckPlan not found", requestId);
-            response.getWriter().print("Не найден план проверки (по идентификатору)");
-            response.setStatus(500);
-            return;
-        }
-        logger.info("#{} founded CheckPlan: {}", requestId, checkPlan);
+    @Autowired
+    private CheckPlanRecordDaoImpl planRecordViewDao;
 
-        PlanCheckErp planCheckErp = checkPlanDao.getLastActiveByPlanOrFault(checkPlan);
-        logger.info("#{} founded PlanCheckErp: {}", requestId, planCheckErp);
-        if (planCheckErp == null) {
-            logger.warn("#{} End. PLAN[{}] is not send for ERP", requestId, checkPlan.getId());
-            response.getWriter().print(
-                    String.format("Нельзя корректировать план: План %d еще не был первично выгружен в ЕРП", checkPlan.getId())
-            );
-            response.setStatus(500);
-            return;
-        }
-        if (planCheckErp.getErpId() == null) {
-            logger.warn("#{} End. PLAN[{}] is not send for ERP", requestId, checkPlan.getId());
-            response.getWriter().print(
-                    String.format(
-                            "Нельзя корректировать план: По первичному размещению плана %d еще не было ответа из ЕРП", checkPlan.getId()
-                    )
-            );
-            response.setStatus(500);
-            return;
-        }
-        final List<CipCheckPlanRecord> checkPlanRecords = checkPlanRecordDao.getRecordsFromViewByPlanId(checkPlan.getId());
-        if (checkPlanRecords.isEmpty()) {
-            logger.warn("#{} End. Not found any PlanRecords by check_plan_id = {}", requestId, checkPlan.getId());
-            response.getWriter().println(String.format("По плану проверок [%d] не найдено проверок", checkPlan.getId()));
-            response.setStatus(500);
-            response.flushBuffer();
-            return;
-        } else if (logger.isDebugEnabled()) {
-            for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
-                logger.info("#{} Founded record: {}", requestId, checkPlanRecord);
-            }
-        }
-        final List<PlanCheckRecErp> sentCheckPlanRecords = checkPlanRecordDao.getRecordsByPlan(planCheckErp);
-        final String result = messageService.sendPlanRegular294Correction(
-                requestId,
-                checkPlanRecords,
-                planCheckErp,
-                sentCheckPlanRecords,
-                StringUtils.defaultString(checkPlan.getAcceptedName(), acceptedName),
-                year != null ? year : Calendar.getInstance().get(Calendar.YEAR)
-        );
+    @Autowired
+    private PlanCheckRecordErpDaoImpl planRecordDao;
+
+    private static void wrapResponse(final HttpServletResponse response, final String result) throws IOException {
         if (StringUtils.isNotEmpty(result)) {
             response.setContentType("text/xml");
             response.getWriter().println(result);
             response.setStatus(200);
         } else {
-            response.getWriter().println("Ошибка");
-            response.setStatus(500);
+            wrapErrorResponse(response, "Ошибка");
         }
     }
 
+    private static void wrapErrorResponse(final HttpServletResponse response, final String message) throws IOException {
+        response.getWriter().println(message);
+        response.setStatus(500);
+    }
+
+    public void processProsecutorAsk(final HttpServletResponse response, final String requestId) throws IOException {
+        final String result = messageService.sendProsecutorAck(
+                requestId, "4.1.1 Запрос на получение справочника территориальных юрисдикций прокуратур Российской Федерации"
+        );
+        wrapResponse(response, result);
+    }
+
     public void processPlanRegular294Initialization(
-            final HttpServletResponse response, final String requestId, final Integer checkPlanId, final Integer year, final String acceptedName
+            final String requestId, final HttpServletResponse response, final Integer checkPlanId, final Integer year, final String acceptedName
     ) throws IOException {
-        final CipCheckPlan checkPlan = checkPlanDao.getByIdFromView(checkPlanId);
+        final CipCheckPlan checkPlan = planViewDao.getById(checkPlanId);
         if (checkPlan == null) {
-            logger.warn("{} : End. CheckPlan[{}] not found ", requestId, checkPlanId);
-            response.getWriter().print(String.format("Не найден план проверки [%s]", checkPlanId));
-            response.setStatus(500);
+            logger.warn("{} : End. CheckPlan not found", requestId);
+            wrapErrorResponse(response, String.format("Не найден план проверки [%d]", checkPlanId));
             return;
         }
         logger.info("{} : founded CheckPlan: {}", requestId, checkPlan);
-        final List<CipCheckPlanRecord> checkPlanRecords = checkPlanRecordDao.getRecordsFromViewByPlanId(checkPlan.getId());
-        if (checkPlanRecords.isEmpty()) {
+
+        final List<CipCheckPlanRecord> checkPlanRecords = planRecordViewDao.getRecordsByPlan(checkPlan);
+        if (checkPlanRecords == null || checkPlanRecords.isEmpty()) {
             logger.warn("{} : End. Not found any PlanRecords by check_plan_id = {}", requestId, checkPlan.getId());
-            response.getWriter().println(String.format("По плану проверок [%d] не найдено проверок", checkPlan.getId()));
-            response.setStatus(500);
+            wrapErrorResponse(response, String.format("По плану проверок [%d] не найдено проверок", checkPlan.getId()));
             return;
         } else if (logger.isDebugEnabled()) {
             for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
                 logger.info("{} : Founded record: {}", requestId, checkPlanRecord);
             }
         }
-        final PlanCheckErp lastActiveByPlan = checkPlanDao.getLastActiveByPlan(checkPlan);
+
+        final PlanCheckErp lastActiveByPlan = planDao.getLastActiveByPlan(checkPlan);
         if (lastActiveByPlan != null) {
-            response.setStatus(500);
             String message = "%d";
             switch (lastActiveByPlan.getStatus()) {
                 case WAIT:
@@ -144,29 +114,86 @@ public class MessageProcessor {
             }
             final String sub_result = String.format(message, checkPlan.getId());
             logger.warn("{} : End. Already was initialized or wait for response from ERP / {}", requestId, sub_result);
-            response.getWriter().println(sub_result);
+            wrapErrorResponse(response, sub_result);
             return;
         }
-        final String result = messageService.sendPlanRegular294Initialization(requestId, checkPlan, acceptedName, year, checkPlanRecords);
-        if (StringUtils.isNotEmpty(result)) {
-            response.setContentType("text/xml");
-            response.getWriter().println(result);
-            response.setStatus(200);
-        } else {
-            response.getWriter().println("Ошибка");
-            response.setStatus(500);
-        }
+        final String result = messageService.sendPlanRegular294Initialization(
+                requestId,
+                "4.1.2 Запрос на первичное размещение плана плановых проверок",
+                checkPlan,
+                acceptedName,
+                year,
+                checkPlanRecords
+        );
+        wrapResponse(response, result);
     }
 
-    public void processProsecutorAsk(final HttpServletResponse response, final String requestId) throws IOException {
-        final String result = messageService.sendProsecutorAck(requestId);
-        if (StringUtils.isNotEmpty(result)) {
-            response.setContentType("text/xml");
-            response.getWriter().println(result);
-            response.setStatus(200);
-        } else {
-            response.getWriter().println("Ошибка");
+
+    public void processPlanRegular294Correction(
+            final String requestId, final HttpServletResponse response, final Integer checkPlanId, final Integer year, final String acceptedName
+    ) throws IOException {
+        final CipCheckPlan checkPlan = planViewDao.getById(checkPlanId);
+        if (checkPlan == null) {
+            logger.warn("{} : End. CheckPlan not found", requestId);
+            response.getWriter().print(String.format("Не найден план проверки [%d]", checkPlanId));
             response.setStatus(500);
+            return;
         }
+        logger.info("{} : founded CheckPlan: {}", requestId, checkPlan);
+
+        PlanCheckErp planCheckErp = planDao.getLastActiveByPlanOrFault(checkPlan);
+        logger.info("{} : founded PlanCheckErp: {}", requestId, planCheckErp);
+
+        if (planCheckErp == null) {
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, checkPlan.getId());
+            response.getWriter().print(
+                    String.format("Нельзя корректировать план: План %d еще не был первично выгружен в ЕРП", checkPlan.getId())
+            );
+            response.setStatus(500);
+            return;
+        }
+        if (planCheckErp.getErpId() == null) {
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, checkPlan.getId());
+            response.getWriter().print(
+                    String.format(
+                            "Нельзя корректировать план: По первичному размещению плана %d еще не было ответа из ЕРП", checkPlan.getId()
+                    )
+            );
+            response.setStatus(500);
+            return;
+        }
+        final List<CipCheckPlanRecord> checkPlanRecords = planRecordViewDao.getRecordsByPlan(checkPlan);
+        if (checkPlanRecords.isEmpty()) {
+            logger.warn("{} : End. Not found any PlanRecords by check_plan_id = {}", requestId, checkPlan.getId());
+            response.getWriter().println(String.format("По плану проверок [%d] не найдено проверок", checkPlan.getId()));
+            response.setStatus(500);
+            response.flushBuffer();
+            return;
+        } else if (logger.isDebugEnabled()) {
+            for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
+                logger.info("{} :  Founded record: {}", requestId, checkPlanRecord);
+            }
+        }
+
+
+        final List<PlanCheckRecErp> sentCheckPlanRecords = planRecordDao.getRecordsByPlan(planCheckErp);
+        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(sentCheckPlanRecords.size());
+        for (PlanCheckRecErp record : sentCheckPlanRecords) {
+             erpIDByCorrelatedID.put(record.getCorrelationId(), record.getErpId());
+        }
+
+        final String result = messageService.sendPlanRegular294Correction(
+                requestId,
+                "4.1.3 Запрос на размещение корректировки плана плановых проверок",
+                checkPlan,
+                planCheckErp.getErpId(),
+                StringUtils.defaultString(checkPlan.getAcceptedName(), acceptedName),
+                year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
+                checkPlanRecords,
+                erpIDByCorrelatedID
+        );
+        wrapResponse(response, result);
     }
+
+
 }

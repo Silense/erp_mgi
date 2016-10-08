@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by Igor on 2014.07.31.
+ * Modified by Egor on 2016.09.10.
  */
 public class MQMessageSender {
 

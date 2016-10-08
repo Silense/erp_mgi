@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.generated.erptypes.*;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanCheckErpDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanCheckRecordErpDaoImpl;
 import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
 import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
 import ru.cip.ws.erp.jdbc.entity.StatusErp;
@@ -26,10 +28,19 @@ public class IncomingMessageProcessor {
 
     private final static Logger logger = LoggerFactory.getLogger(IncomingMessageProcessor.class);
 
+
     @Autowired
-    private CheckPlanDaoImpl checkPlanDao;
+    private CheckPlanDaoImpl planViewDao;
+
     @Autowired
-    private CheckPlanRecordDaoImpl checkPlanRecordDao;
+    private PlanCheckErpDaoImpl planDao;
+
+    @Autowired
+    private CheckPlanRecordDaoImpl planRecordViewDao;
+
+    @Autowired
+    private PlanCheckRecordErpDaoImpl planRecordDao;
+
 
     public void process(final String requestId, final FindInspectionResponseType findInspectionResponse, final StatusErp statusMessage) {
         //TODO
@@ -52,13 +63,13 @@ public class IncomingMessageProcessor {
             final String requestId, final MessageFromERP294Type.PlanRegular294Notification response, final StatusErp status
     ) {
         //TRY to find CIP_PLANCHECK_ERP by requestId
-        final PlanCheckErp planCheckErp = checkPlanDao.getByRequestId(requestId);
+        final PlanCheckErp planCheckErp = planDao.getByRequestId(requestId);
         if (planCheckErp == null) {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
         logger.info("{} : is message for {}", requestId, planCheckErp);
-        checkPlanDao.setIDFromErp(planCheckErp, response.getID(), status, getTotalValid(response.getRest()));
+        planDao.setIDFromErp(planCheckErp, response.getID(), status, getTotalValid(response.getRest()));
 
     }
 
@@ -66,14 +77,14 @@ public class IncomingMessageProcessor {
             final String requestId, final MessageFromERP294Type.PlanRegular294Response response, final StatusErp status
     ) {
         //TRY to find CIP_PLANCHECK_ERP by requestId
-        final PlanCheckErp planCheckErp = checkPlanDao.getByRequestId(requestId);
+        final PlanCheckErp planCheckErp = planDao.getByRequestId(requestId);
         if (planCheckErp == null) {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
         logger.info("{} : is message for {}", requestId, planCheckErp);
-        checkPlanDao.setIDFromErp(planCheckErp, response.getID(), status, getTotalValid(response.getRest()));
-        final List<PlanCheckRecErp> records = checkPlanRecordDao.getRecordsByPlan(planCheckErp);
+        planDao.setIDFromErp(planCheckErp, response.getID(), status, getTotalValid(response.getRest()));
+        final List<PlanCheckRecErp> records = planRecordDao.getRecordsByPlan(planCheckErp);
         for (InspectionRegular294ResponseType responseRow : response.getResponses()) {
             if (responseRow.getID() != null && responseRow.getCORRELATIONID() != null) {
                 for (PlanCheckRecErp localRow : records) {
@@ -84,7 +95,7 @@ public class IncomingMessageProcessor {
                                 responseRow.getOGRN(),
                                 localRow.getId()
                         );
-                        checkPlanRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                        planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
                         break;
                     }
                 }
@@ -133,11 +144,11 @@ public class IncomingMessageProcessor {
 
     public void processStatusMessage(final String requestId, final ResponseMsg msg, final StatusErp status) {
         //TRY to find CIP_PLANCHECK_ERP by requestId
-        final PlanCheckErp planCheckErp = checkPlanDao.getByRequestId(requestId);
+        final PlanCheckErp planCheckErp = planDao.getByRequestId(requestId);
         if (planCheckErp == null) {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
-        checkPlanDao.setStatus(planCheckErp, status);
+        planDao.setStatus(planCheckErp, status);
     }
 }

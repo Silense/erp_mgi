@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.jdbc.entity.ExpSession;
 import ru.cip.ws.erp.jdbc.entity.ExpSessionEvent;
+import ru.cip.ws.erp.jdbc.entity.SessionStatus;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -39,7 +40,7 @@ public class ExportSessionDaoImpl {
         result.setSYSTEM_SERVICE_ID(appID);
         result.setSTART_DATE(now);
         result.setEND_DATE(now);
-        result.setENUM_EXP_SESSION_STATUS("DONE");
+        result.setENUM_EXP_SESSION_STATUS(SessionStatus.DONE);
         result.setSESSION_DESCRIPTION(description);
         result.setSESSION_MSG(message);
         result.setRV(1);
@@ -72,12 +73,12 @@ public class ExportSessionDaoImpl {
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
 
-    public void setSessionInfo(final ExpSession session, final String status, final String message) {
+    public void setSessionInfo(final ExpSession session, final SessionStatus status, final String message) {
         session.setSESSION_MSG(message);
         setSessionStatus(session, status);
     }
 
-    public void setSessionStatus(final ExpSession session, final String status) {
+    public void setSessionStatus(final ExpSession session, final SessionStatus status) {
         session.setEND_DATE(new Date());
         session.setENUM_EXP_SESSION_STATUS(status);
         em.merge(session);

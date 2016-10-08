@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.cip.ws.erp.generated.erptypes.*;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
-import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
-import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -18,6 +16,7 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Author: Upatov Egor <br>
@@ -36,8 +35,8 @@ public class MessageFactory {
             final String acceptedName,
             final Integer year,
             final List<CipCheckPlanRecord> checkPlanRecords,
-            final PlanCheckErp planCheckErp,
-            final List<PlanCheckRecErp> planCheckRecErpList,
+            final BigInteger planID,
+            final Map<Integer, BigInteger> erpIDByCorrelatedID,
             final String requestId
     ) {
         final RequestMsg requestMsg = of.createRequestMsg();
@@ -55,18 +54,11 @@ public class MessageFactory {
         //TODO message.setDATEFORM(wrapDate(new Date()));
         message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
         // ИД из уже отосланного плана
-        message.setID(BigInteger.valueOf(planCheckErp.getErpId()));
+        message.setID(planID);
 
         final List<InspectionRegular294CorrectionType> inspectionList = message.getInspectionRegular294Correction();
         for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
-            PlanCheckRecErp correlated = null;
-            for (PlanCheckRecErp checkRecErp : planCheckRecErpList) {
-               if(checkPlanRecord.getCorrelationId().equals(checkRecErp.getCorrelationId())){
-                   correlated = checkRecErp;
-                   break;
-               }
-            }
-            inspectionList.add(constructInspectionRegular294CorrectionType(checkPlanRecord, correlated));
+            inspectionList.add(constructInspectionRegular294CorrectionType(checkPlanRecord,  erpIDByCorrelatedID.get(checkPlanRecord.getCorrelationId())));
         }
         messageToERP294Type.setPlanRegular294Correction(message);
 
@@ -80,7 +72,10 @@ public class MessageFactory {
 
 
     public JAXBElement<RequestMsg> constructPlanRegular294Initialization(
-            final String acceptedName, final int year, final List<CipCheckPlanRecord> checkPlanRecords, final String requestId
+            final String requestId,
+            final String acceptedName,
+            final int year,
+            final List<CipCheckPlanRecord> checkPlanRecords
     ) {
         final RequestMsg requestMsg = of.createRequestMsg();
         requestMsg.setRequestId(requestId);
@@ -183,7 +178,7 @@ public class MessageFactory {
     }
 
     private InspectionRegular294CorrectionType constructInspectionRegular294CorrectionType(
-            final CipCheckPlanRecord record, final PlanCheckRecErp correlated
+            final CipCheckPlanRecord record, final BigInteger erpID
     ) {
         final InspectionRegular294CorrectionType result = of.createInspectionRegular294CorrectionType();
         result.setORGNAME(record.getORG_NAME());
@@ -216,8 +211,8 @@ public class MessageFactory {
         result.setORDERDATE(wrapDate(record.getORDER_DATE()));
         result.setLASTVIOLATIONDATE(wrapDate(record.getLAST_VIOLATION_DATE()));
         //TODO result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
-        if(correlated != null) {
-            result.setID(correlated.getErpId());
+        if(erpID != null) {
+            result.setID(erpID);
         }
         return result;
     }

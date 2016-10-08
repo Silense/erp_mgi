@@ -50,8 +50,9 @@ public class ImpSession {
     @Column(name = "SYSTEM_SERVICE_ID")
     private String SYSTEM_SERVICE_ID;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ENUM_IMP_SESSION_STATUS")
-    private String ENUM_IMP_SESSION_STATUS;
+    private SessionStatus ENUM_IMP_SESSION_STATUS;
 
     @Column(name = "SESSION_DESCRIPTION")
     private String SESSION_DESCRIPTION;
@@ -137,11 +138,11 @@ public class ImpSession {
         this.endDate = endDate;
     }
 
-    public String getENUM_IMP_SESSION_STATUS() {
+    public SessionStatus getENUM_IMP_SESSION_STATUS() {
         return ENUM_IMP_SESSION_STATUS;
     }
 
-    public void setENUM_IMP_SESSION_STATUS(final String ENUM_IMP_SESSION_STATUS) {
+    public void setENUM_IMP_SESSION_STATUS(final SessionStatus ENUM_IMP_SESSION_STATUS) {
         this.ENUM_IMP_SESSION_STATUS = ENUM_IMP_SESSION_STATUS;
     }
 

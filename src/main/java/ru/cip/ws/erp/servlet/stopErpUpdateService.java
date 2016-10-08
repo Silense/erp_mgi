@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestHandler;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanCheckErpDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanCheckRecordErpDaoImpl;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
 import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
 
@@ -32,9 +34,16 @@ public class stopErpUpdateService implements HttpRequestHandler {
     private static final String PARAM_NAME_CHECK_PLAN_ID = "CHECK_PLAN_ID";
 
     @Autowired
-    private CheckPlanDaoImpl checkPlanDao;
+    private CheckPlanDaoImpl planViewDao;
+
     @Autowired
-    private CheckPlanRecordDaoImpl checkPlanRecordDao;
+    private PlanCheckErpDaoImpl planDao;
+
+    @Autowired
+    private CheckPlanRecordDaoImpl planRecordViewDao;
+
+    @Autowired
+    private PlanCheckRecordErpDaoImpl planRecordDao;
 
 
     @Override
@@ -92,16 +101,16 @@ public class stopErpUpdateService implements HttpRequestHandler {
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         logger.info("{} : is PlanRegular294Initialization param ({}={})", requestId, PARAM_NAME_CHECK_PLAN_ID, param_check_plan_id);
         if(param_check_plan_id != null) {
-            final CipCheckPlan checkPlan = checkPlanDao.getByIdFromView(param_check_plan_id);
+            final CipCheckPlan checkPlan = planViewDao.getById(param_check_plan_id);
             if(checkPlan == null){
                 logger.warn("{} : End. CheckPlan[{}] not found ", requestId, param_check_plan_id);
                 response.getWriter().print(String.format("Не найден план проверки [%s]", param_check_plan_id));
                 response.setStatus(500);
                 return;
             }
-            final List<PlanCheckErp> activeByPlan = checkPlanDao.getActiveByPlan(checkPlan);
+            final List<PlanCheckErp> activeByPlan = planDao.getActiveByPlan(checkPlan);
             for (PlanCheckErp planCheckErp : activeByPlan) {
-                checkPlanDao.cancel(planCheckErp);
+                planDao.cancel(planCheckErp);
                 logger.info("{} : : Canceled {}", requestId, planCheckErp);
             }
             response.getWriter().print("Сессия завершена по запросу пользователя");

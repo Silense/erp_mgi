@@ -13,7 +13,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.UUID;
 
 /**
@@ -97,9 +96,7 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processUplanResult294Correction(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
     ) throws IOException {
-        logger.info("{} : is UplanResult294Correction", requestId);
         if (isTestMode) {
-            logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
             testMessageProcessor.processUplanResult294Correction(requestId, response);
             return;
         }
@@ -109,9 +106,7 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processUplanResult294Initialization(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
     ) throws IOException {
-        logger.info("{} : is UplanResult294Initialization", requestId);
         if (isTestMode) {
-            logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
             testMessageProcessor.processUplanResult294Initialization(requestId, response);
             return;
         }
@@ -121,9 +116,7 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processUplanUnRegular294Correction(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
     ) throws IOException {
-        logger.info("{} : is UplanUnRegular294Correction", requestId);
         if (isTestMode) {
-            logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
             testMessageProcessor.processUplanUnRegular294Correction(requestId, response);
             return;
         }
@@ -133,9 +126,7 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processUplanUnRegular294Initialization(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
     ) throws IOException {
-        logger.info("{} : is UplanUnRegular294Initialization", requestId);
         if (isTestMode) {
-            logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
             testMessageProcessor.processUplanUnRegular294Initialization(requestId, response);
             return;
         }
@@ -145,9 +136,7 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processPlanResult294Correction(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
     ) throws IOException {
-        logger.info("{} : is PlanResult294Correction", requestId);
         if (isTestMode) {
-            logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
             testMessageProcessor.processPlanResult294Correction(requestId, response);
             return;
         }
@@ -157,9 +146,7 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processPlanResult294Initialization(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
     ) throws IOException {
-        logger.info("{} : is PlanResult294Initialization \'{}\'", requestId, requestId);
         if (isTestMode) {
-            logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
             testMessageProcessor.processPlanResult294Initialization(requestId, response);
             return;
         }
@@ -169,21 +156,15 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processPlanRegular294Correction(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
     ) throws IOException {
-        logger.info("{} : is PlanRegular294Correction", requestId);
         if (isTestMode) {
-            logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
-            try {
-                testMessageProcessor.processPlanRegular294Correction(requestId, response);
-            } catch (ParseException e) {
-                logger.error("{} : Exception", e);
-            }
+            testMessageProcessor.processPlanRegular294Correction(requestId, response);
             return;
         }
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
         final String param_accepted_name = getStringParameter(request, PARAM_NAME_ACCEPTED_NAME);
         logger.info(
-                "{}: parsed params ({}='{}', {}='{}', {}='{}')",
+                "{} : parsed params ({}='{}', {}='{}', {}='{}')",
                 requestId,
                 PARAM_NAME_CHECK_PLAN_ID,
                 param_check_plan_id,
@@ -198,11 +179,7 @@ public class startErpUpdateService implements HttpRequestHandler {
             response.setStatus(500);
         } else {
             messageProcessor.processPlanRegular294Correction(
-                    requestId,
-                    response,
-                    param_check_plan_id,
-                    param_year,
-                    param_accepted_name
+                    requestId, response, param_check_plan_id, param_year, param_accepted_name
             );
         }
     }
@@ -211,9 +188,7 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processPlanRegular294Initialization(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
     ) throws IOException {
-        logger.info("{} : is PlanRegular294Initialization", requestId);
         if (isTestMode) {
-            logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
             testMessageProcessor.processPlanRegular294Initialization(requestId, response);
             return;
         }
@@ -230,12 +205,14 @@ public class startErpUpdateService implements HttpRequestHandler {
                 PARAM_NAME_ACCEPTED_NAME,
                 param_accepted_name
         );
-        if (param_check_plan_id != null) {
-            messageProcessor.processPlanRegular294Initialization(response, requestId, param_check_plan_id, param_year, param_accepted_name);
-        } else {
+        if (param_check_plan_id == null) {
             logger.warn("{} : End. Not '{}' set", requestId, PARAM_NAME_CHECK_PLAN_ID);
             response.getWriter().print("Не указан идентифкатор плана проверки");
             response.setStatus(500);
+        } else {
+            messageProcessor.processPlanRegular294Initialization(
+                    requestId, response, param_check_plan_id, param_year, param_accepted_name
+            );
         }
     }
 

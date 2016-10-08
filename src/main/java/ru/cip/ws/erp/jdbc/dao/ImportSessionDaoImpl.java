@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.jdbc.entity.ExpSession;
 import ru.cip.ws.erp.jdbc.entity.ImpSession;
 import ru.cip.ws.erp.jdbc.entity.ImpSessionEvent;
+import ru.cip.ws.erp.jdbc.entity.SessionStatus;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -46,7 +47,7 @@ public class ImportSessionDaoImpl {
         result.setSYSTEM_ID(appID);
         result.setStartDate(now);
         result.setEndDate(now);
-        result.setENUM_IMP_SESSION_STATUS("DONE");
+        result.setENUM_IMP_SESSION_STATUS(SessionStatus.DONE);
         result.setSESSION_DESCRIPTION(description);
         result.setSESSION_MSG(message);
         result.setRV(1);

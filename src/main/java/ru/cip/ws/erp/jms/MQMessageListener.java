@@ -43,18 +43,10 @@ public class MQMessageListener implements MessageListener {
     public void onMessage(Message message) {
         final int requestNumber = counter.incrementAndGet();
         try {
-            final String messageId = message.getJMSMessageID();
-            logger.info("#{} Incoming message[{}] Type: {}", requestNumber, messageId, message.getClass().getName());
             if (isTextMessage(message)) {
                 // Process text message
                 final TextMessage textMessage = (TextMessage) message;
-                logger.info(
-                        "#{} MessageBody:\n{}\n", requestNumber, textMessage.getText().substring(
-                                0, Math.min(
-                                        1200, textMessage.getText().length()
-                                )
-                        )
-                );
+                logger.info("#{} MessageBody:\n{}\n", requestNumber, textMessage.getText());
                 final ResponseMsg msg = JAXBMarshallerUtil.unmarshalResponse(textMessage.getText());
                 if (msg == null) {
                     logger.error("#{} End. Cannot marshal to ResponseMsg", requestNumber);
@@ -73,13 +65,19 @@ public class MQMessageListener implements MessageListener {
                 logger.info("{} : Message of type \'{}\'", requestId, messageType);
                 final ImpSessionEvent importEvent = importSessionDao.createNewImportEvent(messageType, importSession);
                 logger.info("{} : Created ImportEvent: {}", requestId, importEvent);
-                processMessage(requestId, msg, importSession);
+                if (importSession.getExportSession() != null) {
+                    final ExpSession expSession = importSession.getExportSession();
+                    expSession.setImportSession(importSession);
+                    expSession.setSESSION_MSG(msg.getStatusCode().toString());
+                    exportSessionDao.merge(expSession);
+                }
+                processMessage(requestId, msg);
                 // ready for reply
                 final Destination replyTo = message.getJMSReplyTo();
                 if (replyTo == null) { // quite eating messages without JMSReplyTo
                     logger.warn("#{} comes without JMSReplyTo", requestNumber);
                 } else {
-                    reply(messageId, replyTo, requestNumber);
+                    reply(message.getJMSMessageID(), replyTo, requestNumber);
                 }
             } else {
                 logger.warn("#{} is not TextMessage", requestNumber);
@@ -92,15 +90,9 @@ public class MQMessageListener implements MessageListener {
         }
     }
 
-    private void processMessage(final String requestId, final ResponseMsg msg, final ImpSession importSession) {
+    private void processMessage(final String requestId, final ResponseMsg msg) {
         final StatusErp status = StatusErp.valueOf(msg.getStatusCode());
         logger.debug("{} : Start processing with statusMessage=\'{}\'", requestId, status);
-        if (importSession.getExportSession() != null) {
-            final ExpSession expSession = importSession.getExportSession();
-            expSession.setImportSession(importSession);
-            expSession.setSESSION_MSG(msg.getStatusCode().toString());
-            exportSessionDao.merge(expSession);
-        }
         final ResponseBody responseBody = msg.getResponseBody();
         if (responseBody != null) {
             final LetterFromERPType response = responseBody.getResponse();

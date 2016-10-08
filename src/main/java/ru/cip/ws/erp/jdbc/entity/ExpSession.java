@@ -1,5 +1,6 @@
 package ru.cip.ws.erp.jdbc.entity;
 
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -47,8 +48,9 @@ public class ExpSession {
     @Column(name = "SYSTEM_SERVICE_ID")
     private String SYSTEM_SERVICE_ID;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ENUM_EXP_SESSION_STATUS")
-    private String ENUM_EXP_SESSION_STATUS;
+    private SessionStatus ENUM_EXP_SESSION_STATUS;
 
     @Column(name = "SESSION_DESCRIPTION")
     private String SESSION_DESCRIPTION;
@@ -174,11 +176,11 @@ public class ExpSession {
         this.SYSTEM_SERVICE_ID = SYSTEM_SERVICE_ID;
     }
 
-    public String getENUM_EXP_SESSION_STATUS() {
+    public SessionStatus getENUM_EXP_SESSION_STATUS() {
         return ENUM_EXP_SESSION_STATUS;
     }
 
-    public void setENUM_EXP_SESSION_STATUS(final String ENUM_EXP_SESSION_STATUS) {
+    public void setENUM_EXP_SESSION_STATUS(final SessionStatus ENUM_EXP_SESSION_STATUS) {
         this.ENUM_EXP_SESSION_STATUS = ENUM_EXP_SESSION_STATUS;
     }
 
