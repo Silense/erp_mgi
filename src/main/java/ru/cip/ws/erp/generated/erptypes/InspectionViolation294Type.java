@@ -77,7 +77,7 @@ public class InspectionViolation294Type {
     @XmlAttribute(name = "INJUNCTION_DEADLINE")
     protected XMLGregorianCalendar injunctiondeadline;
     @XmlAttribute(name = "INJUNCTION_IS_REFUSED")
-    protected Boolean injunctionisrefused;
+    protected Integer injunctionisrefused;
     @XmlAttribute(name = "INJUNCTION_EXECUTION")
     protected String injunctionexecution;
     @XmlAttribute(name = "LAWSUIT_SEC_I")
@@ -287,7 +287,7 @@ public class InspectionViolation294Type {
      *     {@link Boolean }
      *     
      */
-    public Boolean getINJUNCTIONISREFUSED() {
+    public Integer getINJUNCTIONISREFUSED() {
         return injunctionisrefused;
     }
 
@@ -299,7 +299,7 @@ public class InspectionViolation294Type {
      *     {@link Boolean }
      *     
      */
-    public void setINJUNCTIONISREFUSED(Boolean value) {
+    public void setINJUNCTIONISREFUSED(Integer value) {
         this.injunctionisrefused = value;
     }
 

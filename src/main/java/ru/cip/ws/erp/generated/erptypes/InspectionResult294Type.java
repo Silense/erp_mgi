@@ -8,14 +8,9 @@
 
 package ru.cip.ws.erp.generated.erptypes;
 
-import java.math.BigInteger;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigInteger;
 
 
 /**
@@ -71,7 +66,7 @@ public class InspectionResult294Type {
     @XmlAttribute(name = "ACT_PLACE_CREATE")
     protected String actplacecreate;
     @XmlAttribute(name = "ACT_WAS_READ")
-    protected Boolean actwasread;
+    protected Integer actwasread;
     @XmlAttribute(name = "WRONG_DATA_REASON_SEC_I")
     protected String wrongdatareasonseci;
     @XmlAttribute(name = "WRONG_DATA_ANOTHER")
@@ -196,7 +191,7 @@ public class InspectionResult294Type {
      *     {@link Boolean }
      *     
      */
-    public Boolean getACTWASREAD() {
+    public Integer getACTWASREAD() {
         return actwasread;
     }
 
@@ -208,7 +203,7 @@ public class InspectionResult294Type {
      *     {@link Boolean }
      *     
      */
-    public void setACTWASREAD(Boolean value) {
+    public void setACTWASREAD(Integer value) {
         this.actwasread = value;
     }
 

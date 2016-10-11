@@ -5,9 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
-import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
-import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
+import ru.cip.ws.erp.jdbc.entity.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -30,6 +28,18 @@ public class TestMessageProcessor {
     @Autowired
     private MessageService messageService;
 
+    private static Date parseTestDate(final String dateAsString, final String format) {
+        try {
+            return new SimpleDateFormat(format).parse(dateAsString);
+        } catch (ParseException e) {
+            logger.error("parseTestDate({}) EXCEPTION", dateAsString, e);
+            return null;
+        }
+    }
+
+    private static Date parseTestDate(final String dateAsString) {
+        return parseTestDate(dateAsString, "yyyy-MM-dd");
+    }
 
     private void wrapResponse(final HttpServletResponse response, final String result) throws IOException {
         if (StringUtils.isNotEmpty(result)) {
@@ -42,14 +52,12 @@ public class TestMessageProcessor {
         }
     }
 
-
     public void processProsecutorAsk(final String requestId, final HttpServletResponse response) throws IOException {
         final String result = messageService.sendProsecutorAck(
                 requestId, "4.1.1 :: Эталонный :: Запрос на получение справочника территориальных юрисдикций прокуратур Российской Федерации"
         );
         wrapResponse(response, result);
     }
-
 
     public void processPlanRegular294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
         final CipCheckPlan planCheck = new CipCheckPlan();
@@ -234,8 +242,6 @@ public class TestMessageProcessor {
         wrapResponse(response, result);
     }
 
-
-
     public void processPlanResult294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
         final CipCheckPlan planCheck = new CipCheckPlan();
         planCheck.setId(999999);
@@ -243,7 +249,78 @@ public class TestMessageProcessor {
         final PlanCheckErp planCheckErp = new PlanCheckErp();
         planCheckErp.setCipChPlLglApprvdId(planCheck.getId());
         planCheckErp.setErpId(new BigInteger("2016000109"));
-        final String s = "4.1.2 :: Эталонный :: Запрос на первичное размещение результатов по нескольким проверкам из плана";
+
+        final Map<CipActCheck, List<CipActCheckViolation>> actMap = new HashMap<>(1);
+        final List<CipActCheckViolation> violationList = new ArrayList<>(2);
+        final CipActCheck act = new CipActCheck();
+        act.setACT_DATE_CREATE(parseTestDate("2015-07-29"));
+        act.setACT_TIME_CREATE(parseTestDate("15:45:00", "HH:mm:ss"));
+        act.setACT_PLACE_CREATE("Место составления акта - адрес");
+        act.setACT_WAS_READ(1);
+        act.setWRONG_DATA_REASON_SEC_I("");
+        act.setWRONG_DATA_ANOTHER("");
+        act.setNAME_OF_OWNER("Петров П.П.");
+        act.setUNIMPOSSIBLE_REASON_I("");
+        act.setSTART_DATE(parseTestDate("2015-08-20T16:00:00.000000", "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"));
+        act.setDURATION(new BigInteger("123"));
+        act.setADR_INSPECTION("Фактический адрес проведения");
+        act.setINSPECTORS("Иванов И.И.");
+        act.setUNDOIG_SEC_I("");
+        act.setCorrelationID(10001);
+
+        final CipActCheckViolation v_1 = new CipActCheckViolation();
+        v_1.setVIOLATION_ID(new BigInteger("1"));
+        v_1.setVIOLATION_NOTE("Нарушено столько то раз там-то там -то правовой акт №1");
+        v_1.setVIOLATION_ACT("Правовой акт №1");
+        v_1.setVIOLATION_ACTORS_NAME("Иванов И.И., Петров П.П., Смит С.С. ");
+        v_1.setINJUNCTION_CODES("");
+        v_1.setINJUNCTION_NOTE("Устранить нарушения Правового акта №1 - нарушенного № раз ");
+        v_1.setINJUNCTION_DATE_CREATE(parseTestDate("2015-08-03"));
+        v_1.setINJUNCTION_DEADLINE(parseTestDate("2015-09-07"));
+        v_1.setINJUNCTION_EXECUTION("");
+        v_1.setLAWSUIT_SEC_I("");
+        v_1.setLAWSUIT_SEC_II("");
+        v_1.setLAWSUIT_SEC_III("");
+        v_1.setLAWSUIT_SEC_IV("");
+        v_1.setLAWSUIT_SEC_V("");
+        v_1.setLAWSUIT_SEC_VI("");
+        v_1.setLAWSUIT_SEC_VII("");
+        violationList.add(v_1);
+
+        final CipActCheckViolation v_2 = new CipActCheckViolation();
+        v_2.setVIOLATION_ID(new BigInteger("2"));
+        v_2.setVIOLATION_NOTE("Нарушено столько то раз там-то там -то правовой акт №2");
+        v_2.setVIOLATION_ACT("Правовой акт №2");
+        v_2.setVIOLATION_ACTORS_NAME("Иванов И.И., Петров П.П., Смит С.С. ");
+        v_2.setINJUNCTION_CODES("");
+        v_2.setINJUNCTION_NOTE("Устранить нарушения Правового акта №2 - нарушенного № раз ");
+        v_2.setINJUNCTION_DATE_CREATE(parseTestDate("2015-08-03"));
+        v_2.setINJUNCTION_DEADLINE(parseTestDate("2015-09-07"));
+        v_2.setINJUNCTION_EXECUTION("");
+        v_2.setLAWSUIT_SEC_I("");
+        v_2.setLAWSUIT_SEC_II("");
+        v_2.setLAWSUIT_SEC_III("");
+        v_2.setLAWSUIT_SEC_IV("");
+        v_2.setLAWSUIT_SEC_V("");
+        v_2.setLAWSUIT_SEC_VI("");
+        v_2.setLAWSUIT_SEC_VII("");
+        violationList.add(v_2);
+
+        actMap.put(act, violationList);
+
+        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(1);
+        erpIDByCorrelatedID.put(act.getCorrelationID(), new BigInteger("201600000534"));
+
+        final String result = messageService.sendPlanResult294Initialization(
+                requestId,
+                "4.1.2 :: Эталонный :: Запрос на первичное размещение результатов по нескольким проверкам из плана (сценарий 5)",
+                planCheck,
+                planCheckErp.getErpId(),
+                2016,
+                actMap,
+                erpIDByCorrelatedID
+        );
+        wrapResponse(response, result);
 
 
     }
@@ -255,15 +332,15 @@ public class TestMessageProcessor {
     }
 
     public void processUplanUnRegular294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
-        final String s ="4.1.2 :: Эталонный :: Запрос на первичное размещение внеплановой проверки";
+        final String s = "4.1.2 :: Эталонный :: Запрос на первичное размещение внеплановой проверки";
     }
 
     public void processUplanUnRegular294Correction(final String requestId, final HttpServletResponse response) throws IOException {
-        final String s ="4.1.2 :: Эталонный :: Запрос на корректировку результатов внеплановой проверки";
+        final String s = "4.1.2 :: Эталонный :: Запрос на корректировку результатов внеплановой проверки";
     }
 
     public void processUplanResult294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
-        final String s ="4.1.2 :: Эталонный :: Запрос на первичное размещение результата внеплановой проверки";
+        final String s = "4.1.2 :: Эталонный :: Запрос на первичное размещение результата внеплановой проверки";
     }
 
     public void processUplanResult294Correction(final String requestId, final HttpServletResponse response) throws IOException {
@@ -275,18 +352,6 @@ public class TestMessageProcessor {
 //            "4.1.2 :: Эталонный ::  Запрос на первичное размещение плана плановых проверок",
 //            MessageToERP294Type.UplanResult294Correction.class.getSimpleName()
 //        );
-    }
-
-
-
-
-    private static Date parseTestDate(final String dateAsString) {
-        try {
-            return new SimpleDateFormat("yyyy-MM-dd").parse(dateAsString);
-        } catch (ParseException e) {
-            logger.error("parseTestDate({}) EXCEPTION", dateAsString, e);
-            return null;
-        }
     }
 
 }

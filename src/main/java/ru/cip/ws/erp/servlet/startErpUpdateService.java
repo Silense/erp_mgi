@@ -58,16 +58,32 @@ public class startErpUpdateService implements HttpRequestHandler {
         }
         switch (data_kind) {
             case PROSECUTOR_ACK:
-                processProsecutorAsk(request, response, requestId, isTestMode);
+                if (isTestMode) {
+                    testMessageProcessor.processProsecutorAsk(requestId, response);
+                } else {
+                    processProsecutorAsk(request, response, requestId);
+                }
                 break;
             case PLAN_REGULAR_294_INITIALIZATION:
-                processPlanRegular294Initialization(request, response, requestId, isTestMode);
+                if (isTestMode) {
+                    testMessageProcessor.processPlanRegular294Initialization(requestId, response);
+                } else {
+                    processPlanRegular294Initialization(request, response, requestId);
+                }
                 break;
             case PLAN_REGULAR_294_CORRECTION:
-                processPlanRegular294Correction(request, response, requestId, isTestMode);
+                if (isTestMode) {
+                    testMessageProcessor.processPlanRegular294Correction(requestId, response);
+                } else {
+                    processPlanRegular294Correction(request, response, requestId);
+                }
                 break;
             case PLAN_RESULT_294_INITIALIZATION:
-                processPlanResult294Initialization(request, response, requestId, isTestMode);
+                if (isTestMode) {
+                    testMessageProcessor.processPlanResult294Initialization(requestId, response);
+                } else {
+                    processPlanResult294Initialization(request, response, requestId);
+                }
                 break;
             case PLAN_RESULT_294_CORRECTION:
                 processPlanResult294Correction(request, response, requestId, isTestMode);
@@ -144,22 +160,30 @@ public class startErpUpdateService implements HttpRequestHandler {
     }
 
     private void processPlanResult294Initialization(
-            final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
+            final HttpServletRequest request, final HttpServletResponse response, final String requestId
     ) throws IOException {
-        if (isTestMode) {
-            testMessageProcessor.processPlanResult294Initialization(requestId, response);
-            return;
+        final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
+        final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
+        logger.info(
+                "{} : parsed params ({}='{}', {}='{}', {}='{}')",
+                requestId,
+                PARAM_NAME_CHECK_PLAN_ID,
+                param_check_plan_id,
+                PARAM_NAME_YEAR,
+                param_year
+        );
+        if (param_check_plan_id == null) {
+            logger.warn("{} : End. Not '{}' set", requestId, PARAM_NAME_CHECK_PLAN_ID);
+            response.getWriter().print("Не указан идентифкатор плана проверки");
+            response.setStatus(500);
+        } else {
+            messageProcessor.processPlanResult294Initialization(requestId, response, param_check_plan_id, param_year);
         }
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     private void processPlanRegular294Correction(
-            final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
+            final HttpServletRequest request, final HttpServletResponse response, final String requestId
     ) throws IOException {
-        if (isTestMode) {
-            testMessageProcessor.processPlanRegular294Correction(requestId, response);
-            return;
-        }
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
         final String param_accepted_name = getStringParameter(request, PARAM_NAME_ACCEPTED_NAME);
@@ -186,12 +210,8 @@ public class startErpUpdateService implements HttpRequestHandler {
 
 
     private void processPlanRegular294Initialization(
-            final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
+            final HttpServletRequest request, final HttpServletResponse response, final String requestId
     ) throws IOException {
-        if (isTestMode) {
-            testMessageProcessor.processPlanRegular294Initialization(requestId, response);
-            return;
-        }
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
         final String param_accepted_name = getStringParameter(request, PARAM_NAME_ACCEPTED_NAME);
@@ -217,14 +237,8 @@ public class startErpUpdateService implements HttpRequestHandler {
     }
 
     private void processProsecutorAsk(
-            final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
+            final HttpServletRequest request, final HttpServletResponse response, final String requestId
     ) throws IOException {
-        logger.info("{} : is ProsecutorAsk", requestId);
-        if (isTestMode) {
-            logger.warn("{} : IN TEST_MODE WE MUST SEND REFERENCE EXAMPLE MESSAGE", requestId);
-            testMessageProcessor.processProsecutorAsk(requestId, response);
-            return;
-        }
         messageProcessor.processProsecutorAsk(response, requestId);
     }
 

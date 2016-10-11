@@ -6,6 +6,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.cip.ws.erp.generated.erptypes.*;
+import ru.cip.ws.erp.jdbc.entity.CipActCheck;
+import ru.cip.ws.erp.jdbc.entity.CipActCheckViolation;
 import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
 
 import javax.xml.bind.JAXBElement;
@@ -14,9 +16,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Author: Upatov Egor <br>
@@ -32,12 +32,12 @@ public class MessageFactory {
     private ObjectFactory of = new ObjectFactory();
 
     public JAXBElement<RequestMsg> constructPlanRegular294Correction(
+            final String requestId,
             final String acceptedName,
             final Integer year,
             final List<CipCheckPlanRecord> checkPlanRecords,
             final BigInteger planID,
-            final Map<Integer, BigInteger> erpIDByCorrelatedID,
-            final String requestId
+            final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
         final RequestMsg requestMsg = of.createRequestMsg();
         requestMsg.setRequestId(requestId);
@@ -58,7 +58,13 @@ public class MessageFactory {
 
         final List<InspectionRegular294CorrectionType> inspectionList = message.getInspectionRegular294Correction();
         for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
-            inspectionList.add(constructInspectionRegular294CorrectionType(checkPlanRecord,  erpIDByCorrelatedID.get(checkPlanRecord.getCorrelationId())));
+            inspectionList.add(
+                    constructInspectionRegular294CorrectionType(
+                            checkPlanRecord, erpIDByCorrelatedID.get(
+                                    checkPlanRecord.getCorrelationId()
+                            )
+                    )
+            );
         }
         messageToERP294Type.setPlanRegular294Correction(message);
 
@@ -70,12 +76,8 @@ public class MessageFactory {
     }
 
 
-
     public JAXBElement<RequestMsg> constructPlanRegular294Initialization(
-            final String requestId,
-            final String acceptedName,
-            final int year,
-            final List<CipCheckPlanRecord> checkPlanRecords
+            final String requestId, final String acceptedName, final int year, final List<CipCheckPlanRecord> checkPlanRecords
     ) {
         final RequestMsg requestMsg = of.createRequestMsg();
         requestMsg.setRequestId(requestId);
@@ -105,7 +107,6 @@ public class MessageFactory {
     }
 
 
-
     public JAXBElement<RequestMsg> constructProsecutorAsk(final String requestId) {
         final RequestMsg requestMsg = of.createRequestMsg();
         requestMsg.setRequestId(requestId);
@@ -123,6 +124,108 @@ public class MessageFactory {
         requestMsg.setRequestBody(requestBody);
         return of.createRequestMsg(requestMsg);
     }
+
+    public JAXBElement<RequestMsg> constructPlanResult294Initialization(
+            final String requestId,
+            final int year,
+            final Map<CipActCheck, List<CipActCheckViolation>> actMap,
+            final BigInteger planID,
+            final Map<Integer, BigInteger> erpIDByCorrelatedID
+    ) {
+        final RequestMsg requestMsg = of.createRequestMsg();
+        requestMsg.setRequestId(requestId);
+        requestMsg.setRequestDate(wrapDateTime(new Date()));
+        final RequestBody requestBody = of.createRequestBody();
+
+        final LetterToERPType letterToERPType = of.createLetterToERPType();
+        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
+
+        final MessageToERP294Type.PlanResult294Initialization message = of.createMessageToERP294TypePlanResult294Initialization();
+        message.setYEAR(year);
+        // ИД из уже отосланного плана
+        message.setID(planID);
+
+        message.getInspectionResult294Initialization().addAll(constructInspectionResultInitList(actMap, erpIDByCorrelatedID));
+
+        messageToERP294Type.setPlanResult294Initialization(message);
+
+        letterToERPType.setMessage294(messageToERP294Type);
+
+        requestBody.setRequest(letterToERPType);
+        requestMsg.setRequestBody(requestBody);
+        return of.createRequestMsg(requestMsg);
+
+    }
+
+    private List<MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization> constructInspectionResultInitList(
+            final Map<CipActCheck, List<CipActCheckViolation>> actMap, final Map<Integer, BigInteger> erpIDByCorrelatedID
+    ) {
+        final List<MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization> result = new ArrayList<>(actMap.size());
+        for (Map.Entry<CipActCheck, List<CipActCheckViolation>> entry : actMap.entrySet()) {
+            result.add(
+                    constructInspectionResultInit(
+                            entry.getKey(), entry.getValue(), erpIDByCorrelatedID.get(
+                                    entry.getKey().getCorrelationID()
+                            )
+                    )
+            );
+        }
+        return result;
+    }
+
+    private MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization constructInspectionResultInit(
+            final CipActCheck act, final List<CipActCheckViolation> violations, final BigInteger erpID
+    ) {
+        final MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization result = of
+                .createMessageToERP294TypePlanResult294InitializationInspectionResult294Initialization();
+        result.setACTDATECREATE(wrapDate(act.getACT_DATE_CREATE()));
+        result.setACTPLACECREATE(act.getACT_PLACE_CREATE());
+        result.setACTTIMECREATE(wrapDate(act.getACT_TIME_CREATE(), "HH:mm:ss"));
+        result.setACTWASREAD(act.getACT_WAS_READ());
+        result.setADRINSPECTION(act.getADR_INSPECTION());
+        result.setDURATION(act.getDURATION());
+        result.setID(erpID);
+        result.setINSPECTORS(act.getINSPECTORS());
+        result.setNAMEOFOWNER(act.getNAME_OF_OWNER());
+        result.setSTARTDATE(wrapDate(act.getSTART_DATE(), "yyyy-MM-dd'T'HH:mm:ss.SSS'000'"));
+        result.setUNDOIGSECI(act.getUNDOIG_SEC_I());
+        result.setUNIMPOSSIBLEREASONI(act.getUNIMPOSSIBLE_REASON_I());
+        result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
+        result.setWRONGDATAREASONSECI(act.getWRONG_DATA_REASON_SEC_I());
+        result.getInspectionViolation294Initialization().addAll(constructInspectionViolationInitList(violations));
+        return result;
+    }
+
+    private List<InspectionViolation294InitializationType> constructInspectionViolationInitList(final List<CipActCheckViolation> violations) {
+        final List<InspectionViolation294InitializationType> result = new ArrayList<>(violations.size());
+        for (CipActCheckViolation violation : violations) {
+            result.add(constructInspectionViolationInit(violation));
+        }
+        return result;
+    }
+
+    private InspectionViolation294InitializationType constructInspectionViolationInit(final CipActCheckViolation violation) {
+        final InspectionViolation294InitializationType result = of.createInspectionViolation294InitializationType();
+        result.setVIOLATIONID(violation.getVIOLATION_ID().intValue());
+        result.setVIOLATIONNOTE(violation.getVIOLATION_NOTE());
+        result.setVIOLATIONACT(violation.getVIOLATION_ACT());
+        result.setVIOLATIONACTORSNAME(violation.getVIOLATION_ACTORS_NAME());
+        result.setINJUNCTIONCODES(violation.getINJUNCTION_CODES());
+        result.setINJUNCTIONNOTE(violation.getINJUNCTION_NOTE());
+        result.setINJUNCTIONDATECREATE(wrapDate(violation.getINJUNCTION_DATE_CREATE()));
+        result.setINJUNCTIONDEADLINE(wrapDate(violation.getINJUNCTION_DEADLINE()));
+        result.setINJUNCTIONEXECUTION(violation.getINJUNCTION_EXECUTION());
+        result.setLAWSUITSECI(violation.getLAWSUIT_SEC_I());
+        result.setLAWSUITSECII(violation.getLAWSUIT_SEC_II());
+        result.setLAWSUITSECIII(violation.getLAWSUIT_SEC_III());
+        result.setLAWSUITSECIV(violation.getLAWSUIT_SEC_IV());
+        result.setLAWSUITSECV(violation.getLAWSUIT_SEC_V());
+        result.setLAWSUITSECVI(violation.getLAWSUIT_SEC_VI());
+        result.setLAWSUITSECVII(violation.getLAWSUIT_SEC_VII());
+        result.setINJUNCTIONISREFUSED(violation.getINJUNCTION_IS_REFUSED());
+        return result;
+    }
+
 
     public MessageToERPCommonType constructMessageToERPCommonType() {
         final MessageToERPCommonType result = of.createMessageToERPCommonType();
@@ -211,7 +314,7 @@ public class MessageFactory {
         result.setORDERDATE(wrapDate(record.getORDER_DATE()));
         result.setLASTVIOLATIONDATE(wrapDate(record.getLAST_VIOLATION_DATE()));
         //TODO result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
-        if(erpID != null) {
+        if (erpID != null) {
             result.setID(erpID);
         }
         return result;
@@ -244,22 +347,21 @@ public class MessageFactory {
     }
 
 
-    private XMLGregorianCalendar wrapDate(final Date date) {
+    private XMLGregorianCalendar wrapDate(final Date date, final String format) {
         try {
-            return date == null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat("yyyy-MM-dd").format(date));
+            return date == null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat(format).format(date));
         } catch (DatatypeConfigurationException e) {
             return null;
         }
     }
 
+
+    private XMLGregorianCalendar wrapDate(final Date date) {
+       return wrapDate(date, "yyyy-MM-dd");
+    }
+
     private XMLGregorianCalendar wrapDateTime(final Date date) {
-        try {
-            return date == null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(
-                    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format(date)
-            );
-        } catch (DatatypeConfigurationException e) {
-            return null;
-        }
+      return wrapDate(date, "yyyy-MM-dd'T'HH:mm:ss'Z'");
     }
 
 

@@ -48,7 +48,7 @@ public class CipActCheck {
      * Отметка об отказе в ознакомлении с актом проверки (заполняется в случае отказа)
      **/
     @Column(name = "ACT_WAS_READ")
-    private BigInteger ACT_WAS_READ;
+    private Integer ACT_WAS_READ;
     /**
      * Несоответствие поданных сведений о начале осущ . предп.-льской деятельности (список положений  правовых актов)
      **/
@@ -95,6 +95,9 @@ public class CipActCheck {
     @Column(name = "UNDOIG_SEC_I")
     private String UNDOIG_SEC_I;
 
+    @Column(name="CHECK_PLAN_RECORD_ID")
+    private Integer correlationID;
+
 
     public CipActCheck() {
     }
@@ -131,11 +134,11 @@ public class CipActCheck {
         this.ACT_TIME_CREATE = ACT_TIME_CREATE;
     }
 
-    public BigInteger getACT_WAS_READ() {
+    public Integer getACT_WAS_READ() {
         return ACT_WAS_READ;
     }
 
-    public void setACT_WAS_READ(final BigInteger ACT_WAS_READ) {
+    public void setACT_WAS_READ(final Integer ACT_WAS_READ) {
         this.ACT_WAS_READ = ACT_WAS_READ;
     }
 
@@ -227,6 +230,14 @@ public class CipActCheck {
         this.WRONG_DATA_REASON_SEC_I = WRONG_DATA_REASON_SEC_I;
     }
 
+    public Integer getCorrelationID() {
+        return correlationID;
+    }
+
+    public void setCorrelationID(final Integer correlationId) {
+        this.correlationID = correlationId;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("CipActCheck[").append(ACT_ID);
@@ -245,6 +256,7 @@ public class CipActCheck {
         sb.append(", ADR_INSPECTION='").append(ADR_INSPECTION).append('\'');
         sb.append(", INSPECTORS='").append(INSPECTORS).append('\'');
         sb.append(", UNDOIG_SEC_I='").append(UNDOIG_SEC_I).append('\'');
+        sb.append(", correlationID=").append(correlationID);
         sb.append('}');
         return sb.toString();
     }

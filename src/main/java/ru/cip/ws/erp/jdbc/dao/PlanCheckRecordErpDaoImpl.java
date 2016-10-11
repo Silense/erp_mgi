@@ -27,7 +27,7 @@ public class PlanCheckRecordErpDaoImpl {
     @PersistenceContext
     private EntityManager em;
 
-    public PlanCheckRecErp createPlanCheckRecErp(final PlanCheckErp plan, final CipCheckPlanRecord record, final BigInteger erpID) {
+    public PlanCheckRecErp createPlanCheckRecErp(final PlanCheckErp plan, final Integer correlationId, final BigInteger erpID) {
         final PlanCheckRecErp result = new PlanCheckRecErp();
         result.setPlan(plan);
         if(erpID != null) {
@@ -36,9 +36,13 @@ public class PlanCheckRecordErpDaoImpl {
             result.setErpId(null);
         }
         result.setStatus(StatusErp.WAIT);
-        result.setCorrelationId(record.getCorrelationId());
+        result.setCorrelationId(correlationId);
         em.persist(result);
         return result;
+    }
+
+    public PlanCheckRecErp createPlanCheckRecErp(final PlanCheckErp plan, final CipCheckPlanRecord record, final BigInteger erpID) {
+      return createPlanCheckRecErp(plan, record.getCorrelationId(), erpID);
     }
 
 
