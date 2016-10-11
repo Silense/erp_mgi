@@ -112,11 +112,11 @@ public class MQMessageListener implements MessageListener {
                 final MessageFromERP294Type m294 = response.getMessage294();
                 if (m294 != null) {
                     if (m294.getPlanRegular294Notification() != null) {
-                        messageProcessor.process(requestId, m294.getPlanRegular294Notification(), status);
+                        messageProcessor.processPlanRegular294Notification(requestId, m294.getPlanRegular294Notification(), status);
                     } else if (m294.getPlanRegular294Response() != null) {
-                        messageProcessor.process(requestId, m294.getPlanRegular294Response(), status);
+                        messageProcessor.processPlanRegular294Response(requestId, m294.getPlanRegular294Response(), status);
                     } else if (m294.getPlanResult294Notification() != null) {
-                        messageProcessor.process(m294.getPlanResult294Notification());
+                        messageProcessor.processPlanResult294Notification(requestId, m294.getPlanResult294Notification(), status);
                     } else if (m294.getPlanResult294Response() != null) {
                         messageProcessor.process(m294.getPlanResult294Response());
                     } else if (m294.getUplanResult294Notification() != null) {
