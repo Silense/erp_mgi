@@ -41,7 +41,7 @@ public class TestMessageProcessor {
         return parseTestDate(dateAsString, "yyyy-MM-dd");
     }
 
-    private void wrapResponse(final HttpServletResponse response, final String result) throws IOException {
+    private static void wrapResponse(final HttpServletResponse response, final String result) throws IOException {
         if (StringUtils.isNotEmpty(result)) {
             response.setContentType("text/xml");
             response.getWriter().println(result);
@@ -313,7 +313,7 @@ public class TestMessageProcessor {
 
         final String result = messageService.sendPlanResult294Initialization(
                 requestId,
-                "4.1.2 :: Эталонный :: Запрос на первичное размещение результатов по нескольким проверкам из плана (сценарий 5)",
+                "4.1.5 :: Эталонный :: Запрос на первичное размещение результатов по нескольким проверкам из плана (сценарий 5)",
                 planCheck,
                 planCheckErp.getErpId(),
                 2016,
@@ -321,14 +321,67 @@ public class TestMessageProcessor {
                 erpIDByCorrelatedID
         );
         wrapResponse(response, result);
-
-
     }
 
     public void processPlanResult294Correction(final String requestId, final HttpServletResponse response) throws IOException {
+        final CipCheckPlan planCheck = new CipCheckPlan();
+        planCheck.setId(999999);
 
-        final String s = "4.1.2 :: Эталонный :: Запрос на корректировку результатов плановых проверок";
+        final PlanCheckErp planCheckErp = new PlanCheckErp();
+        planCheckErp.setCipChPlLglApprvdId(planCheck.getId());
+        planCheckErp.setErpId(new BigInteger("2016000109"));
 
+        final Map<CipActCheck, List<CipActCheckViolation>> actMap = new HashMap<>(1);
+        final List<CipActCheckViolation> violationList = new ArrayList<>(1);
+        final CipActCheck act = new CipActCheck();
+        act.setACT_DATE_CREATE(parseTestDate("2015-07-29"));
+        act.setACT_TIME_CREATE(parseTestDate("15:45:00", "HH:mm:ss"));
+        act.setACT_PLACE_CREATE("Место составления акта - адрес");
+        act.setACT_WAS_READ(1);
+        act.setWRONG_DATA_REASON_SEC_I("");
+        act.setWRONG_DATA_ANOTHER("");
+        act.setNAME_OF_OWNER("Петров П.П.");
+        act.setUNIMPOSSIBLE_REASON_I("");
+        act.setSTART_DATE(parseTestDate("2015-08-20T16:00:00.000000", "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"));
+        act.setDURATION(new BigInteger("123"));
+        act.setADR_INSPECTION("Фактический адрес проведения");
+        act.setINSPECTORS("Иванов И.И.");
+        act.setUNDOIG_SEC_I("");
+        act.setCorrelationID(10002);
+
+        final CipActCheckViolation v_1 = new CipActCheckViolation();
+        v_1.setVIOLATION_ID(new BigInteger("1"));
+        v_1.setVIOLATION_NOTE("Нарушено столько то раз там-то там -то правовой акт №1");
+        v_1.setVIOLATION_ACT("Правовой акт №1");
+        v_1.setVIOLATION_ACTORS_NAME("Иванов И.И., Петров П.П., Смит С.С. ");
+        v_1.setINJUNCTION_CODES("");
+        v_1.setINJUNCTION_NOTE("Устранить нарушения Правового акта №1 - нарушенного № раз ");
+        v_1.setINJUNCTION_DATE_CREATE(parseTestDate("2015-08-03"));
+        v_1.setINJUNCTION_DEADLINE(parseTestDate("2015-09-07"));
+        v_1.setINJUNCTION_EXECUTION("");
+        v_1.setLAWSUIT_SEC_I("");
+        v_1.setLAWSUIT_SEC_II("");
+        v_1.setLAWSUIT_SEC_III("");
+        v_1.setLAWSUIT_SEC_IV("");
+        v_1.setLAWSUIT_SEC_V("");
+        v_1.setLAWSUIT_SEC_VI("");
+        v_1.setLAWSUIT_SEC_VII("");
+        violationList.add(v_1);
+        actMap.put(act, violationList);
+
+        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(1);
+        erpIDByCorrelatedID.put(act.getCorrelationID(), new BigInteger("201600000535"));
+
+        final String result = messageService.sendPlanResult294Correction(
+                requestId,
+                "4.1.6 :: Эталонный :: Запрос на корректировку результатов плановых проверок (сценарий 6)",
+                planCheck,
+                planCheckErp.getErpId(),
+                2016,
+                actMap,
+                erpIDByCorrelatedID
+        );
+        wrapResponse(response, result);
     }
 
     public void processUplanUnRegular294Initialization(final String requestId, final HttpServletResponse response) throws IOException {

@@ -16,7 +16,10 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Author: Upatov Egor <br>
@@ -125,6 +128,40 @@ public class MessageFactory {
         return of.createRequestMsg(requestMsg);
     }
 
+    public JAXBElement<RequestMsg> constructPlanResult294Correction(
+            final String requestId,
+            final int year,
+            final Map<CipActCheck, List<CipActCheckViolation>> actMap,
+            final BigInteger planID,
+            final Map<Integer, BigInteger> erpIDByCorrelatedID
+    ) {
+        final RequestMsg requestMsg = of.createRequestMsg();
+        requestMsg.setRequestId(requestId);
+        requestMsg.setRequestDate(wrapDateTime(new Date()));
+        final RequestBody requestBody = of.createRequestBody();
+
+        final LetterToERPType letterToERPType = of.createLetterToERPType();
+        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
+
+        final MessageToERP294Type.PlanResult294Correction message = of.createMessageToERP294TypePlanResult294Correction();
+        message.setYEAR(year);
+        // ИД из уже отосланного плана
+        message.setID(planID);
+
+        message.getInspectionResult294Correction().addAll(constructInspectionResultCorrectionList(actMap, erpIDByCorrelatedID));
+
+        messageToERP294Type.setPlanResult294Correction(message);
+
+        letterToERPType.setMessage294(messageToERP294Type);
+
+        requestBody.setRequest(letterToERPType);
+        requestMsg.setRequestBody(requestBody);
+        return of.createRequestMsg(requestMsg);
+    }
+
+
+
+
     public JAXBElement<RequestMsg> constructPlanResult294Initialization(
             final String requestId,
             final int year,
@@ -154,7 +191,6 @@ public class MessageFactory {
         requestBody.setRequest(letterToERPType);
         requestMsg.setRequestBody(requestBody);
         return of.createRequestMsg(requestMsg);
-
     }
 
     private List<MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization> constructInspectionResultInitList(
@@ -173,6 +209,48 @@ public class MessageFactory {
         return result;
     }
 
+    private List<MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction> constructInspectionResultCorrectionList(
+            final Map<CipActCheck, List<CipActCheckViolation>> actMap, final Map<Integer, BigInteger> erpIDByCorrelatedID
+    ) {
+        final List<MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction> result = new ArrayList<>(actMap.size());
+        for (Map.Entry<CipActCheck, List<CipActCheckViolation>> entry : actMap.entrySet()) {
+            result.add(
+                    constructInspectionResultCorrection(
+                            entry.getKey(), entry.getValue(), erpIDByCorrelatedID.get(
+                                    entry.getKey().getCorrelationID()
+                            )
+                    )
+            );
+        }
+        return result;
+    }
+
+
+    private MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction constructInspectionResultCorrection(
+            final CipActCheck act, final List<CipActCheckViolation> violations, final BigInteger erpID
+    ) {
+        final MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction result = of
+                .createMessageToERP294TypePlanResult294CorrectionInspectionResult294Correction();
+        result.setACTDATECREATE(wrapDate(act.getACT_DATE_CREATE()));
+        result.setACTPLACECREATE(act.getACT_PLACE_CREATE());
+        result.setACTTIMECREATE(wrapDate(act.getACT_TIME_CREATE(), "HH:mm:ss"));
+        result.setACTWASREAD(act.getACT_WAS_READ());
+        result.setADRINSPECTION(act.getADR_INSPECTION());
+        result.setDURATION(act.getDURATION());
+        result.setID(erpID);
+        result.setINSPECTORS(act.getINSPECTORS());
+        result.setNAMEOFOWNER(act.getNAME_OF_OWNER());
+        result.setSTARTDATE(act.getSTART_DATE(), "yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+        result.setUNDOIGSECI(act.getUNDOIG_SEC_I());
+        result.setUNIMPOSSIBLEREASONI(act.getUNIMPOSSIBLE_REASON_I());
+        result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
+        result.setWRONGDATAREASONSECI(act.getWRONG_DATA_REASON_SEC_I());
+        result.getInspectionViolation294Correction().addAll(constructInspectionViolationCorrectionList(violations));
+        return result;
+    }
+
+
+
     private MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization constructInspectionResultInit(
             final CipActCheck act, final List<CipActCheckViolation> violations, final BigInteger erpID
     ) {
@@ -187,7 +265,7 @@ public class MessageFactory {
         result.setID(erpID);
         result.setINSPECTORS(act.getINSPECTORS());
         result.setNAMEOFOWNER(act.getNAME_OF_OWNER());
-        result.setSTARTDATE(wrapDate(act.getSTART_DATE(), "yyyy-MM-dd'T'HH:mm:ss.SSS'000'"));
+        result.setSTARTDATE(act.getSTART_DATE(), "yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
         result.setUNDOIGSECI(act.getUNDOIG_SEC_I());
         result.setUNIMPOSSIBLEREASONI(act.getUNIMPOSSIBLE_REASON_I());
         result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
@@ -204,8 +282,41 @@ public class MessageFactory {
         return result;
     }
 
+
+    private List<InspectionViolation294CorrectionType> constructInspectionViolationCorrectionList(final List<CipActCheckViolation> violations) {
+        final List<InspectionViolation294CorrectionType> result = new ArrayList<>(violations.size());
+        for (CipActCheckViolation violation : violations) {
+            result.add(constructInspectionViolationCorrection(violation));
+        }
+        return result;
+    }
+
+
+
     private InspectionViolation294InitializationType constructInspectionViolationInit(final CipActCheckViolation violation) {
         final InspectionViolation294InitializationType result = of.createInspectionViolation294InitializationType();
+        result.setVIOLATIONID(violation.getVIOLATION_ID().intValue());
+        result.setVIOLATIONNOTE(violation.getVIOLATION_NOTE());
+        result.setVIOLATIONACT(violation.getVIOLATION_ACT());
+        result.setVIOLATIONACTORSNAME(violation.getVIOLATION_ACTORS_NAME());
+        result.setINJUNCTIONCODES(violation.getINJUNCTION_CODES());
+        result.setINJUNCTIONNOTE(violation.getINJUNCTION_NOTE());
+        result.setINJUNCTIONDATECREATE(wrapDate(violation.getINJUNCTION_DATE_CREATE()));
+        result.setINJUNCTIONDEADLINE(wrapDate(violation.getINJUNCTION_DEADLINE()));
+        result.setINJUNCTIONEXECUTION(violation.getINJUNCTION_EXECUTION());
+        result.setLAWSUITSECI(violation.getLAWSUIT_SEC_I());
+        result.setLAWSUITSECII(violation.getLAWSUIT_SEC_II());
+        result.setLAWSUITSECIII(violation.getLAWSUIT_SEC_III());
+        result.setLAWSUITSECIV(violation.getLAWSUIT_SEC_IV());
+        result.setLAWSUITSECV(violation.getLAWSUIT_SEC_V());
+        result.setLAWSUITSECVI(violation.getLAWSUIT_SEC_VI());
+        result.setLAWSUITSECVII(violation.getLAWSUIT_SEC_VII());
+        result.setINJUNCTIONISREFUSED(violation.getINJUNCTION_IS_REFUSED());
+        return result;
+    }
+
+    private InspectionViolation294CorrectionType constructInspectionViolationCorrection(final CipActCheckViolation violation) {
+        final InspectionViolation294CorrectionType result = of.createInspectionViolation294CorrectionType();
         result.setVIOLATIONID(violation.getVIOLATION_ID().intValue());
         result.setVIOLATIONNOTE(violation.getVIOLATION_NOTE());
         result.setVIOLATIONACT(violation.getVIOLATION_ACT());
@@ -357,11 +468,11 @@ public class MessageFactory {
 
 
     private XMLGregorianCalendar wrapDate(final Date date) {
-       return wrapDate(date, "yyyy-MM-dd");
+        return wrapDate(date, "yyyy-MM-dd");
     }
 
     private XMLGregorianCalendar wrapDateTime(final Date date) {
-      return wrapDate(date, "yyyy-MM-dd'T'HH:mm:ss'Z'");
+        return wrapDate(date, "yyyy-MM-dd'T'HH:mm:ss'Z'");
     }
 
 

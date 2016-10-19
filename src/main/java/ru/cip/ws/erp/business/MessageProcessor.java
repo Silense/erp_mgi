@@ -217,6 +217,55 @@ public class MessageProcessor {
         wrapResponse(response, result);
     }
 
+    public void processPlanResult294Correction(
+            final String requestId, final HttpServletResponse response, final Integer checkPlanId, final Integer year
+    ) throws IOException {
+        final CipCheckPlan checkPlan = planViewDao.getById(checkPlanId);
+        if (checkPlan == null) {
+            logger.warn("{} : End. CheckPlan not found", requestId);
+            wrapErrorResponse(response, String.format("Не найден план проверки [%d]", checkPlanId));
+            return;
+        }
+        logger.info("{} : founded CheckPlan: {}", requestId, checkPlan);
+
+        PlanCheckErp planCheckErp = planDao.getLastActiveByPlanOrFault(checkPlan);
+        logger.info("{} : founded PlanCheckErp: {}", requestId, planCheckErp);
+
+        if (planCheckErp == null) {
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, checkPlan.getId());
+            wrapErrorResponse(
+                    response, String.format("Нельзя корректировать план: План %d еще не был первично выгружен в ЕРП", checkPlan.getId())
+            );
+            return;
+        }
+        if (planCheckErp.getErpId() == null) {
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, checkPlan.getId());
+            wrapErrorResponse(
+                    response, String.format(
+                            "Нельзя корректировать план: По первичному размещению плана %d еще не было ответа из ЕРП", checkPlan.getId()
+                    )
+            );
+            return;
+        }
+
+        final Map<CipActCheck, List<CipActCheckViolation>> actMap = actDao.getWithViolationsByPlan(checkPlan);
+        final List<PlanCheckRecErp> sentCheckPlanRecords = planRecordDao.getRecordsByPlan(planCheckErp);
+        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(sentCheckPlanRecords.size());
+        for (PlanCheckRecErp record : sentCheckPlanRecords) {
+            erpIDByCorrelatedID.put(record.getCorrelationId(), record.getErpId());
+        }
+        final String result = messageService.sendPlanResult294Correction(
+                requestId,
+                "4.1.6 Запрос на размещение корректировки результатов проверкам плана ",
+                checkPlan,
+                planCheckErp.getErpId(),
+                year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
+                actMap,
+                erpIDByCorrelatedID
+        );
+        wrapResponse(response, result);
+    }
+
 
 
     private static void wrapResponse(final HttpServletResponse response, final String result) throws IOException {
@@ -233,5 +282,6 @@ public class MessageProcessor {
         response.getWriter().println(message);
         response.setStatus(500);
     }
+
 
 }

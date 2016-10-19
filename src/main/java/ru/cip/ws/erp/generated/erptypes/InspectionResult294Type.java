@@ -11,6 +11,8 @@ package ru.cip.ws.erp.generated.erptypes;
 import javax.xml.bind.annotation.*;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 /**
@@ -76,8 +78,7 @@ public class InspectionResult294Type {
     @XmlAttribute(name = "UNIMPOSSIBLE_REASON_I")
     protected String unimpossiblereasoni;
     @XmlAttribute(name = "START_DATE")
-    @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar startdate;
+    protected String startdate;
     @XmlAttribute(name = "DURATION")
     protected BigInteger duration;
     @XmlAttribute(name = "ADR_INSPECTION")
@@ -311,7 +312,7 @@ public class InspectionResult294Type {
      *     {@link XMLGregorianCalendar }
      *     
      */
-    public XMLGregorianCalendar getSTARTDATE() {
+    public String getSTARTDATE() {
         return startdate;
     }
 
@@ -323,8 +324,8 @@ public class InspectionResult294Type {
      *     {@link XMLGregorianCalendar }
      *     
      */
-    public void setSTARTDATE(XMLGregorianCalendar value) {
-        this.startdate = value;
+    public void setSTARTDATE(final Date value, final String format) {
+        this.startdate = value != null ? new SimpleDateFormat(format).format(value) : null;
     }
 
     /**

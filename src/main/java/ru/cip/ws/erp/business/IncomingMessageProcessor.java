@@ -83,26 +83,31 @@ public class IncomingMessageProcessor {
         planDao.setIDFromErp(planCheckErp, response.getID(), status, getTotalValid(response.getRest()));
         final List<PlanCheckRecErp> records = planRecordDao.getRecordsByPlan(planCheckErp);
         for (InspectionRegular294ResponseType responseRow : response.getResponses()) {
-            if (responseRow.getID() != null && responseRow.getCORRELATIONID() != null) {
-                for (PlanCheckRecErp localRow : records) {
-                    if (Objects.equals(localRow.getCorrelationId(), responseRow.getCORRELATIONID().intValue())) {
-                        logger.info(
-                                "{} : InspectionRegular294Response[OGRN='{}'] correlated with PlanCheckRecErp[{}]",
-                                requestId,
-                                responseRow.getOGRN(),
-                                localRow.getId()
-                        );
-                        planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
-                        break;
-                    }
+            for (PlanCheckRecErp localRow : records) {
+                if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
+                    logger.info(
+                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with PlanCheckRecErp[{}]",
+                            requestId,
+                            responseRow.getOGRN(),
+                            localRow.getId()
+                    );
+                    planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    break;
+                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(
+                        localRow.getCorrelationId(), responseRow.getCORRELATIONID().intValue()
+                )) {
+                    logger.info(
+                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with PlanCheckRecErp[{}]",
+                            requestId,
+                            responseRow.getOGRN(),
+                            localRow.getId()
+                    );
+                    planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    break;
                 }
-            } else {
-                logger.warn("{} : InspectionRegular294Response[OGRN='{}'] has NULL as ID or NULL correlationId", requestId, responseRow.getOGRN());
             }
         }
-
     }
-
 
 
     public void processPlanResult294Notification(
@@ -119,7 +124,7 @@ public class IncomingMessageProcessor {
 
         for (MessageFromERP294Type.PlanResult294Notification.InspectionResult294Notification responseRow : response
                 .getInspectionResult294Notification()) {
-            if(responseRow.getID() != null){
+            if (responseRow.getID() != null) {
                 for (PlanCheckRecErp localRow : records) {
                     if (Objects.equals(localRow.getErpId(), responseRow.getID())) {
                         logger.info(

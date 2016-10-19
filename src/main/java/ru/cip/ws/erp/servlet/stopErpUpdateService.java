@@ -64,27 +64,34 @@ public class stopErpUpdateService implements HttpRequestHandler {
             case PROSECUTOR_ACK:
                 break;
             case PLAN_REGULAR_294_INITIALIZATION:
-                processPlanRegular294Initialization(request, response, requestId);
+                processPlanCheckCancel(request, response, requestId);
                 break;
             case PLAN_REGULAR_294_CORRECTION:
+                processPlanCheckCancel(request, response, requestId);
                 //processPlanRegular294Correction(request, response, requestId, isTestMode);
                 break;
             case PLAN_RESULT_294_INITIALIZATION:
+                processPlanCheckCancel(request, response, requestId);
                 //processPlanResult294Initialization(request, response, requestId, isTestMode);
                 break;
             case PLAN_RESULT_294_CORRECTION:
+                processPlanCheckCancel(request, response, requestId);
                 //processPlanResult294Correction(request, response, requestId, isTestMode);
                 break;
             case UPLAN_UNREGULAR_294_INITIALIZATION:
+                processPlanCheckCancel(request, response, requestId);
                 // processUplanUnRegular294Initialization(request, response, requestId, isTestMode);
                 break;
             case UPLAN_UNREGULAR_294_CORRECTION:
+                processPlanCheckCancel(request, response, requestId);
                 // processUplanUnRegular294Correction(request, response, requestId, isTestMode);
                 break;
             case UPLAN_RESULT_294_INITIALIZATION:
+                processPlanCheckCancel(request, response, requestId);
                 // processUplanResult294Initialization(request, response, requestId, isTestMode);
                 break;
             case UPLAN_RESULT_294_CORRECTION:
+                processPlanCheckCancel(request, response, requestId);
                 // processUplanResult294Correction(request, response, requestId, isTestMode);
                 break;
             default:
@@ -96,10 +103,10 @@ public class stopErpUpdateService implements HttpRequestHandler {
         logger.info("{} : End.", requestId);
     }
 
-    private void processPlanRegular294Initialization(final HttpServletRequest request, final HttpServletResponse response, final String requestId)
+    private void processPlanCheckCancel(final HttpServletRequest request, final HttpServletResponse response, final String requestId)
             throws IOException {
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
-        logger.info("{} : is PlanRegular294Initialization param ({}={})", requestId, PARAM_NAME_CHECK_PLAN_ID, param_check_plan_id);
+        logger.info("{} : is processPlanCheckCancel param ({}={})", requestId, PARAM_NAME_CHECK_PLAN_ID, param_check_plan_id);
         if(param_check_plan_id != null) {
             final CipCheckPlan checkPlan = planViewDao.getById(param_check_plan_id);
             if(checkPlan == null){
@@ -109,6 +116,12 @@ public class stopErpUpdateService implements HttpRequestHandler {
                 return;
             }
             final List<PlanCheckErp> activeByPlan = planDao.getActiveByPlan(checkPlan);
+            if(activeByPlan.isEmpty()){
+                logger.warn("{} : End. No active plan found ", requestId);
+                response.getWriter().print("Нет сессий, доступных для прерывания");
+                response.setStatus(500);
+                return;
+            }
             for (PlanCheckErp planCheckErp : activeByPlan) {
                 planDao.cancel(planCheckErp);
                 logger.info("{} : : Canceled {}", requestId, planCheckErp);
