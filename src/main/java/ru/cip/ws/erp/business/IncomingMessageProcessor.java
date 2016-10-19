@@ -181,6 +181,7 @@ public class IncomingMessageProcessor {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
+        logger.info("{} : Founded PlanCheckErp: {}", requestId, planCheckErp);
         planDao.setStatus(planCheckErp, status);
     }
 }

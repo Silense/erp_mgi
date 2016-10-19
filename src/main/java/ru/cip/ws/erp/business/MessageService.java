@@ -16,6 +16,7 @@ import ru.cip.ws.erp.jdbc.dao.PlanCheckErpDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.PlanCheckRecordErpDaoImpl;
 import ru.cip.ws.erp.jdbc.entity.*;
 import ru.cip.ws.erp.jms.MQMessageSender;
+import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.xml.bind.JAXBElement;
 import java.math.BigInteger;
@@ -90,7 +91,7 @@ public class MessageService {
         final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
 
-        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, exportSession);
+        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, DataKindEnum.PLAN_REGULAR_294_INITIALIZATION, exportSession);
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
         final List<PlanCheckRecErp> planCheckRecErpList = new ArrayList<>(planRecords.size());
         for (CipCheckPlanRecord record : planRecords) {
@@ -143,7 +144,7 @@ public class MessageService {
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
 
 
-        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, exportSession, erpID);
+        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, DataKindEnum.PLAN_REGULAR_294_CORRECTION, exportSession, erpID);
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
 
 
@@ -200,7 +201,7 @@ public class MessageService {
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
 
 
-        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, exportSession, erpID);
+        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, DataKindEnum.PLAN_RESULT_294_INITIALIZATION, exportSession, erpID);
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
 
 
@@ -257,7 +258,7 @@ public class MessageService {
         logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
 
 
-        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, exportSession, erpID);
+        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, DataKindEnum.PLAN_RESULT_294_CORRECTION, exportSession, erpID);
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
 
 

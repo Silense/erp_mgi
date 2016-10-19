@@ -1,5 +1,7 @@
 package ru.cip.ws.erp.jdbc.entity;
 
+import ru.cip.ws.erp.servlet.DataKindEnum;
+
 import javax.persistence.*;
 import java.math.BigInteger;
 
@@ -35,6 +37,16 @@ public class PlanCheckErp {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "EXP_SESSION_ID", nullable = true)
     private ExpSession expSession;
+
+    /**
+     * Вид запроса к ЕРП
+     * select * from RSYS_ENUM_VALUE t where t.catalog_id='ERP_DATA_KIND'
+     * SIC! Строка, так что видимо к коду надо привязывать... А мне тот справочник нах не нужен
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name="ENUM_ERP_DATA_KIND")
+    private DataKindEnum dataKind;
+
 
     @Column(name = "PLAN_TOTAL_VALID")
     private String totalValid;
@@ -91,12 +103,19 @@ public class PlanCheckErp {
     }
 
     public String getTotalValid() {
-
         return totalValid;
     }
 
     public void setTotalValid(final String totalValid) {
         this.totalValid = totalValid;
+    }
+
+    public DataKindEnum getDataKind() {
+        return dataKind;
+    }
+
+    public void setDataKind(final DataKindEnum dataKind) {
+        this.dataKind = dataKind;
     }
 
     @Override
@@ -107,6 +126,7 @@ public class PlanCheckErp {
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (cipChPlLglApprvdId != null ? cipChPlLglApprvdId.hashCode() : 0);
         result = 31 * result + (expSession != null ? expSession.hashCode() : 0);
+        result = 31 * result + (dataKind != null ? dataKind.hashCode() : 0);
         result = 31 * result + (totalValid != null ? totalValid.hashCode() : 0);
         return result;
     }
@@ -140,6 +160,9 @@ public class PlanCheckErp {
         if (expSession != null ? !expSession.equals(that.expSession) : that.expSession != null) {
             return false;
         }
+        if(dataKind != null ? !dataKind.equals(that.dataKind) : that.dataKind != null){
+            return false;
+        }
         return !(totalValid != null ? !totalValid.equals(that.totalValid) : that.totalValid != null);
 
     }
@@ -149,6 +172,7 @@ public class PlanCheckErp {
         final StringBuilder sb = new StringBuilder("PlanCheckErp[").append(id);
         sb.append("]{ status='").append(status).append('\'');
         sb.append(", prosecutor=").append(prosecutor);
+        sb.append(", dataKind=").append(dataKind);
         sb.append(", erpId=").append(erpId);
         sb.append(", cipChPlLglApprvdId=").append(cipChPlLglApprvdId);
         sb.append(", expSessionId=").append(expSession != null ? expSession.getId() : null);

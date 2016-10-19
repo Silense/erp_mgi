@@ -60,63 +60,28 @@ public class stopErpUpdateService implements HttpRequestHandler {
             response.getWriter().println(String.format("Параметер %s имеет неизвестное значение \'%s\'", PARAM_NAME_DATA_KIND, param_data_kind));
             return;
         }
-        switch (data_kind) {
-            case PROSECUTOR_ACK:
-                break;
-            case PLAN_REGULAR_294_INITIALIZATION:
-                processPlanCheckCancel(request, response, requestId);
-                break;
-            case PLAN_REGULAR_294_CORRECTION:
-                processPlanCheckCancel(request, response, requestId);
-                //processPlanRegular294Correction(request, response, requestId, isTestMode);
-                break;
-            case PLAN_RESULT_294_INITIALIZATION:
-                processPlanCheckCancel(request, response, requestId);
-                //processPlanResult294Initialization(request, response, requestId, isTestMode);
-                break;
-            case PLAN_RESULT_294_CORRECTION:
-                processPlanCheckCancel(request, response, requestId);
-                //processPlanResult294Correction(request, response, requestId, isTestMode);
-                break;
-            case UPLAN_UNREGULAR_294_INITIALIZATION:
-                processPlanCheckCancel(request, response, requestId);
-                // processUplanUnRegular294Initialization(request, response, requestId, isTestMode);
-                break;
-            case UPLAN_UNREGULAR_294_CORRECTION:
-                processPlanCheckCancel(request, response, requestId);
-                // processUplanUnRegular294Correction(request, response, requestId, isTestMode);
-                break;
-            case UPLAN_RESULT_294_INITIALIZATION:
-                processPlanCheckCancel(request, response, requestId);
-                // processUplanResult294Initialization(request, response, requestId, isTestMode);
-                break;
-            case UPLAN_RESULT_294_CORRECTION:
-                processPlanCheckCancel(request, response, requestId);
-                // processUplanResult294Correction(request, response, requestId, isTestMode);
-                break;
-            default:
-                logger.error("{} : End. Unknown {} = \'{}\' parameter value. Skip processing", requestId, PARAM_NAME_DATA_KIND, param_data_kind);
-                response.setStatus(400);
-                response.getWriter().println(String.format("Параметер %s имеет неизвестное значение \'%s\'", PARAM_NAME_DATA_KIND, param_data_kind));
-                break;
-        }
+        processPlanCheckCancel(requestId, data_kind, request, response);
         logger.info("{} : End.", requestId);
     }
 
-    private void processPlanCheckCancel(final HttpServletRequest request, final HttpServletResponse response, final String requestId)
-            throws IOException {
+    private void processPlanCheckCancel(
+            final String requestId,
+            final DataKindEnum dataKind,
+            final HttpServletRequest request,
+            final HttpServletResponse response
+    ) throws IOException {
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         logger.info("{} : is processPlanCheckCancel param ({}={})", requestId, PARAM_NAME_CHECK_PLAN_ID, param_check_plan_id);
-        if(param_check_plan_id != null) {
+        if (param_check_plan_id != null) {
             final CipCheckPlan checkPlan = planViewDao.getById(param_check_plan_id);
-            if(checkPlan == null){
+            if (checkPlan == null) {
                 logger.warn("{} : End. CheckPlan[{}] not found ", requestId, param_check_plan_id);
                 response.getWriter().print(String.format("Не найден план проверки [%s]", param_check_plan_id));
                 response.setStatus(500);
                 return;
             }
-            final List<PlanCheckErp> activeByPlan = planDao.getActiveByPlan(checkPlan);
-            if(activeByPlan.isEmpty()){
+            final List<PlanCheckErp> activeByPlan = planDao.getActiveByPlan(checkPlan, dataKind);
+            if (activeByPlan.isEmpty()) {
                 logger.warn("{} : End. No active plan found ", requestId);
                 response.getWriter().print("Нет сессий, доступных для прерывания");
                 response.setStatus(500);

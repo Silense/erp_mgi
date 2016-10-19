@@ -8,6 +8,7 @@ import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
 import ru.cip.ws.erp.jdbc.entity.ExpSession;
 import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
 import ru.cip.ws.erp.jdbc.entity.StatusErp;
+import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -32,27 +33,31 @@ public class PlanCheckErpDaoImpl {
     private ExportSessionDaoImpl exportSessionDao;
 
 
-    public PlanCheckErp createPlanCheckErp(final CipCheckPlan checkPlan, final Integer prosecutorId, final ExpSession expSession, final BigInteger erpID) {
-        return createPlanCheckErp(checkPlan.getId(), prosecutorId, expSession, erpID);
-    }
-
-    public PlanCheckErp createPlanCheckErp(final CipCheckPlan checkPlan, final Integer prosecutorId, final ExpSession expSession) {
-        return createPlanCheckErp(checkPlan.getId(), prosecutorId, expSession, null);
-    }
-
     public PlanCheckErp createPlanCheckErp(
-            final Integer cipCheckPlanID,
+            final CipCheckPlan checkPlan,
             final Integer prosecutorId,
+            final DataKindEnum dataKind,
             final ExpSession expSession,
             final BigInteger erpID
     ) {
+        return createPlanCheckErp(checkPlan.getId(), prosecutorId, dataKind, expSession, erpID);
+    }
+
+    public PlanCheckErp createPlanCheckErp(final CipCheckPlan checkPlan, final Integer prosecutorId, final DataKindEnum dataKind, final ExpSession expSession) {
+        return createPlanCheckErp(checkPlan.getId(), prosecutorId, dataKind, expSession, null);
+    }
+
+    public PlanCheckErp createPlanCheckErp(
+            final Integer cipCheckPlanID, final Integer prosecutorId, final DataKindEnum dataKind, final ExpSession expSession, final BigInteger erpID
+    ) {
         final PlanCheckErp result = new PlanCheckErp();
         result.setProsecutor(prosecutorId);
-        if(erpID != null) {
+        if (erpID != null) {
             result.setErpId(erpID);
         } else {
             result.setErpId(null);
         }
+        result.setDataKind(dataKind);
         result.setStatus(StatusErp.WAIT);
         result.setCipChPlLglApprvdId(cipCheckPlanID);
         result.setExpSession(expSession);
@@ -113,6 +118,14 @@ public class PlanCheckErpDaoImpl {
                         "AND a.status NOT IN :statuses" +
                         " ORDER BY a.expSession.START_DATE DESC", PlanCheckErp.class
         ).setParameter("planId", plan.getId()).setParameter("statuses", StatusErp.incorrectStatuses()).getResultList();
+    }
+
+    public List<PlanCheckErp> getActiveByPlan(final CipCheckPlan plan, final DataKindEnum dataKind) {
+        return em.createQuery(
+                "SELECT a FROM PlanCheckErp a WHERE a.cipChPlLglApprvdId = :planId AND a.dataKind = :dataKind AND a.status NOT IN :statuses" + " ORDER BY a.expSession.START_DATE DESC",
+                PlanCheckErp.class
+        ).setParameter("planId", plan.getId()).setParameter("statuses", StatusErp.incorrectStatuses()).setParameter("dataKind", dataKind)
+                .getResultList();
     }
 
     public void cancel(final PlanCheckErp planCheckErp) {
