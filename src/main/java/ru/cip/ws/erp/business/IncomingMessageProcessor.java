@@ -69,6 +69,32 @@ public class IncomingMessageProcessor {
         }
         logger.info("{} : is message for {}", requestId, planCheckErp);
         planDao.setIDFromErp(planCheckErp, response.getID(), status, getTotalValid(response.getRest()));
+        final List<PlanCheckRecErp> records = planRecordDao.getRecordsByPlan(planCheckErp);
+        for (InspectionRegular294ResponseType responseRow : response.getInspectionRegular294Notification()) {
+            for (PlanCheckRecErp localRow : records) {
+                if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
+                    logger.info(
+                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with PlanCheckRecErp[{}]",
+                            requestId,
+                            responseRow.getOGRN(),
+                            localRow.getId()
+                    );
+                    planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    break;
+                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(
+                        localRow.getCorrelationId(), responseRow.getCORRELATIONID().intValue()
+                )) {
+                    logger.info(
+                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with PlanCheckRecErp[{}]",
+                            requestId,
+                            responseRow.getOGRN(),
+                            localRow.getId()
+                    );
+                    planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    break;
+                }
+            }
+        }
     }
 
     public void processPlanRegular294Response(
@@ -82,7 +108,7 @@ public class IncomingMessageProcessor {
         logger.info("{} : is message for {}", requestId, planCheckErp);
         planDao.setIDFromErp(planCheckErp, response.getID(), status, getTotalValid(response.getRest()));
         final List<PlanCheckRecErp> records = planRecordDao.getRecordsByPlan(planCheckErp);
-        for (InspectionRegular294ResponseType responseRow : response.getResponses()) {
+        for (InspectionRegular294ResponseType responseRow : response.getInspectionRegular294Response()) {
             for (PlanCheckRecErp localRow : records) {
                 if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
                     logger.info(

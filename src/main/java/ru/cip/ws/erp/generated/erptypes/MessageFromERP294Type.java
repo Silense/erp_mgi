@@ -8,12 +8,12 @@
 
 package ru.cip.ws.erp.generated.erptypes;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -471,7 +471,15 @@ public class MessageFromERP294Type
     public static class PlanRegular294Notification
         extends PlanRegular294NotificationType
     {
+        @XmlElement(name = "InspectionRegular294Notification", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", required = false)
+        protected List<InspectionRegular294NotificationType> inspectionRegular294Notification;
 
+        public List<InspectionRegular294NotificationType> getInspectionRegular294Notification() {
+            if(this.inspectionRegular294Notification == null){
+                this.inspectionRegular294Notification = new ArrayList<>();
+            }
+            return this.inspectionRegular294Notification;
+        }
 
     }
 
@@ -500,8 +508,15 @@ public class MessageFromERP294Type
     public static class PlanRegular294Response
         extends PlanRegular294ResponseType
     {
+        @XmlElement(name = "InspectionRegular294Response", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", required = false)
+        protected List<InspectionRegular294ResponseType> inspectionRegular294Response;
 
-
+        public List<InspectionRegular294ResponseType> getInspectionRegular294Response() {
+            if(this.inspectionRegular294Response == null){
+                this.inspectionRegular294Response = new ArrayList<>();
+            }
+            return this.inspectionRegular294Response;
+        }
     }
 
 

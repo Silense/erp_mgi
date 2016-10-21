@@ -38,7 +38,7 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PlanRegular294ResponseType", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", propOrder = {
-    "rest", "responses"
+    "rest"
 })
 @XmlSeeAlso({
     ru.cip.ws.erp.generated.erptypes.MessageFromERP294Type.PlanRegular294Response.class,
@@ -53,9 +53,6 @@ public class PlanRegular294ResponseType
         @XmlElementRef(name = "DATE_FORM", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", type = JAXBElement.class, required = false)
     })
     protected List<JAXBElement<ERPResponseType>> rest;
-
-    @XmlElement(name = "InspectionRegular294Response", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5")
-    protected InspectionRegular294ResponseType[] responses;
 
     /**
      * Gets the rest of the content model. 
@@ -97,7 +94,5 @@ public class PlanRegular294ResponseType
         return this.rest;
     }
 
-    public InspectionRegular294ResponseType[] getResponses() {
-        return responses;
-    }
+
 }
