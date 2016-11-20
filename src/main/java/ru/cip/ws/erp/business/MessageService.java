@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.factory.MessageFactory;
 import ru.cip.ws.erp.generated.erptypes.MessageToERP294Type;
+import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
 import ru.cip.ws.erp.generated.erptypes.ProsecutorAskType;
 import ru.cip.ws.erp.generated.erptypes.RequestMsg;
 import ru.cip.ws.erp.jdbc.dao.ExportSessionDaoImpl;
@@ -37,8 +38,6 @@ public class MessageService {
     private final static Logger logger = LoggerFactory.getLogger(MessageService.class);
 
     @Autowired
-    private MessageFactory messageFactory;
-    @Autowired
     private MQMessageSender messageSender;
 
     @Autowired
@@ -52,44 +51,41 @@ public class MessageService {
 
     public String sendProsecutorAck(final String requestId, final String description) {
         logger.info("{} : Start processing ProsecutorAsk message", requestId);
-        final JAXBElement<RequestMsg> requestMessage = messageFactory.constructProsecutorAsk(requestId);
-        if (requestMessage == null) {
-            logger.error("{} : End. Error: message from Factory is NULL", requestId);
-            return null;
-        }
-        return sendMessage(requestId, requestMessage, description, ProsecutorAskType.class.getSimpleName());
+        return sendMessage(requestId, MessageFactory.constructProsecutorAsk(requestId), description, ProsecutorAskType.class.getSimpleName());
     }
 
 
     public String sendPlanRegular294Initialization(
             final String requestId,
             final String description,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
             final CipCheckPlan checkPlan,
             final String acceptedName,
             final Integer year,
             final List<CipCheckPlanRecord> planRecords
     ) {
-        final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Initialization(
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructPlanRegular294Initialization(
                 requestId,
+                mailer,
+                addressee,
+                KO_NAME,
                 StringUtils.defaultString(acceptedName, checkPlan.getAcceptedName()),
                 year != null ? year : checkPlan.getYear(),
                 planRecords
         );
-        if (requestMessage == null) {
-            logger.error("{} : End. Error: message from Factory is NULL", requestId);
-            return null;
-        }
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
         logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
 
-        final String messageType = MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName();
-        final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
-        logger.info("{} : Created ExportSession: {}", requestId, exportSession);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
-        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
+        final ExpSession exportSession = createExportInfo(
+                requestId,
+                description,
+                MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName()
+        );
 
         final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, DataKindEnum.PLAN_REGULAR_294_INITIALIZATION, exportSession);
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
@@ -113,10 +109,57 @@ public class MessageService {
         return result;
     }
 
+    private ExpSession createExportInfo(final String requestId, final String description, final String messageType) {
+        final ExpSession result = exportSessionDao.createExportSession(description, messageType, requestId);
+        logger.info("{} : Created ExportSession: {}", requestId, result);
+        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, result);
+        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
+        return result;
+    }
+
+    public String setUplanUnregular294Initialization(
+            final String requestId,
+            final String description,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
+            final Uplan uplan,
+            final List<UplanAddress> addressList
+    ) {
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructUplanUnregular294Initialization(
+                requestId, mailer, addressee, KO_NAME, uplan, addressList
+        );
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
+        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        if (StringUtils.isEmpty(result)) {
+            return null;
+        }
+        final ExpSession exportSession = createExportInfo(
+                requestId,
+                description,
+                MessageToERP294Type.UplanResult294Initialization.class.getSimpleName()
+        );
+        //TODO
+        try {
+            final String messageId = messageSender.send(result);
+            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+        } catch (final Exception e) {
+            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
+//            planDao.setStatus(planCheckErp, StatusErp.ERROR);
+//            planRecordDao.setStatus(planCheckRecErpList, StatusErp.ERROR); TODO
+            return null;
+        }
+        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+        return result;
+    }
+
 
     public String sendPlanRegular294Correction(
             final String requestId,
             final String description,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
             final CipCheckPlan checkPlan,
             final BigInteger erpID,
             final String acceptedName,
@@ -124,36 +167,23 @@ public class MessageService {
             final List<CipCheckPlanRecord> planRecords,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanRegular294Correction(
-                requestId, StringUtils.defaultString(acceptedName), year, planRecords, erpID, erpIDByCorrelatedID
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructPlanRegular294Correction(
+                requestId, mailer, addressee, KO_NAME, StringUtils.defaultString(acceptedName), year, planRecords, erpID, erpIDByCorrelatedID
         );
-        if (requestMessage == null) {
-            logger.error("{} : End. Error: message from Factory is NULL", requestId);
-            return null;
-        }
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
         logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-
-        final String messageType = MessageToERP294Type.PlanRegular294Correction.class.getSimpleName();
-        final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
-        logger.info("{} : Created ExportSession: {}", requestId, exportSession);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
-        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
-
+        final ExpSession exportSession = createExportInfo(requestId, description, MessageToERP294Type.PlanRegular294Correction.class.getSimpleName());
 
         final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, DataKindEnum.PLAN_REGULAR_294_CORRECTION, exportSession, erpID);
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
 
-
         final List<PlanCheckRecErp> planCheckRecErpList = new ArrayList<>(planRecords.size());
         for (CipCheckPlanRecord record : planRecords) {
             final PlanCheckRecErp planCheckRecErp = planRecordDao.createPlanCheckRecErp(
-                    planCheckErp,
-                    record,
-                    erpIDByCorrelatedID.get(record.getCorrelationId())
+                    planCheckErp, record, erpIDByCorrelatedID.get(record.getCorrelationId())
             );
             planCheckRecErpList.add(planCheckRecErp);
             logger.info("{} : Created PlanCheckRecErp: {}", requestId, planCheckRecErp);
@@ -172,45 +202,78 @@ public class MessageService {
         return result;
     }
 
+    public String setUplanUnregular294Correction(
+            final String requestId,
+            final String description,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
+            final Uplan uplan,
+            final BigInteger id,
+            final List<UplanAddress> addressList,
+            final Map<Long, BigInteger> erpIDByCorrelatedID
+    ) {
+
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructUplanUnregular294Correction(
+                requestId, mailer, addressee, KO_NAME, uplan, id, addressList, erpIDByCorrelatedID
+        );
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
+        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        if (StringUtils.isEmpty(result)) {
+            return null;
+        }
+        final ExpSession exportSession = createExportInfo(
+                requestId,
+                description,
+                MessageToERP294Type.UplanResult294Initialization.class.getSimpleName()
+        );
+        //TODO
+        try {
+            final String messageId = messageSender.send(result);
+            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+        } catch (final Exception e) {
+            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
+//            planDao.setStatus(planCheckErp, StatusErp.ERROR);
+//            planRecordDao.setStatus(planCheckRecErpList, StatusErp.ERROR); TODO
+            return null;
+        }
+        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+        return result;
+    }
+
     public String sendPlanResult294Initialization(
             final String requestId,
             final String description,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
             final CipCheckPlan checkPlan,
             final BigInteger erpID,
             final int year,
             final Map<CipActCheck, List<CipActCheckViolation>> actMap,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanResult294Initialization(
-                requestId, year, actMap, erpID, erpIDByCorrelatedID
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructPlanResult294Initialization(
+                requestId, mailer, addressee, year, actMap, erpID, erpIDByCorrelatedID
         );
-        if (requestMessage == null) {
-            logger.error("{} : End. Error: message from Factory is NULL", requestId);
-            return null;
-        }
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
         logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
 
-        final String messageType = MessageToERP294Type.PlanResult294Initialization.class.getSimpleName();
-        final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
-        logger.info("{} : Created ExportSession: {}", requestId, exportSession);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
-        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
+        final ExpSession exportSession =  createExportInfo(requestId, description, MessageToERP294Type.PlanResult294Initialization.class.getSimpleName());
 
-
-        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, DataKindEnum.PLAN_RESULT_294_INITIALIZATION, exportSession, erpID);
+        final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(
+                checkPlan, null, DataKindEnum.PLAN_RESULT_294_INITIALIZATION, exportSession, erpID
+        );
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
 
 
         final List<PlanCheckRecErp> planCheckRecErpList = new ArrayList<>(actMap.size());
         for (CipActCheck record : actMap.keySet()) {
             final PlanCheckRecErp planCheckRecErp = planRecordDao.createPlanCheckRecErp(
-                    planCheckErp,
-                    record.getCorrelationID(),
-                    erpIDByCorrelatedID.get(record.getCorrelationID())
+                    planCheckErp, record.getCorrelationID(), erpIDByCorrelatedID.get(record.getCorrelationID())
             );
             planCheckRecErpList.add(planCheckRecErp);
             logger.info("{} : Created PlanCheckRecErp: {}", requestId, planCheckRecErp);
@@ -232,31 +295,24 @@ public class MessageService {
     public String sendPlanResult294Correction(
             final String requestId,
             final String description,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
             final CipCheckPlan checkPlan,
             final BigInteger erpID,
             final int year,
             final Map<CipActCheck, List<CipActCheckViolation>> actMap,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final JAXBElement<RequestMsg> requestMessage = messageFactory.constructPlanResult294Correction(
-                requestId, year, actMap, erpID, erpIDByCorrelatedID
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructPlanResult294Correction(
+                requestId, mailer, addressee, year, actMap, erpID, erpIDByCorrelatedID
         );
-        if (requestMessage == null) {
-            logger.error("{} : End. Error: message from Factory is NULL", requestId);
-            return null;
-        }
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
         logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
 
-        final String messageType = MessageToERP294Type.PlanResult294Correction.class.getSimpleName();
-        final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
-        logger.info("{} : Created ExportSession: {}", requestId, exportSession);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
-        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
-
+        final ExpSession exportSession = createExportInfo(requestId, description, MessageToERP294Type.PlanResult294Correction.class.getSimpleName());
 
         final PlanCheckErp planCheckErp = planDao.createPlanCheckErp(checkPlan, null, DataKindEnum.PLAN_RESULT_294_CORRECTION, exportSession, erpID);
         logger.info("{} : Created PlanCheckErp: {}", requestId, planCheckErp);
@@ -265,9 +321,7 @@ public class MessageService {
         final List<PlanCheckRecErp> planCheckRecErpList = new ArrayList<>(actMap.size());
         for (CipActCheck record : actMap.keySet()) {
             final PlanCheckRecErp planCheckRecErp = planRecordDao.createPlanCheckRecErp(
-                    planCheckErp,
-                    record.getCorrelationID(),
-                    erpIDByCorrelatedID.get(record.getCorrelationID())
+                    planCheckErp, record.getCorrelationID(), erpIDByCorrelatedID.get(record.getCorrelationID())
             );
             planCheckRecErpList.add(planCheckRecErp);
             logger.info("{} : Created PlanCheckRecErp: {}", requestId, planCheckRecErp);
@@ -296,10 +350,7 @@ public class MessageService {
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-        final ExpSession exportSession = exportSessionDao.createExportSession(description, messageType, requestId);
-        logger.info("{} : Created ExportSession: {}", requestId, exportSession);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, exportSession);
-        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
+        final ExpSession exportSession = createExportInfo(requestId, description, messageType);
         try {
             final String messageId = messageSender.send(result);
             logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);

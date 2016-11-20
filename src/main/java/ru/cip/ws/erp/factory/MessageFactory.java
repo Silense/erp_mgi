@@ -3,12 +3,8 @@ package ru.cip.ws.erp.factory;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import ru.cip.ws.erp.generated.erptypes.*;
-import ru.cip.ws.erp.jdbc.entity.CipActCheck;
-import ru.cip.ws.erp.jdbc.entity.CipActCheckViolation;
-import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
+import ru.cip.ws.erp.jdbc.entity.*;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -16,7 +12,6 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -26,39 +21,48 @@ import java.util.Map;
  * Date: 11.09.2016, 11:43 <br>
  * Description:
  */
-@Component
 public class MessageFactory {
 
-    @Autowired
-    private PropertiesHolder prop;
+    private static ObjectFactory of = new ObjectFactory();
 
-    private ObjectFactory of = new ObjectFactory();
+    public static MessageToERPModelType.Addressee constructAddressee(final String code, final String name) {
+        final MessageToERPModelType.Addressee result = of.createMessageToERPModelTypeAddressee();
+        result.setCode(code);
+        result.setName(name);
+        return result;
+    }
 
-    public JAXBElement<RequestMsg> constructPlanRegular294Correction(
+    public static MessageToERPModelType.Mailer constructMailer(String name, String OGRN, long FRGUORGID, long FRGUSERVID) {
+        final MessageToERPModelType.Mailer result = of.createMessageToERPModelTypeMailer();
+        result.setName(name);
+        result.setOGRN(OGRN);
+        result.setFRGUORGID(BigInteger.valueOf(FRGUORGID));
+        result.setFRGUSERVID(BigInteger.valueOf(FRGUSERVID));
+        return result;
+    }
+
+    public static JAXBElement<RequestMsg> constructPlanRegular294Correction(
             final String requestId,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
             final String acceptedName,
             final Integer year,
             final List<CipCheckPlanRecord> checkPlanRecords,
             final BigInteger planID,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final RequestMsg requestMsg = of.createRequestMsg();
-        requestMsg.setRequestId(requestId);
-        requestMsg.setRequestDate(wrapDateTime(new Date()));
-        final RequestBody requestBody = of.createRequestBody();
-
-        final LetterToERPType letterToERPType = of.createLetterToERPType();
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
-
+        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.PlanRegular294Correction message = of.createMessageToERP294TypePlanRegular294Correction();
-        message.setKONAME(prop.KO_NAME);
+        messageToERP294Type.setPlanRegular294Correction(message);
+        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
+
+        message.setKONAME(KO_NAME);
         message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
         message.setYEAR(year);
-        //TODO message.setDATEFORM(wrapDate(new Date()));
-        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
+        message.setDATEFORM(wrapDate(new Date()));
         // ИД из уже отосланного плана
         message.setID(planID);
-
         final List<InspectionRegular294CorrectionType> inspectionList = message.getInspectionRegular294Correction();
         for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
             inspectionList.add(
@@ -69,39 +73,89 @@ public class MessageFactory {
                     )
             );
         }
-        messageToERP294Type.setPlanRegular294Correction(message);
-
-        letterToERPType.setMessage294(messageToERP294Type);
-
-        requestBody.setRequest(letterToERPType);
-        requestMsg.setRequestBody(requestBody);
-        return of.createRequestMsg(requestMsg);
+        return extendMessage(requestId, messageToERP294Type);
     }
 
+    public static JAXBElement<RequestMsg> constructUplanUnregular294Correction(
+            final String requestId,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
+            final Uplan uplan,
+            final BigInteger id,
+            final List<UplanAddress> addressList,
+            final Map<Long, BigInteger> erpIDByCorrelatedID
+    ) {
+        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
+        final MessageToERP294Type.UplanUnregular294Correction message = of.createMessageToERP294TypeUplanUnregular294Correction();
+        messageToERP294Type.setUplanUnregular294Correction(message);
+        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
 
-    public JAXBElement<RequestMsg> constructPlanRegular294Initialization(
-            final String requestId, final String acceptedName, final int year, final List<CipCheckPlanRecord> checkPlanRecords
+        message.setID(id);
+        message.setKONAME(KO_NAME);
+        message.setREQUESTNUM(uplan.getREQUEST_NUM());
+        message.setREQUESTDATE(wrapDate(uplan.getREQUEST_DATE()));
+        message.setSTARTDATE(wrapDate(uplan.getSTART_DATE()));
+        message.setENDDATE(wrapDate(uplan.getEND_DATE()));
+        message.setDECISIONDATE(wrapDate(uplan.getDECISION_DATE()));
+        message.setORDERNUM(uplan.getORDER_NUM());
+        message.setORDERDATE(wrapDate(uplan.getORDER_DATE()));
+        message.setREASONSECIDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_I_DENY()));
+        message.setREASONSECIIDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_II_DENY()));
+        message.setREASONSECIIIDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_III_DENY()));
+        message.setREASONSECIVDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_IV_DENY()));
+        message.setREASONSECVDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_V_DENY()));
+        message.setREASONSECVIDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_VI_DENY()));
+        message.setREASONSECVIIDENY(uplan.getREASON_SEC_VII_DENY());
+        message.setINSPTARGET(uplan.getINSP_TARGET());
+        message.setREASONSECI(uplan.getREASON_SEC_I());
+        message.setKINDOFINSP(TypeOfInspection.fromValue(uplan.getKIND_OF_INSP()));
+        message.setSIGNERTITLE(uplan.getSIGNER_TITLE());
+        message.setSIGNERNAME(uplan.getSIGNER_NAME());
+        message.setKOADDRESS(uplan.getKO_ADDRESS());
+        message.setKORECIPIENTTITLE(uplan.getKO_RECIPIENT_TITLE());
+        message.setKORECIPIENTTITLEDC(uplan.getKO_RECIPIENT_TITLE());
+        message.setKORECIPIENTNAME(uplan.getKO_RECIPIENT_NAME());
+        message.setKORECIPIENTNAMEDC(uplan.getKO_RECIPIENT_NAME());
+        message.setDECISIONPLACE(uplan.getDECISION_PLACE());
+        message.setYEAR(uplan.getYEAR());
+        message.setFRGUNUM(uplan.getFRGU_NUM());
+        message.setNOTICEDATE(wrapDate(uplan.getNOTICE_DATE()));
+        message.setNOTICEWAY(uplan.getNOTICE_WAY());
+        message.setUSERNOTE(uplan.getUSER_NOTE());
+        message.setTYPEOFINSP(TypeOfUnplannedInspection.fromValue(uplan.getTYPE_OF_INSP()));
+        final List<UinspectionUnregular294CorrectionType> inspections = message.getUinspectionUnregular294Correction();
+        for (UplanAddress address : addressList) {
+            inspections.add(constructUinspectionUnregular294CorrectionType(address, erpIDByCorrelatedID.get(address.getCORRELATION_ID())));
+        }
+        return extendMessage(requestId, messageToERP294Type);
+    }
+
+    private static UinspectionUnregular294CorrectionType constructUinspectionUnregular294CorrectionType(
+            final UplanAddress source, final BigInteger id
+    ) {
+        final UinspectionUnregular294CorrectionType result = new UinspectionUnregular294CorrectionType();
+        result.setID(id);
+        result.setORGNAME(source.getORG_NAME());
+        result.setINN(source.getINN());
+        result.setOGRN(source.getOGRN());
+        result.setADRSECI(source.getADR_SEC_I());
+        result.setADRSECII(source.getADR_SEC_II());
+        result.setLASTVIOLATIONID(wrapDate(source.getLAST_VIOLATION_ID()));
+        //NOTE: cvc-complex-type.3.2.2: Attribute 'CORRELATION_ID' is not allowed to appear in element 'erp_types:UinspectionUnregular294Correction'
+        result.setCORRELATIONID(null);
+        return result;
+    }
+
+    public static JAXBElement<RequestMsg> extendMessage(
+            final String requestId, final MessageToERP294Type messageToERP294Type
     ) {
         final RequestMsg requestMsg = of.createRequestMsg();
         requestMsg.setRequestId(requestId);
         requestMsg.setRequestDate(wrapDateTime(new Date()));
+
         final RequestBody requestBody = of.createRequestBody();
-
         final LetterToERPType letterToERPType = of.createLetterToERPType();
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
-
-
-        final MessageToERP294Type.PlanRegular294Initialization message = of.createMessageToERP294TypePlanRegular294Initialization();
-        message.setKONAME(prop.KO_NAME);
-        message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
-        message.setYEAR(year);
-        message.setDATEFORM(wrapDate(new Date()));
-        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
-        final List<InspectionRegular294InitializationType> inspectionList = message.getInspectionRegular294Initialization();
-        for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
-            inspectionList.add(constructInspectionRegular294InitializationType(checkPlanRecord));
-        }
-        messageToERP294Type.setPlanRegular294Initialization(message);
         letterToERPType.setMessage294(messageToERP294Type);
 
         requestBody.setRequest(letterToERPType);
@@ -109,8 +163,98 @@ public class MessageFactory {
         return of.createRequestMsg(requestMsg);
     }
 
+    public static JAXBElement<RequestMsg> constructPlanRegular294Initialization(
+            final String requestId,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
+            final String acceptedName,
+            final int year,
+            final List<CipCheckPlanRecord> checkPlanRecords
+    ) {
+        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
+        final MessageToERP294Type.PlanRegular294Initialization message = of.createMessageToERP294TypePlanRegular294Initialization();
+        messageToERP294Type.setPlanRegular294Initialization(message);
+        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
 
-    public JAXBElement<RequestMsg> constructProsecutorAsk(final String requestId) {
+        message.setKONAME(KO_NAME);
+        message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
+        message.setYEAR(year);
+        message.setDATEFORM(wrapDate(new Date()));
+        final List<InspectionRegular294InitializationType> inspectionList = message.getInspectionRegular294Initialization();
+        for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
+            inspectionList.add(constructInspectionRegular294InitializationType(checkPlanRecord));
+        }
+        return extendMessage(requestId, messageToERP294Type);
+    }
+
+    public static JAXBElement<RequestMsg> constructUplanUnregular294Initialization(
+            final String requestId,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
+            final Uplan uplan,
+            final List<UplanAddress> addressList
+    ) {
+        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
+        final MessageToERP294Type.UplanUnregular294Initialization message = of.createMessageToERP294TypeUplanUnregular294Initialization();
+        messageToERP294Type.setUplanUnregular294Initialization(message);
+        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
+
+        message.setID(null);
+        message.setKONAME(KO_NAME);
+        message.setREQUESTNUM(uplan.getREQUEST_NUM());
+        message.setREQUESTDATE(wrapDate(uplan.getREQUEST_DATE()));
+        message.setSTARTDATE(wrapDate(uplan.getSTART_DATE()));
+        message.setENDDATE(wrapDate(uplan.getEND_DATE()));
+        message.setDECISIONDATE(wrapDate(uplan.getDECISION_DATE()));
+        message.setORDERNUM(uplan.getORDER_NUM());
+        message.setORDERDATE(wrapDate(uplan.getORDER_DATE()));
+        message.setREASONSECIDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_I_DENY()));
+        message.setREASONSECIIDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_II_DENY()));
+        message.setREASONSECIIIDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_III_DENY()));
+        message.setREASONSECIVDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_IV_DENY()));
+        message.setREASONSECVDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_V_DENY()));
+        message.setREASONSECVIDENY(BooleanUtils.toBooleanObject(uplan.getREASON_SEC_VI_DENY()));
+        message.setREASONSECVIIDENY(uplan.getREASON_SEC_VII_DENY());
+        message.setINSPTARGET(uplan.getINSP_TARGET());
+        message.setREASONSECI(uplan.getREASON_SEC_I());
+        message.setKINDOFINSP(TypeOfInspection.fromValue(uplan.getKIND_OF_INSP()));
+        message.setSIGNERTITLE(uplan.getSIGNER_TITLE());
+        message.setSIGNERNAME(uplan.getSIGNER_NAME());
+        message.setKOADDRESS(uplan.getKO_ADDRESS());
+        message.setKORECIPIENTTITLE(uplan.getKO_RECIPIENT_TITLE());
+        message.setKORECIPIENTTITLEDC(uplan.getKO_RECIPIENT_TITLE());
+        message.setKORECIPIENTNAME(uplan.getKO_RECIPIENT_NAME());
+        message.setKORECIPIENTNAMEDC(uplan.getKO_RECIPIENT_NAME());
+        message.setDECISIONPLACE(uplan.getDECISION_PLACE());
+        message.setYEAR(uplan.getYEAR());
+        message.setFRGUNUM(uplan.getFRGU_NUM());
+        message.setNOTICEDATE(wrapDate(uplan.getNOTICE_DATE()));
+        message.setNOTICEWAY(uplan.getNOTICE_WAY());
+        message.setUSERNOTE(uplan.getUSER_NOTE());
+        message.setTYPEOFINSP(TypeOfUnplannedInspection.fromValue(uplan.getTYPE_OF_INSP()));
+        final List<UinspectionUnregular294InitializationType> inspections = message.getUinspectionUnregular294Initialization();
+        for (UplanAddress address : addressList) {
+            inspections.add(constructUinspectionUnregular294Initialization(address));
+        }
+        return extendMessage(requestId, messageToERP294Type);
+    }
+
+    private static UinspectionUnregular294InitializationType constructUinspectionUnregular294Initialization(final UplanAddress source) {
+        final UinspectionUnregular294InitializationType result = new UinspectionUnregular294InitializationType();
+        result.setID(null);
+        result.setORGNAME(source.getORG_NAME());
+        result.setINN(source.getINN());
+        result.setOGRN(source.getOGRN());
+        result.setADRSECI(source.getADR_SEC_I());
+        result.setADRSECII(source.getADR_SEC_II());
+        result.setLASTVIOLATIONID(wrapDate(source.getLAST_VIOLATION_ID()));
+        result.setCORRELATIONID(source.getCORRELATION_ID());
+        return result;
+    }
+
+    public static JAXBElement<RequestMsg> constructProsecutorAsk(final String requestId) {
         final RequestMsg requestMsg = of.createRequestMsg();
         requestMsg.setRequestId(requestId);
         requestMsg.setRequestDate(wrapDateTime(new Date()));
@@ -128,109 +272,64 @@ public class MessageFactory {
         return of.createRequestMsg(requestMsg);
     }
 
-    public JAXBElement<RequestMsg> constructPlanResult294Correction(
+    public static JAXBElement<RequestMsg> constructPlanResult294Correction(
             final String requestId,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
             final int year,
             final Map<CipActCheck, List<CipActCheckViolation>> actMap,
             final BigInteger planID,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final RequestMsg requestMsg = of.createRequestMsg();
-        requestMsg.setRequestId(requestId);
-        requestMsg.setRequestDate(wrapDateTime(new Date()));
-        final RequestBody requestBody = of.createRequestBody();
-
-        final LetterToERPType letterToERPType = of.createLetterToERPType();
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
-
+        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.PlanResult294Correction message = of.createMessageToERP294TypePlanResult294Correction();
-        message.setYEAR(year);
-        // ИД из уже отосланного плана
-        message.setID(planID);
-
-        message.getInspectionResult294Correction().addAll(constructInspectionResultCorrectionList(actMap, erpIDByCorrelatedID));
-
         messageToERP294Type.setPlanResult294Correction(message);
 
-        letterToERPType.setMessage294(messageToERP294Type);
-
-        requestBody.setRequest(letterToERPType);
-        requestMsg.setRequestBody(requestBody);
-        return of.createRequestMsg(requestMsg);
+        message.setYEAR(year);
+        // ИД из уже отосланного плана
+        message.setID(planID);
+        for (Map.Entry<CipActCheck, List<CipActCheckViolation>> entry : actMap.entrySet()) {
+            final CipActCheck key = entry.getKey();
+            message.getInspectionResult294Correction().add(
+                    constructInspectionResultCorrection(key, entry.getValue(), erpIDByCorrelatedID.get(key.getCorrelationID()))
+            );
+        }
+        return extendMessage(requestId, messageToERP294Type);
     }
 
 
-
-
-    public JAXBElement<RequestMsg> constructPlanResult294Initialization(
+    public static JAXBElement<RequestMsg> constructPlanResult294Initialization(
             final String requestId,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
             final int year,
             final Map<CipActCheck, List<CipActCheckViolation>> actMap,
             final BigInteger planID,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final RequestMsg requestMsg = of.createRequestMsg();
-        requestMsg.setRequestId(requestId);
-        requestMsg.setRequestDate(wrapDateTime(new Date()));
-        final RequestBody requestBody = of.createRequestBody();
-
-        final LetterToERPType letterToERPType = of.createLetterToERPType();
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type();
-
+        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.PlanResult294Initialization message = of.createMessageToERP294TypePlanResult294Initialization();
+        messageToERP294Type.setPlanResult294Initialization(message);
+
         message.setYEAR(year);
         // ИД из уже отосланного плана
         message.setID(planID);
-
-        message.getInspectionResult294Initialization().addAll(constructInspectionResultInitList(actMap, erpIDByCorrelatedID));
-
-        messageToERP294Type.setPlanResult294Initialization(message);
-
-        letterToERPType.setMessage294(messageToERP294Type);
-
-        requestBody.setRequest(letterToERPType);
-        requestMsg.setRequestBody(requestBody);
-        return of.createRequestMsg(requestMsg);
-    }
-
-    private List<MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization> constructInspectionResultInitList(
-            final Map<CipActCheck, List<CipActCheckViolation>> actMap, final Map<Integer, BigInteger> erpIDByCorrelatedID
-    ) {
-        final List<MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization> result = new ArrayList<>(actMap.size());
         for (Map.Entry<CipActCheck, List<CipActCheckViolation>> entry : actMap.entrySet()) {
-            result.add(
-                    constructInspectionResultInit(
-                            entry.getKey(), entry.getValue(), erpIDByCorrelatedID.get(
-                                    entry.getKey().getCorrelationID()
-                            )
-                    )
+            final CipActCheck key = entry.getKey();
+            message.getInspectionResult294Initialization().add(
+                    constructInspectionResultInit(key, entry.getValue(), erpIDByCorrelatedID.get(key.getCorrelationID()))
             );
         }
-        return result;
-    }
-
-    private List<MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction> constructInspectionResultCorrectionList(
-            final Map<CipActCheck, List<CipActCheckViolation>> actMap, final Map<Integer, BigInteger> erpIDByCorrelatedID
-    ) {
-        final List<MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction> result = new ArrayList<>(actMap.size());
-        for (Map.Entry<CipActCheck, List<CipActCheckViolation>> entry : actMap.entrySet()) {
-            result.add(
-                    constructInspectionResultCorrection(
-                            entry.getKey(), entry.getValue(), erpIDByCorrelatedID.get(
-                                    entry.getKey().getCorrelationID()
-                            )
-                    )
-            );
-        }
-        return result;
+        return extendMessage(requestId, messageToERP294Type);
     }
 
 
-    private MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction constructInspectionResultCorrection(
+    private static MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction constructInspectionResultCorrection(
             final CipActCheck act, final List<CipActCheckViolation> violations, final BigInteger erpID
     ) {
         final MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction result = of
                 .createMessageToERP294TypePlanResult294CorrectionInspectionResult294Correction();
+
         result.setACTDATECREATE(wrapDate(act.getACT_DATE_CREATE()));
         result.setACTPLACECREATE(act.getACT_PLACE_CREATE());
         result.setACTTIMECREATE(wrapDate(act.getACT_TIME_CREATE(), "HH:mm:ss"));
@@ -244,14 +343,13 @@ public class MessageFactory {
         result.setUNDOIGSECI(act.getUNDOIG_SEC_I());
         result.setUNIMPOSSIBLEREASONI(act.getUNIMPOSSIBLE_REASON_I());
         result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
-        result.setWRONGDATAREASONSECI(act.getWRONG_DATA_REASON_SEC_I());
-        result.getInspectionViolation294Correction().addAll(constructInspectionViolationCorrectionList(violations));
+        for (CipActCheckViolation violation : violations) {
+            result.getInspectionViolation294Correction().add(constructInspectionViolationCorrection(violation));
+        }
         return result;
     }
 
-
-
-    private MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization constructInspectionResultInit(
+    private static MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization constructInspectionResultInit(
             final CipActCheck act, final List<CipActCheckViolation> violations, final BigInteger erpID
     ) {
         final MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization result = of
@@ -270,30 +368,14 @@ public class MessageFactory {
         result.setUNIMPOSSIBLEREASONI(act.getUNIMPOSSIBLE_REASON_I());
         result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
         result.setWRONGDATAREASONSECI(act.getWRONG_DATA_REASON_SEC_I());
-        result.getInspectionViolation294Initialization().addAll(constructInspectionViolationInitList(violations));
-        return result;
-    }
-
-    private List<InspectionViolation294InitializationType> constructInspectionViolationInitList(final List<CipActCheckViolation> violations) {
-        final List<InspectionViolation294InitializationType> result = new ArrayList<>(violations.size());
         for (CipActCheckViolation violation : violations) {
-            result.add(constructInspectionViolationInit(violation));
+            result.getInspectionViolation294Initialization().add(constructInspectionViolationInit(violation));
         }
         return result;
     }
 
 
-    private List<InspectionViolation294CorrectionType> constructInspectionViolationCorrectionList(final List<CipActCheckViolation> violations) {
-        final List<InspectionViolation294CorrectionType> result = new ArrayList<>(violations.size());
-        for (CipActCheckViolation violation : violations) {
-            result.add(constructInspectionViolationCorrection(violation));
-        }
-        return result;
-    }
-
-
-
-    private InspectionViolation294InitializationType constructInspectionViolationInit(final CipActCheckViolation violation) {
+    private static InspectionViolation294InitializationType constructInspectionViolationInit(final CipActCheckViolation violation) {
         final InspectionViolation294InitializationType result = of.createInspectionViolation294InitializationType();
         result.setVIOLATIONID(violation.getVIOLATION_ID().intValue());
         result.setVIOLATIONNOTE(violation.getVIOLATION_NOTE());
@@ -315,7 +397,7 @@ public class MessageFactory {
         return result;
     }
 
-    private InspectionViolation294CorrectionType constructInspectionViolationCorrection(final CipActCheckViolation violation) {
+    private static InspectionViolation294CorrectionType constructInspectionViolationCorrection(final CipActCheckViolation violation) {
         final InspectionViolation294CorrectionType result = of.createInspectionViolation294CorrectionType();
         result.setVIOLATIONID(violation.getVIOLATION_ID().intValue());
         result.setVIOLATIONNOTE(violation.getVIOLATION_NOTE());
@@ -337,26 +419,25 @@ public class MessageFactory {
         return result;
     }
 
-
-    public MessageToERPCommonType constructMessageToERPCommonType() {
+    public static MessageToERPCommonType constructMessageToERPCommonType() {
         final MessageToERPCommonType result = of.createMessageToERPCommonType();
-        result.setInfoModel(prop.MESSAGETYPE_INFO_MODEL);
-        result.setPreviousInfoModel(prop.MESSAGETYPE_PREVIOUS_INFO_MODEL);
+        result.setInfoModel(new BigInteger("20150201"));
+        result.setPreviousInfoModel(new BigInteger("0"));
         return result;
     }
 
-
-    public MessageToERP294Type constructMessageToERP294Type() {
+    public static MessageToERP294Type constructMessageToERP294Type(
+            final MessageToERPModelType.Mailer mailer, final MessageToERPModelType.Addressee addressee
+    ) {
         final MessageToERP294Type result = of.createMessageToERP294Type();
-        result.setInfoModel(prop.MESSAGETYPE_INFO_MODEL);
-        result.setPreviousInfoModel(prop.MESSAGETYPE_PREVIOUS_INFO_MODEL);
-        result.setMailer(constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID));
-        result.setAddressee(constructAdressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME));
+        result.setInfoModel(new BigInteger("20150201"));
+        result.setPreviousInfoModel(new BigInteger("0"));
+        result.setMailer(mailer);
+        result.setAddressee(addressee);
         return result;
     }
 
-
-    private InspectionRegular294InitializationType constructInspectionRegular294InitializationType(final CipCheckPlanRecord record) {
+    private static InspectionRegular294InitializationType constructInspectionRegular294InitializationType(final CipCheckPlanRecord record) {
         final InspectionRegular294InitializationType result = of.createInspectionRegular294InitializationType();
         result.setORGNAME(record.getORG_NAME());
         result.setADRSECI(StringUtils.defaultString(record.getADR_SEC_I()));
@@ -391,7 +472,7 @@ public class MessageFactory {
         return result;
     }
 
-    private InspectionRegular294CorrectionType constructInspectionRegular294CorrectionType(
+    private static InspectionRegular294CorrectionType constructInspectionRegular294CorrectionType(
             final CipCheckPlanRecord record, final BigInteger erpID
     ) {
         final InspectionRegular294CorrectionType result = of.createInspectionRegular294CorrectionType();
@@ -431,8 +512,7 @@ public class MessageFactory {
         return result;
     }
 
-
-    private LawBook294Type constructLawBook294(final long lawBase, final InspectionFormulationType inspectionFormulation) {
+    private static LawBook294Type constructLawBook294(final long lawBase, final InspectionFormulationType inspectionFormulation) {
         final LawBook294Type result = of.createLawBook294Type();
         final LawBook294Type.LawI law1 = of.createLawBook294TypeLawI();
         law1.setFORMULATION(inspectionFormulation);
@@ -441,24 +521,7 @@ public class MessageFactory {
         return result;
     }
 
-    private MessageToERPModelType.Addressee constructAdressee(final String code, final String name) {
-        final MessageToERPModelType.Addressee result = of.createMessageToERPModelTypeAddressee();
-        result.setCode(code);
-        result.setName(name);
-        return result;
-    }
-
-    private MessageToERPModelType.Mailer constructMailer(String name, String OGRN, long FRGUORGID, long FRGUSERVID) {
-        final MessageToERPModelType.Mailer result = of.createMessageToERPModelTypeMailer();
-        result.setName(name);
-        result.setOGRN(OGRN);
-        result.setFRGUORGID(BigInteger.valueOf(FRGUORGID));
-        result.setFRGUSERVID(BigInteger.valueOf(FRGUSERVID));
-        return result;
-    }
-
-
-    private XMLGregorianCalendar wrapDate(final Date date, final String format) {
+    private static XMLGregorianCalendar wrapDate(final Date date, final String format) {
         try {
             return date == null ? null : DatatypeFactory.newInstance().newXMLGregorianCalendar(new SimpleDateFormat(format).format(date));
         } catch (DatatypeConfigurationException e) {
@@ -467,11 +530,11 @@ public class MessageFactory {
     }
 
 
-    private XMLGregorianCalendar wrapDate(final Date date) {
+    private static XMLGregorianCalendar wrapDate(final Date date) {
         return wrapDate(date, "yyyy-MM-dd");
     }
 
-    private XMLGregorianCalendar wrapDateTime(final Date date) {
+    private static XMLGregorianCalendar wrapDateTime(final Date date) {
         return wrapDate(date, "yyyy-MM-dd'T'HH:mm:ss'Z'");
     }
 

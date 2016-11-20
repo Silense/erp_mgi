@@ -91,17 +91,34 @@ public class startErpUpdateService implements HttpRequestHandler {
                     processPlanResult294Correction(request, response, requestId);
                 }
                 break;
+            // Внеплановые проверки
             case UPLAN_UNREGULAR_294_INITIALIZATION:
-                processUplanUnRegular294Initialization(request, response, requestId, isTestMode);
+                if(isTestMode) {
+                    testMessageProcessor.processUplanUnRegular294Initialization(requestId, response);
+                } else {
+                    processUplanUnRegular294Initialization(request, response, requestId);
+                }
                 break;
             case UPLAN_UNREGULAR_294_CORRECTION:
-                processUplanUnRegular294Correction(request, response, requestId, isTestMode);
+                if(isTestMode) {
+                    testMessageProcessor.processUplanUnRegular294Correction(requestId, response);
+                } else {
+                    processUplanUnRegular294Correction(request, response, requestId);
+                }
                 break;
             case UPLAN_RESULT_294_INITIALIZATION:
-                processUplanResult294Initialization(request, response, requestId, isTestMode);
+                if(isTestMode) {
+                    testMessageProcessor.processUplanResult294Initialization(requestId, response);
+                } else {
+                    processUplanResult294Initialization(request, response, requestId);
+                }
                 break;
             case UPLAN_RESULT_294_CORRECTION:
-                processUplanResult294Correction(request, response, requestId, isTestMode);
+                if(isTestMode) {
+                    testMessageProcessor.processUplanResult294Correction(requestId, response);
+                } else {
+                    processUplanResult294Correction(request, response, requestId);
+                }
                 break;
             default:
                 logger.error("{} : End. Unknown {} = \'{}\' parameter value. Skip processing", requestId, PARAM_NAME_DATA_KIND, param_data_kind);
@@ -113,42 +130,22 @@ public class startErpUpdateService implements HttpRequestHandler {
     }
 
     private void processUplanResult294Correction(
-            final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
-    ) throws IOException {
-        if (isTestMode) {
-            testMessageProcessor.processUplanResult294Correction(requestId, response);
-            return;
-        }
+            final HttpServletRequest request, final HttpServletResponse response, final String requestId) throws IOException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
     private void processUplanResult294Initialization(
-            final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
-    ) throws IOException {
-        if (isTestMode) {
-            testMessageProcessor.processUplanResult294Initialization(requestId, response);
-            return;
-        }
+            final HttpServletRequest request, final HttpServletResponse response, final String requestId) throws IOException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
     private void processUplanUnRegular294Correction(
-            final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
-    ) throws IOException {
-        if (isTestMode) {
-            testMessageProcessor.processUplanUnRegular294Correction(requestId, response);
-            return;
-        }
+            final HttpServletRequest request, final HttpServletResponse response, final String requestId) throws IOException {
+
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    private void processUplanUnRegular294Initialization(
-            final HttpServletRequest request, final HttpServletResponse response, final String requestId, final boolean isTestMode
-    ) throws IOException {
-        if (isTestMode) {
-            testMessageProcessor.processUplanUnRegular294Initialization(requestId, response);
-            return;
-        }
+    private void processUplanUnRegular294Initialization(final HttpServletRequest request, final HttpServletResponse response, final String requestId) throws IOException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 

@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import ru.cip.ws.erp.factory.MessageFactory;
+import ru.cip.ws.erp.factory.PropertiesHolder;
 import ru.cip.ws.erp.jdbc.dao.*;
 import ru.cip.ws.erp.jdbc.entity.*;
 
@@ -29,6 +31,9 @@ public class MessageProcessor {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private PropertiesHolder prop;
 
     @Autowired
     private CheckPlanDaoImpl planViewDao;
@@ -101,7 +106,15 @@ public class MessageProcessor {
             return;
         }
         final String result = messageService.sendPlanRegular294Initialization(
-                requestId, "4.1.2 Запрос на первичное размещение плана плановых проверок", checkPlan, acceptedName, year, checkPlanRecords
+                requestId,
+                "4.1.2 Запрос на первичное размещение плана плановых проверок",
+                MessageFactory.constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                MessageFactory.constructAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                prop.KO_NAME,
+                checkPlan,
+                acceptedName,
+                year,
+                checkPlanRecords
         );
         wrapResponse(response, result);
     }
@@ -157,6 +170,9 @@ public class MessageProcessor {
         final String result = messageService.sendPlanRegular294Correction(
                 requestId,
                 "4.1.3 Запрос на размещение корректировки плана плановых проверок",
+                MessageFactory.constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                MessageFactory.constructAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                prop.KO_NAME,
                 checkPlan,
                 planCheckErp.getErpId(),
                 StringUtils.defaultString(checkPlan.getAcceptedName(), acceptedName),
@@ -208,6 +224,9 @@ public class MessageProcessor {
         final String result = messageService.sendPlanResult294Initialization(
                 requestId,
                 "4.1.2 Запрос на первичное размещение результатов по нескольким проверкам из плана",
+                MessageFactory.constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                MessageFactory.constructAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                prop.KO_NAME,
                 checkPlan,
                 planCheckErp.getErpId(),
                 year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
@@ -257,6 +276,8 @@ public class MessageProcessor {
         final String result = messageService.sendPlanResult294Correction(
                 requestId,
                 "4.1.6 Запрос на размещение корректировки результатов проверкам плана ",
+                MessageFactory.constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                MessageFactory.constructAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
                 checkPlan,
                 planCheckErp.getErpId(),
                 year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
