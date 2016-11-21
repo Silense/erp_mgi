@@ -12,16 +12,17 @@ import ru.cip.ws.erp.generated.erptypes.MessageToERP294Type;
 import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
 import ru.cip.ws.erp.generated.erptypes.ProsecutorAskType;
 import ru.cip.ws.erp.generated.erptypes.RequestMsg;
+import ru.cip.ws.erp.jms.MQMessageSender;
 import ru.cip.ws.erp.jpa.dao.ExportSessionDaoImpl;
 import ru.cip.ws.erp.jpa.dao.PlanErpDaoImpl;
 import ru.cip.ws.erp.jpa.dao.PlanRecordErpDaoImpl;
-import ru.cip.ws.erp.jpa.entity.*;
+import ru.cip.ws.erp.jpa.entity.PlanErp;
+import ru.cip.ws.erp.jpa.entity.PlanRecErp;
 import ru.cip.ws.erp.jpa.entity.enums.SessionStatus;
 import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSessionEvent;
 import ru.cip.ws.erp.jpa.entity.views.*;
-import ru.cip.ws.erp.jms.MQMessageSender;
 import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.xml.bind.JAXBElement;
@@ -87,9 +88,7 @@ public class MessageService {
         }
 
         final ExpSession exportSession = createExportInfo(
-                requestId,
-                description,
-                MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName()
+                requestId, description, MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName()
         );
 
         final PlanErp planErp = planDao.createPlanErp(plan, null, DataKindEnum.PLAN_REGULAR_294_INITIALIZATION, exportSession);
@@ -122,7 +121,7 @@ public class MessageService {
         return result;
     }
 
-    public String setUplanUnregular294Initialization(
+    public String sendUplanUnregular294Initialization(
             final String requestId,
             final String description,
             final MessageToERPModelType.Mailer mailer,
@@ -140,9 +139,7 @@ public class MessageService {
             return null;
         }
         final ExpSession exportSession = createExportInfo(
-                requestId,
-                description,
-                MessageToERP294Type.UplanResult294Initialization.class.getSimpleName()
+                requestId, description, MessageToERP294Type.UplanUnregular294Initialization.class.getSimpleName()
         );
         //TODO
         try {
@@ -207,7 +204,7 @@ public class MessageService {
         return result;
     }
 
-    public String setUplanUnregular294Correction(
+    public String sendUplanUnregular294Correction(
             final String requestId,
             final String description,
             final MessageToERPModelType.Mailer mailer,
@@ -228,9 +225,7 @@ public class MessageService {
             return null;
         }
         final ExpSession exportSession = createExportInfo(
-                requestId,
-                description,
-                MessageToERP294Type.UplanResult294Initialization.class.getSimpleName()
+                requestId, description, MessageToERP294Type.UplanUnregular294Correction.class.getSimpleName()
         );
         //TODO
         try {
@@ -267,7 +262,11 @@ public class MessageService {
             return null;
         }
 
-        final ExpSession exportSession =  createExportInfo(requestId, description, MessageToERP294Type.PlanResult294Initialization.class.getSimpleName());
+        final ExpSession exportSession = createExportInfo(
+                requestId,
+                description,
+                MessageToERP294Type.PlanResult294Initialization.class.getSimpleName()
+        );
 
         final PlanErp planErp = planDao.createPlanErp(plan, null, DataKindEnum.PLAN_RESULT_294_INITIALIZATION, exportSession, erpID);
         logger.info("{} : Created PlanErp: {}", requestId, planErp);
@@ -293,6 +292,43 @@ public class MessageService {
         exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
         return result;
     }
+
+    public String sendUplanResult294Initialization(
+            final String requestId,
+            final String description,
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee,
+            final String KO_NAME,
+            final BigInteger erpID,
+            final int year,
+            final Map<UplanAct, List<UplanActViolation>> actMap
+    ) {
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanResult294Initialization(
+                requestId, mailer, addressee, year, actMap, erpID
+        );
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
+        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        if (StringUtils.isEmpty(result)) {
+            return null;
+        }
+
+        final ExpSession exportSession = createExportInfo(
+                requestId,
+                description,
+                MessageToERP294Type.UplanResult294Initialization.class.getSimpleName()
+        );
+
+        try {
+            final String messageId = messageSender.send(result);
+            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+        } catch (final Exception e) {
+            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
+            return null;
+        }
+        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+        return result;
+    }
+
 
     public String sendPlanResult294Correction(
             final String requestId,
@@ -363,7 +399,6 @@ public class MessageService {
         exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
         return result;
     }
-
 
 
 }

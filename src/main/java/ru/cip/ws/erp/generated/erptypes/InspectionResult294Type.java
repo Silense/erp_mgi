@@ -80,7 +80,7 @@ public class InspectionResult294Type {
     @XmlAttribute(name = "START_DATE")
     protected String startdate;
     @XmlAttribute(name = "DURATION")
-    protected BigInteger duration;
+    protected Integer duration;
     @XmlAttribute(name = "ADR_INSPECTION")
     protected String adrinspection;
     @XmlAttribute(name = "INSPECTORS")
@@ -336,7 +336,7 @@ public class InspectionResult294Type {
      *     {@link BigInteger }
      *     
      */
-    public BigInteger getDURATION() {
+    public Integer getDURATION() {
         return duration;
     }
 
@@ -348,7 +348,7 @@ public class InspectionResult294Type {
      *     {@link BigInteger }
      *     
      */
-    public void setDURATION(BigInteger value) {
+    public void setDURATION(Integer value) {
         this.duration = value;
     }
 
