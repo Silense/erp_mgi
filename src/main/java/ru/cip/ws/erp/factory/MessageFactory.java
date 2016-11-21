@@ -339,6 +339,7 @@ public class MessageFactory {
         result.setUNDOIGSECI(act.getUNDOIG_SEC_I());
         result.setUNIMPOSSIBLEREASONI(act.getUNIMPOSSIBLE_REASON_I());
         result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
+        result.setWRONGDATAREASONSECI(act.getWRONG_DATA_REASON_SEC_I());
         for (PlanActViolation violation : violations) {
             result.getInspectionViolation294Correction().add(createInspectionViolationCorrection(violation));
         }
@@ -492,7 +493,7 @@ public class MessageFactory {
         result.setNOTICEDATE(wrapDate(record.getNOTICE_DATE()));
         result.setNOTICEWAY(StringUtils.defaultString(record.getNOTICE_WAY()));
         result.setORDERNUM(StringUtils.defaultString(record.getORDER_NUM()));
-        //TODO result.setORDERDATE(wrapDate(record.getORDER_DATE()));
+        result.setORDERDATE(wrapDate(record.getORDER_DATE()));
         result.setLASTVIOLATIONDATE(wrapDate(record.getLAST_VIOLATION_DATE()));
         result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
         return result;
@@ -509,7 +510,7 @@ public class MessageFactory {
         result.setADRSECI(source.getADR_SEC_I());
         result.setADRSECII(source.getADR_SEC_II());
         result.setLASTVIOLATIONID(wrapDate(source.getLAST_VIOLATION_ID()));
-        //NOTE: cvc-complex-type.3.2.2: Attribute 'CORRELATION_ID' is not allowed to appear in element 'erp_types:UinspectionUnregular294Correction'
+        //NOTE: Attribute 'CORRELATION_ID' is not allowed to appear in element 'erp_types:UinspectionUnregular294Correction'
         result.setCORRELATIONID(null);
         return result;
     }
@@ -543,11 +544,12 @@ public class MessageFactory {
         result.setUSERNOTE(StringUtils.defaultString(record.getUSER_NOTE()));
         result.setFRGUNUM(record.getFRGU_NUM());
         result.setNOTICEDATE(wrapDate(record.getNOTICE_DATE()));
-        //TODO result.setNOTICEWAY(StringUtils.defaultString(record.getNOTICE_WAY()));
+        result.setNOTICEWAY(StringUtils.defaultString(record.getNOTICE_WAY()));
         result.setORDERNUM(StringUtils.defaultString(record.getORDER_NUM()));
         result.setORDERDATE(wrapDate(record.getORDER_DATE()));
         result.setLASTVIOLATIONDATE(wrapDate(record.getLAST_VIOLATION_DATE()));
-        //TODO result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
+        //NOTE: Attribute 'CORRELATION_ID' is not allowed to appear in element 'erp_types:InspectionRegular294Correction'
+        // result.setCORRELATIONID(Long.valueOf(record.getCorrelationId()));
         if (erpID != null) {
             result.setID(erpID);
         }

@@ -137,14 +137,9 @@ public class TestMessageProcessor {
         final String result = messageService.sendPlanRegular294Initialization(
                 requestId,
                 "4.1.2 :: Эталонный :: Запрос на первичное размещение плана плановых проверок (сценарий 2)",
-                MessageFactory.createMailer(
-                        "ФНС России",
-                        "1047707030513",
-                        Long.valueOf("10000001169"),
-                        Long.valueOf("10001696877")
-                ),
+                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"),Long.valueOf("10000037754")),
                 MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
-                "Федеральная налоговая служба",
+                "Управление Роскомнадзора по Приволжскому федеральному округу",
                 plan,
                 "",
                 2016,
@@ -242,9 +237,9 @@ public class TestMessageProcessor {
         final String result = messageService.sendPlanRegular294Correction(
                 requestId,
                 "4.1.3 :: Эталонный :: Запрос на размещение корректировки плана плановых проверок (сценарий 3)",
-                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10001696877")),
+                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"),Long.valueOf("10000037754")),
                 MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
-                "Федеральная налоговая служба",
+                "Управление Роскомнадзора по Приволжскому федеральному округу",
                 plan,
                 planErp.getErpId(),
                 "",
@@ -275,7 +270,7 @@ public class TestMessageProcessor {
         act.setNAME_OF_OWNER("Петров П.П.");
         act.setUNIMPOSSIBLE_REASON_I("");
         act.setSTART_DATE(parseTestDate("2015-08-20T16:00:00.000000", "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"));
-        act.setDURATION(new BigInteger("123"));
+        act.setDURATION(123);
         act.setADR_INSPECTION("Фактический адрес проведения");
         act.setINSPECTORS("Иванов И.И.");
         act.setUNDOIG_SEC_I("");
@@ -327,7 +322,7 @@ public class TestMessageProcessor {
         final String result = messageService.sendPlanResult294Initialization(
                 requestId,
                 "4.1.5 :: Эталонный :: Запрос на первичное размещение результатов по нескольким проверкам из плана (сценарий 5)",
-                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10001696877")),
+                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10000037754")),
                 MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
                 "Федеральная налоговая служба",
                 plan,
@@ -343,10 +338,6 @@ public class TestMessageProcessor {
         final Plan plan = new Plan();
         plan.setId(999999);
 
-        final PlanErp planErp = new PlanErp();
-        planErp.setCipChPlLglApprvdId(plan.getId());
-        planErp.setErpId(new BigInteger("2016000109"));
-
         final Map<PlanAct, List<PlanActViolation>> actMap = new HashMap<>(1);
         final List<PlanActViolation> violationList = new ArrayList<>(1);
         final PlanAct act = new PlanAct();
@@ -359,7 +350,7 @@ public class TestMessageProcessor {
         act.setNAME_OF_OWNER("Петров П.П.");
         act.setUNIMPOSSIBLE_REASON_I("");
         act.setSTART_DATE(parseTestDate("2015-08-20T16:00:00.000000", "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"));
-        act.setDURATION(new BigInteger("123"));
+        act.setDURATION(123);
         act.setADR_INSPECTION("Фактический адрес проведения");
         act.setINSPECTORS("Иванов И.И.");
         act.setUNDOIG_SEC_I("");
@@ -391,15 +382,10 @@ public class TestMessageProcessor {
         final String result = messageService.sendPlanResult294Correction(
                 requestId,
                 "4.1.6 :: Эталонный :: Запрос на корректировку результатов плановых проверок (сценарий 6)",
-                MessageFactory.createMailer(
-                        "ФНС России",
-                        "1047707030513",
-                        Long.valueOf("10000001169"),
-                        Long.valueOf("10001696877")
-                ),
+                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10000037754")),
                 MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
                 plan,
-                planErp.getErpId(),
+                new BigInteger("2016000109"),
                 2016,
                 actMap,
                 erpIDByCorrelatedID
