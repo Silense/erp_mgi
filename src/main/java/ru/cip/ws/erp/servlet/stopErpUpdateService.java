@@ -70,17 +70,17 @@ public class stopErpUpdateService implements HttpRequestHandler {
             final HttpServletRequest request,
             final HttpServletResponse response
     ) throws IOException {
-        final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
-        logger.info("{} : is processPlanCheckCancel param ({}={})", requestId, PARAM_NAME_CHECK_PLAN_ID, param_check_plan_id);
-        if (param_check_plan_id != null) {
-            final Plan checkPlan = planViewDao.getById(param_check_plan_id);
-            if (checkPlan == null) {
-                logger.warn("{} : End. CheckPlan[{}] not found ", requestId, param_check_plan_id);
-                response.getWriter().print(String.format("Не найден план проверки [%s]", param_check_plan_id));
+        final Integer param_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
+        logger.info("{} : is processPlanCheckCancel param ({}={})", requestId, PARAM_NAME_CHECK_PLAN_ID, param_plan_id);
+        if (param_plan_id != null) {
+            final Plan plan = planViewDao.getById(param_plan_id);
+            if (plan == null) {
+                logger.warn("{} : End. Plan[{}] not found ", requestId, param_plan_id);
+                response.getWriter().print(String.format("Не найден план проверки [%s]", param_plan_id));
                 response.setStatus(500);
                 return;
             }
-            final List<PlanErp> activeByPlan = planDao.getActiveByPlan(checkPlan, dataKind);
+            final List<PlanErp> activeByPlan = planDao.getActiveByPlan(plan, dataKind);
             if (activeByPlan.isEmpty()) {
                 logger.warn("{} : End. No active plan found ", requestId);
                 response.getWriter().print("Нет сессий, доступных для прерывания");

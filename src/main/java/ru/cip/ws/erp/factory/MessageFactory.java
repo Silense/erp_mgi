@@ -25,14 +25,14 @@ public class MessageFactory {
 
     private static ObjectFactory of = new ObjectFactory();
 
-    public static MessageToERPModelType.Addressee constructAddressee(final String code, final String name) {
+    public static MessageToERPModelType.Addressee createAddressee(final String code, final String name) {
         final MessageToERPModelType.Addressee result = of.createMessageToERPModelTypeAddressee();
         result.setCode(code);
         result.setName(name);
         return result;
     }
 
-    public static MessageToERPModelType.Mailer constructMailer(String name, String OGRN, long FRGUORGID, long FRGUSERVID) {
+    public static MessageToERPModelType.Mailer createMailer(final String name, final String OGRN, long FRGUORGID, long FRGUSERVID) {
         final MessageToERPModelType.Mailer result = of.createMessageToERPModelTypeMailer();
         result.setName(name);
         result.setOGRN(OGRN);
@@ -41,42 +41,62 @@ public class MessageFactory {
         return result;
     }
 
-    public static JAXBElement<RequestMsg> constructPlanRegular294Correction(
+    public static MessageToERP294Type createMessageToERP294Type(
+            final MessageToERPModelType.Mailer mailer,
+            final MessageToERPModelType.Addressee addressee
+    ) {
+        final MessageToERP294Type result = of.createMessageToERP294Type();
+        result.setInfoModel(new BigInteger("20150201"));
+        result.setPreviousInfoModel(new BigInteger("0"));
+        result.setMailer(mailer);
+        result.setAddressee(addressee);
+        return result;
+    }
+
+
+    public static JAXBElement<RequestMsg> extendMessage(final String requestId, final MessageToERP294Type messageToERP294Type) {
+        final RequestMsg result = of.createRequestMsg();
+        result.setRequestId(requestId);
+        result.setRequestDate(wrapDateTime(new Date()));
+        final RequestBody requestBody = of.createRequestBody();
+        result.setRequestBody(requestBody);
+        final LetterToERPType letterToERPType = of.createLetterToERPType();
+        requestBody.setRequest(letterToERPType);
+        letterToERPType.setMessage294(messageToERP294Type);
+        return of.createRequestMsg(result);
+    }
+
+
+    public static JAXBElement<RequestMsg> createPlanRegular294Correction(
             final String requestId,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final String KO_NAME,
             final String acceptedName,
             final Integer year,
-            final List<PlanRecord> checkPlanRecords,
+            final List<PlanRecord> planRecords,
             final BigInteger planID,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
+        final MessageToERP294Type messageToERP294Type = createMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.PlanRegular294Correction message = of.createMessageToERP294TypePlanRegular294Correction();
         messageToERP294Type.setPlanRegular294Correction(message);
-        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
+        message.setLawBook294(createLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
 
         message.setKONAME(KO_NAME);
-        message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
+        message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName));
         message.setYEAR(year);
         message.setDATEFORM(wrapDate(new Date()));
-        // ИД из уже отосланного плана
         message.setID(planID);
+
         final List<InspectionRegular294CorrectionType> inspectionList = message.getInspectionRegular294Correction();
-        for (PlanRecord checkPlanRecord : checkPlanRecords) {
-            inspectionList.add(
-                    constructInspectionRegular294CorrectionType(
-                            checkPlanRecord, erpIDByCorrelatedID.get(
-                                    checkPlanRecord.getCorrelationId()
-                            )
-                    )
-            );
+        for (PlanRecord record : planRecords) {
+            inspectionList.add(createInspectionRegular294CorrectionType(record, erpIDByCorrelatedID.get(record.getCorrelationId())));
         }
         return extendMessage(requestId, messageToERP294Type);
     }
 
-    public static JAXBElement<RequestMsg> constructUplanUnregular294Correction(
+    public static JAXBElement<RequestMsg> createUplanUnregular294Correction(
             final String requestId,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
@@ -86,10 +106,10 @@ public class MessageFactory {
             final List<UplanRecord> addressList,
             final Map<Long, BigInteger> erpIDByCorrelatedID
     ) {
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
+        final MessageToERP294Type messageToERP294Type = createMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.UplanUnregular294Correction message = of.createMessageToERP294TypeUplanUnregular294Correction();
         messageToERP294Type.setUplanUnregular294Correction(message);
-        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
+        message.setLawBook294(createLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
 
         message.setID(id);
         message.setKONAME(KO_NAME);
@@ -126,12 +146,12 @@ public class MessageFactory {
         message.setTYPEOFINSP(TypeOfUnplannedInspection.fromValue(uplan.getTYPE_OF_INSP()));
         final List<UinspectionUnregular294CorrectionType> inspections = message.getUinspectionUnregular294Correction();
         for (UplanRecord address : addressList) {
-            inspections.add(constructUinspectionUnregular294CorrectionType(address, erpIDByCorrelatedID.get(address.getCORRELATION_ID())));
+            inspections.add(createUinspectionUnregular294CorrectionType(address, erpIDByCorrelatedID.get(address.getCORRELATION_ID())));
         }
         return extendMessage(requestId, messageToERP294Type);
     }
 
-    private static UinspectionUnregular294CorrectionType constructUinspectionUnregular294CorrectionType(
+    private static UinspectionUnregular294CorrectionType createUinspectionUnregular294CorrectionType(
             final UplanRecord source, final BigInteger id
     ) {
         final UinspectionUnregular294CorrectionType result = new UinspectionUnregular294CorrectionType();
@@ -147,59 +167,44 @@ public class MessageFactory {
         return result;
     }
 
-    public static JAXBElement<RequestMsg> extendMessage(
-            final String requestId, final MessageToERP294Type messageToERP294Type
-    ) {
-        final RequestMsg requestMsg = of.createRequestMsg();
-        requestMsg.setRequestId(requestId);
-        requestMsg.setRequestDate(wrapDateTime(new Date()));
 
-        final RequestBody requestBody = of.createRequestBody();
-        final LetterToERPType letterToERPType = of.createLetterToERPType();
-        letterToERPType.setMessage294(messageToERP294Type);
-
-        requestBody.setRequest(letterToERPType);
-        requestMsg.setRequestBody(requestBody);
-        return of.createRequestMsg(requestMsg);
-    }
-
-    public static JAXBElement<RequestMsg> constructPlanRegular294Initialization(
+    public static JAXBElement<RequestMsg> createPlanRegular294Initialization(
             final String requestId,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final String KO_NAME,
             final String acceptedName,
             final int year,
-            final List<PlanRecord> checkPlanRecords
+            final List<PlanRecord> planRecords
     ) {
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
+        final MessageToERP294Type messageToERP294Type = createMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.PlanRegular294Initialization message = of.createMessageToERP294TypePlanRegular294Initialization();
         messageToERP294Type.setPlanRegular294Initialization(message);
-        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
+        message.setLawBook294(createLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
 
         message.setKONAME(KO_NAME);
         message.setACCEPTEDNAME(StringUtils.defaultString(acceptedName, ""));
         message.setYEAR(year);
         message.setDATEFORM(wrapDate(new Date()));
         final List<InspectionRegular294InitializationType> inspectionList = message.getInspectionRegular294Initialization();
-        for (PlanRecord checkPlanRecord : checkPlanRecords) {
-            inspectionList.add(constructInspectionRegular294InitializationType(checkPlanRecord));
+        for (PlanRecord record : planRecords) {
+            inspectionList.add(createInspectionRegular294InitializationType(record));
         }
         return extendMessage(requestId, messageToERP294Type);
     }
 
-    public static JAXBElement<RequestMsg> constructUplanUnregular294Initialization(
+    public static JAXBElement<RequestMsg> createUplanUnregular294Initialization(
             final String requestId,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final String KO_NAME,
             final Uplan uplan,
-            final List<UplanRecord> addressList
+            final List<UplanRecord> uplanRecords
     ) {
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
+        final MessageToERP294Type messageToERP294Type = createMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.UplanUnregular294Initialization message = of.createMessageToERP294TypeUplanUnregular294Initialization();
         messageToERP294Type.setUplanUnregular294Initialization(message);
-        message.setLawBook294(constructLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
+        message.setLawBook294(createLawBook294(294, InspectionFormulationType.ПРОВЕРКИ_294_ФЗ_В_ОТНОШЕНИИ_ЮЛ_ИП));
 
         message.setID(null);
         message.setKONAME(KO_NAME);
@@ -235,13 +240,13 @@ public class MessageFactory {
         message.setUSERNOTE(uplan.getUSER_NOTE());
         message.setTYPEOFINSP(TypeOfUnplannedInspection.fromValue(uplan.getTYPE_OF_INSP()));
         final List<UinspectionUnregular294InitializationType> inspections = message.getUinspectionUnregular294Initialization();
-        for (UplanRecord address : addressList) {
-            inspections.add(constructUinspectionUnregular294Initialization(address));
+        for (UplanRecord record : uplanRecords) {
+            inspections.add(createUinspectionUnregular294Initialization(record));
         }
         return extendMessage(requestId, messageToERP294Type);
     }
 
-    private static UinspectionUnregular294InitializationType constructUinspectionUnregular294Initialization(final UplanRecord source) {
+    private static UinspectionUnregular294InitializationType createUinspectionUnregular294Initialization(final UplanRecord source) {
         final UinspectionUnregular294InitializationType result = new UinspectionUnregular294InitializationType();
         result.setID(null);
         result.setORGNAME(source.getORG_NAME());
@@ -254,25 +259,24 @@ public class MessageFactory {
         return result;
     }
 
-    public static JAXBElement<RequestMsg> constructProsecutorAsk(final String requestId) {
+    public static JAXBElement<RequestMsg> createProsecutorAsk(final String requestId) {
         final RequestMsg requestMsg = of.createRequestMsg();
         requestMsg.setRequestId(requestId);
         requestMsg.setRequestDate(wrapDateTime(new Date()));
         final RequestBody requestBody = of.createRequestBody();
-
+        requestMsg.setRequestBody(requestBody);
         final LetterToERPType letterToERPType = of.createLetterToERPType();
-
-        final MessageToERPCommonType messageCommon = constructMessageToERPCommonType();
-        messageCommon.setProsecutorAsk(of.createProsecutorAskType());
-
+        requestBody.setRequest(letterToERPType);
+        final MessageToERPCommonType messageCommon = of.createMessageToERPCommonType();
         letterToERPType.setMessageCommon(messageCommon);
 
-        requestBody.setRequest(letterToERPType);
-        requestMsg.setRequestBody(requestBody);
+        messageCommon.setInfoModel(new BigInteger("20150201"));
+        messageCommon.setPreviousInfoModel(new BigInteger("0"));
+        messageCommon.setProsecutorAsk(of.createProsecutorAskType());
         return of.createRequestMsg(requestMsg);
     }
 
-    public static JAXBElement<RequestMsg> constructPlanResult294Correction(
+    public static JAXBElement<RequestMsg> createPlanResult294Correction(
             final String requestId,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
@@ -281,7 +285,7 @@ public class MessageFactory {
             final BigInteger planID,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
+        final MessageToERP294Type messageToERP294Type = createMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.PlanResult294Correction message = of.createMessageToERP294TypePlanResult294Correction();
         messageToERP294Type.setPlanResult294Correction(message);
 
@@ -291,14 +295,14 @@ public class MessageFactory {
         for (Map.Entry<PlanAct, List<PlanActViolation>> entry : actMap.entrySet()) {
             final PlanAct key = entry.getKey();
             message.getInspectionResult294Correction().add(
-                    constructInspectionResultCorrection(key, entry.getValue(), erpIDByCorrelatedID.get(key.getCorrelationID()))
+                    createInspectionResultCorrection(key, entry.getValue(), erpIDByCorrelatedID.get(key.getCorrelationID()))
             );
         }
         return extendMessage(requestId, messageToERP294Type);
     }
 
 
-    public static JAXBElement<RequestMsg> constructPlanResult294Initialization(
+    public static JAXBElement<RequestMsg> createPlanResult294Initialization(
             final String requestId,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
@@ -307,7 +311,7 @@ public class MessageFactory {
             final BigInteger planID,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
+        final MessageToERP294Type messageToERP294Type = createMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.PlanResult294Initialization message = of.createMessageToERP294TypePlanResult294Initialization();
         messageToERP294Type.setPlanResult294Initialization(message);
 
@@ -315,16 +319,16 @@ public class MessageFactory {
         // ИД из уже отосланного плана
         message.setID(planID);
         for (Map.Entry<PlanAct, List<PlanActViolation>> entry : actMap.entrySet()) {
-            final PlanAct key = entry.getKey();
+            final PlanAct act = entry.getKey();
             message.getInspectionResult294Initialization().add(
-                    constructInspectionResultInit(key, entry.getValue(), erpIDByCorrelatedID.get(key.getCorrelationID()))
+                    createInspectionResultInit(act, entry.getValue(), erpIDByCorrelatedID.get(act.getCorrelationID()))
             );
         }
         return extendMessage(requestId, messageToERP294Type);
     }
 
 
-    private static MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction constructInspectionResultCorrection(
+    private static MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction createInspectionResultCorrection(
             final PlanAct act, final List<PlanActViolation> violations, final BigInteger erpID
     ) {
         final MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction result = of
@@ -344,12 +348,12 @@ public class MessageFactory {
         result.setUNIMPOSSIBLEREASONI(act.getUNIMPOSSIBLE_REASON_I());
         result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
         for (PlanActViolation violation : violations) {
-            result.getInspectionViolation294Correction().add(constructInspectionViolationCorrection(violation));
+            result.getInspectionViolation294Correction().add(createInspectionViolationCorrection(violation));
         }
         return result;
     }
 
-    private static MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization constructInspectionResultInit(
+    private static MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization createInspectionResultInit(
             final PlanAct act, final List<PlanActViolation> violations, final BigInteger erpID
     ) {
         final MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization result = of
@@ -369,13 +373,13 @@ public class MessageFactory {
         result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
         result.setWRONGDATAREASONSECI(act.getWRONG_DATA_REASON_SEC_I());
         for (PlanActViolation violation : violations) {
-            result.getInspectionViolation294Initialization().add(constructInspectionViolationInit(violation));
+            result.getInspectionViolation294Initialization().add(createInspectionViolationInit(violation));
         }
         return result;
     }
 
 
-    private static InspectionViolation294InitializationType constructInspectionViolationInit(final PlanActViolation violation) {
+    private static InspectionViolation294InitializationType createInspectionViolationInit(final PlanActViolation violation) {
         final InspectionViolation294InitializationType result = of.createInspectionViolation294InitializationType();
         result.setVIOLATIONID(violation.getVIOLATION_ID().intValue());
         result.setVIOLATIONNOTE(violation.getVIOLATION_NOTE());
@@ -397,7 +401,7 @@ public class MessageFactory {
         return result;
     }
 
-    private static InspectionViolation294CorrectionType constructInspectionViolationCorrection(final PlanActViolation violation) {
+    private static InspectionViolation294CorrectionType createInspectionViolationCorrection(final PlanActViolation violation) {
         final InspectionViolation294CorrectionType result = of.createInspectionViolation294CorrectionType();
         result.setVIOLATIONID(violation.getVIOLATION_ID().intValue());
         result.setVIOLATIONNOTE(violation.getVIOLATION_NOTE());
@@ -419,25 +423,8 @@ public class MessageFactory {
         return result;
     }
 
-    public static MessageToERPCommonType constructMessageToERPCommonType() {
-        final MessageToERPCommonType result = of.createMessageToERPCommonType();
-        result.setInfoModel(new BigInteger("20150201"));
-        result.setPreviousInfoModel(new BigInteger("0"));
-        return result;
-    }
 
-    public static MessageToERP294Type constructMessageToERP294Type(
-            final MessageToERPModelType.Mailer mailer, final MessageToERPModelType.Addressee addressee
-    ) {
-        final MessageToERP294Type result = of.createMessageToERP294Type();
-        result.setInfoModel(new BigInteger("20150201"));
-        result.setPreviousInfoModel(new BigInteger("0"));
-        result.setMailer(mailer);
-        result.setAddressee(addressee);
-        return result;
-    }
-
-    private static InspectionRegular294InitializationType constructInspectionRegular294InitializationType(final PlanRecord record) {
+    private static InspectionRegular294InitializationType createInspectionRegular294InitializationType(final PlanRecord record) {
         final InspectionRegular294InitializationType result = of.createInspectionRegular294InitializationType();
         result.setORGNAME(record.getORG_NAME());
         result.setADRSECI(StringUtils.defaultString(record.getADR_SEC_I()));
@@ -472,7 +459,7 @@ public class MessageFactory {
         return result;
     }
 
-    private static InspectionRegular294CorrectionType constructInspectionRegular294CorrectionType(
+    private static InspectionRegular294CorrectionType createInspectionRegular294CorrectionType(
             final PlanRecord record, final BigInteger erpID
     ) {
         final InspectionRegular294CorrectionType result = of.createInspectionRegular294CorrectionType();
@@ -512,7 +499,7 @@ public class MessageFactory {
         return result;
     }
 
-    private static LawBook294Type constructLawBook294(final long lawBase, final InspectionFormulationType inspectionFormulation) {
+    private static LawBook294Type createLawBook294(final long lawBase, final InspectionFormulationType inspectionFormulation) {
         final LawBook294Type result = of.createLawBook294Type();
         final LawBook294Type.LawI law1 = of.createLawBook294TypeLawI();
         law1.setFORMULATION(inspectionFormulation);

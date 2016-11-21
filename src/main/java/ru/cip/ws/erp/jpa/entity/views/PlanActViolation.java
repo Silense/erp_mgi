@@ -271,7 +271,7 @@ public class PlanActViolation {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("CipActCheckViolation[").append(VIOLATION_ID);
+        final StringBuilder sb = new StringBuilder("PlanActViolation[").append(VIOLATION_ID);
         sb.append("]{ ACT_ID=").append(ACT_ID);
         sb.append(", VIOLATION_NOTE='").append(VIOLATION_NOTE).append('\'');
         sb.append(", VIOLATION_ACT='").append(VIOLATION_ACT).append('\'');

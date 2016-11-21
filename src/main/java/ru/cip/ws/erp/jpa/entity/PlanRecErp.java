@@ -133,7 +133,7 @@ public class PlanRecErp {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("PlanCheckRecErp[");
+        final StringBuilder sb = new StringBuilder("PlanRecErp[");
         sb.append(id);
         sb.append("]{ plan=").append(plan != null ? plan.getId() : null);
         sb.append(", erpId=").append(erpId);

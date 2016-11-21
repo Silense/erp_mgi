@@ -170,7 +170,7 @@ public class PlanErp {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("PlanCheckErp[").append(id);
+        final StringBuilder sb = new StringBuilder("PlanErp[").append(id);
         sb.append("]{ status='").append(status).append('\'');
         sb.append(", prosecutor=").append(prosecutor);
         sb.append(", dataKind=").append(dataKind);

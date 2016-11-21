@@ -75,7 +75,7 @@ public class MessageProcessor {
 
         final List<PlanRecord> planRecords = planRecordViewDao.getRecordsByPlan(plan);
         if (planRecords == null || planRecords.isEmpty()) {
-            logger.warn("{} : End. Not found any PlanRecords by check_plan_id = {}", requestId, plan.getId());
+            logger.warn("{} : End. Not found any PlanRecords by plan_id = {}", requestId, plan.getId());
             wrapErrorResponse(response, String.format("По плану проверок [%d] не найдено проверок", plan.getId()));
             return;
         } else if (logger.isDebugEnabled()) {
@@ -112,8 +112,8 @@ public class MessageProcessor {
         final String result = messageService.sendPlanRegular294Initialization(
                 requestId,
                 "4.1.2 Запрос на первичное размещение плана плановых проверок",
-                MessageFactory.constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
-                MessageFactory.constructAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
                 prop.KO_NAME,
                 plan,
                 acceptedName,
@@ -154,34 +154,34 @@ public class MessageProcessor {
             );
             return;
         }
-        final List<PlanRecord> checkPlanRecords = planRecordViewDao.getRecordsByPlan(plan);
-        if (checkPlanRecords.isEmpty()) {
+        final List<PlanRecord> planRecords = planRecordViewDao.getRecordsByPlan(plan);
+        if (planRecords.isEmpty()) {
             logger.warn("{} : End. Not found any PlanRecords by plan_id = {}", requestId, plan.getId());
             wrapErrorResponse(response, String.format("По плану проверок [%d] не найдено проверок", plan.getId()));
             return;
         } else if (logger.isDebugEnabled()) {
-            for (PlanRecord checkPlanRecord : checkPlanRecords) {
+            for (PlanRecord checkPlanRecord : planRecords) {
                 logger.info("{} :  Founded record: {}", requestId, checkPlanRecord);
             }
         }
 
-        final List<PlanRecErp> sentCheckPlanRecords = planRecordDao.getRecordsByPlan(planErp);
-        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(sentCheckPlanRecords.size());
-        for (PlanRecErp record : sentCheckPlanRecords) {
+        final List<PlanRecErp> sentPlanRecords = planRecordDao.getRecordsByPlan(planErp);
+        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(sentPlanRecords.size());
+        for (PlanRecErp record : sentPlanRecords) {
             erpIDByCorrelatedID.put(record.getCorrelationId(), record.getErpId());
         }
 
         final String result = messageService.sendPlanRegular294Correction(
                 requestId,
                 "4.1.3 Запрос на размещение корректировки плана плановых проверок",
-                MessageFactory.constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
-                MessageFactory.constructAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
                 prop.KO_NAME,
                 plan,
                 planErp.getErpId(),
                 StringUtils.defaultString(plan.getAcceptedName(), acceptedName),
                 year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
-                checkPlanRecords,
+                planRecords,
                 erpIDByCorrelatedID
         );
         wrapResponse(response, result);
@@ -225,8 +225,8 @@ public class MessageProcessor {
         final String result = messageService.sendPlanResult294Initialization(
                 requestId,
                 "4.1.2 Запрос на первичное размещение результатов по нескольким проверкам из плана",
-                MessageFactory.constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
-                MessageFactory.constructAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
                 prop.KO_NAME,
                 plan,
                 planErp.getErpId(),
@@ -277,8 +277,8 @@ public class MessageProcessor {
         final String result = messageService.sendPlanResult294Correction(
                 requestId,
                 "4.1.6 Запрос на размещение корректировки результатов проверкам плана ",
-                MessageFactory.constructMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
-                MessageFactory.constructAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
                 plan,
                 planErp.getErpId(),
                 year != null ? year : Calendar.getInstance().get(Calendar.YEAR),

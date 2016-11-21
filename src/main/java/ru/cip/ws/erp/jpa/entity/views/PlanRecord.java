@@ -349,8 +349,7 @@ public class PlanRecord {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("CipCheckPlanRecord[");
-        sb.append("correlationId=").append(correlationId);
+        final StringBuilder sb = new StringBuilder("PlanRecord[").append("correlationId=").append(correlationId);
         sb.append("]{ ORG_NAME='").append(ORG_NAME).append('\'');
         sb.append(", ADR_SEC_I='").append(ADR_SEC_I).append('\'');
         sb.append(", ADR_SEC_II='").append(ADR_SEC_II).append('\'');

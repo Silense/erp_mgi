@@ -63,7 +63,7 @@ public class Plan {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("CipCheckPlan[").append(id);
+        final StringBuilder sb = new StringBuilder("Plan[").append(id);
         sb.append("]{ acceptedName='").append(acceptedName).append('\'');
         sb.append(", year=").append(year);
         sb.append(", dateFrom=").append(dateFrom);

@@ -56,7 +56,7 @@ public class MessageService {
 
     public String sendProsecutorAck(final String requestId, final String description) {
         logger.info("{} : Start processing ProsecutorAsk message", requestId);
-        return sendMessage(requestId, MessageFactory.constructProsecutorAsk(requestId), description, ProsecutorAskType.class.getSimpleName());
+        return sendMessage(requestId, MessageFactory.createProsecutorAsk(requestId), description, ProsecutorAskType.class.getSimpleName());
     }
 
 
@@ -71,7 +71,7 @@ public class MessageService {
             final Integer year,
             final List<PlanRecord> planRecords
     ) {
-        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructPlanRegular294Initialization(
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.createPlanRegular294Initialization(
                 requestId,
                 mailer,
                 addressee,
@@ -131,7 +131,7 @@ public class MessageService {
             final Uplan uplan,
             final List<UplanRecord> addressList
     ) {
-        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructUplanUnregular294Initialization(
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanUnregular294Initialization(
                 requestId, mailer, addressee, KO_NAME, uplan, addressList
         );
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
@@ -172,7 +172,7 @@ public class MessageService {
             final List<PlanRecord> planRecords,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructPlanRegular294Correction(
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.createPlanRegular294Correction(
                 requestId, mailer, addressee, KO_NAME, StringUtils.defaultString(acceptedName), year, planRecords, erpID, erpIDByCorrelatedID
         );
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
@@ -219,7 +219,7 @@ public class MessageService {
             final Map<Long, BigInteger> erpIDByCorrelatedID
     ) {
 
-        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructUplanUnregular294Correction(
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanUnregular294Correction(
                 requestId, mailer, addressee, KO_NAME, uplan, id, addressList, erpIDByCorrelatedID
         );
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
@@ -258,7 +258,7 @@ public class MessageService {
             final Map<PlanAct, List<PlanActViolation>> actMap,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructPlanResult294Initialization(
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.createPlanResult294Initialization(
                 requestId, mailer, addressee, year, actMap, erpID, erpIDByCorrelatedID
         );
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
@@ -305,7 +305,7 @@ public class MessageService {
             final Map<PlanAct, List<PlanActViolation>> actMap,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
-        final JAXBElement<RequestMsg> requestMessage = MessageFactory.constructPlanResult294Correction(
+        final JAXBElement<RequestMsg> requestMessage = MessageFactory.createPlanResult294Correction(
                 requestId, mailer, addressee, year, actMap, erpID, erpIDByCorrelatedID
         );
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);

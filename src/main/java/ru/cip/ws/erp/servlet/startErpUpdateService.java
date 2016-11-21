@@ -152,70 +152,70 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processPlanResult294Correction(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId
     ) throws IOException {
-        final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
+        final Integer param_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
         logger.info(
                 "{} : parsed params ({}='{}', {}='{}', {}='{}')",
                 requestId,
                 PARAM_NAME_CHECK_PLAN_ID,
-                param_check_plan_id,
+                param_plan_id,
                 PARAM_NAME_YEAR,
                 param_year
         );
-        if (param_check_plan_id == null) {
+        if (param_plan_id == null) {
             logger.warn("{} : End. Not '{}' set", requestId, PARAM_NAME_CHECK_PLAN_ID);
             response.getWriter().print("Не указан идентифкатор плана проверки");
             response.setStatus(500);
         } else {
-            messageProcessor.processPlanResult294Correction(requestId, response, param_check_plan_id, param_year);
+            messageProcessor.processPlanResult294Correction(requestId, response, param_plan_id, param_year);
         }
     }
 
     private void processPlanResult294Initialization(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId
     ) throws IOException {
-        final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
+        final Integer param_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
         logger.info(
                 "{} : parsed params ({}='{}', {}='{}', {}='{}')",
                 requestId,
                 PARAM_NAME_CHECK_PLAN_ID,
-                param_check_plan_id,
+                param_plan_id,
                 PARAM_NAME_YEAR,
                 param_year
         );
-        if (param_check_plan_id == null) {
+        if (param_plan_id == null) {
             logger.warn("{} : End. Not '{}' set", requestId, PARAM_NAME_CHECK_PLAN_ID);
             response.getWriter().print("Не указан идентифкатор плана проверки");
             response.setStatus(500);
         } else {
-            messageProcessor.processPlanResult294Initialization(requestId, response, param_check_plan_id, param_year);
+            messageProcessor.processPlanResult294Initialization(requestId, response, param_plan_id, param_year);
         }
     }
 
     private void processPlanRegular294Correction(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId
     ) throws IOException {
-        final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
+        final Integer param_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
         final String param_accepted_name = getStringParameter(request, PARAM_NAME_ACCEPTED_NAME);
         logger.info(
                 "{} : parsed params ({}='{}', {}='{}', {}='{}')",
                 requestId,
                 PARAM_NAME_CHECK_PLAN_ID,
-                param_check_plan_id,
+                param_plan_id,
                 PARAM_NAME_YEAR,
                 param_year,
                 PARAM_NAME_ACCEPTED_NAME,
                 param_accepted_name
         );
-        if (param_check_plan_id == null) {
+        if (param_plan_id == null) {
             logger.warn("{} : End. Not '{}' set", requestId, PARAM_NAME_CHECK_PLAN_ID);
             response.getWriter().print("Не указан идентифкатор плана проверки");
             response.setStatus(500);
         } else {
             messageProcessor.processPlanRegular294Correction(
-                    requestId, response, param_check_plan_id, param_year, param_accepted_name
+                    requestId, response, param_plan_id, param_year, param_accepted_name
             );
         }
     }
@@ -224,26 +224,26 @@ public class startErpUpdateService implements HttpRequestHandler {
     private void processPlanRegular294Initialization(
             final HttpServletRequest request, final HttpServletResponse response, final String requestId
     ) throws IOException {
-        final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
+        final Integer param_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         final Integer param_year = getIntegerParameter(request, PARAM_NAME_YEAR);
         final String param_accepted_name = getStringParameter(request, PARAM_NAME_ACCEPTED_NAME);
         logger.info(
                 "{} : parsed params ({}='{}', {}='{}', {}='{}')",
                 requestId,
                 PARAM_NAME_CHECK_PLAN_ID,
-                param_check_plan_id,
+                param_plan_id,
                 PARAM_NAME_YEAR,
                 param_year,
                 PARAM_NAME_ACCEPTED_NAME,
                 param_accepted_name
         );
-        if (param_check_plan_id == null) {
+        if (param_plan_id == null) {
             logger.warn("{} : End. Not '{}' set", requestId, PARAM_NAME_CHECK_PLAN_ID);
             response.getWriter().print("Не указан идентифкатор плана проверки");
             response.setStatus(500);
         } else {
             messageProcessor.processPlanRegular294Initialization(
-                    requestId, response, param_check_plan_id, param_year, param_accepted_name
+                    requestId, response, param_plan_id, param_year, param_accepted_name
             );
         }
     }

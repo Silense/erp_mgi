@@ -239,7 +239,7 @@ public class PlanAct {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("CipActCheck[").append(ACT_ID);
+        final StringBuilder sb = new StringBuilder("PlanAct[").append(ACT_ID);
         sb.append("]{ ACT_DATE_CREATE=").append(ACT_DATE_CREATE);
         sb.append(", INSTRUCTION_DATE=").append(INSTRUCTION_DATE);
         sb.append(", CHECK_ID=").append(CHECK_ID);
