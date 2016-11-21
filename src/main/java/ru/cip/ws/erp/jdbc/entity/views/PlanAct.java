@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jdbc.entity.views;
 
 import javax.persistence.*;
 import java.math.BigInteger;
@@ -7,12 +7,11 @@ import java.util.Date;
 /**
  * Author: Upatov Egor <br>
  * Date: 08.10.2016, 20:11 <br>
- * Company: Bars Group [ www.bars.open.ru ]
- * Description:
+ * Description: Первичное размещение и корректировка результата проведения плановых проверок 294 ФЗ (без условий п.2,3)
  */
 @Entity
 @Table(name = "CIP_ACT_CHECK_V", schema = "ODOPM_SRC")
-public class CipActCheck {
+public class PlanAct {
 
     /**
      * "ID акта проверки"
@@ -99,7 +98,7 @@ public class CipActCheck {
     private Integer correlationID;
 
 
-    public CipActCheck() {
+    public PlanAct() {
     }
 
     public Date getACT_DATE_CREATE() {

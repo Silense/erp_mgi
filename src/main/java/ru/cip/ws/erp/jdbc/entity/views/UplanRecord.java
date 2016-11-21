@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jdbc.entity.views;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,10 +9,13 @@ import java.util.Date;
 /**
  * Author: Upatov Egor <br>
  * Date: 20.11.2016, 7:40 <br>
+ *     7.Перечень атрибутов Адресов (мест) проверки для внеплановых Распоряжений,
+ *     ожидаемых  в ЕРП от ЕИС МЖИ
+ *     (более подробно см. пункт № 4.3.30 из руководства пользователя «РП_вида_сведений_ АС_ ЕПР_ СМЭВ_3_2.1»)
  */
 @Entity
 @Table(name = "CIP_UNSCHEDL_CHECK_ADDR_V", schema = "ODOPM_SRC")
-public class UplanAddress {
+public class UplanRecord {
     /**
      * Наименование проверяемой организации
      **/
@@ -49,7 +52,7 @@ public class UplanAddress {
     @javax.persistence.Transient
     private Date LAST_VIOLATION_ID;
 
-    public UplanAddress() {
+    public UplanRecord() {
     }
 
     public String getADR_SEC_I() {

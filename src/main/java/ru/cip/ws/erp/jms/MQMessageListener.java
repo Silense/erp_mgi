@@ -10,10 +10,10 @@ import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.generated.erptypes.*;
 import ru.cip.ws.erp.jdbc.dao.ExportSessionDaoImpl;
 import ru.cip.ws.erp.jdbc.dao.ImportSessionDaoImpl;
-import ru.cip.ws.erp.jdbc.entity.ExpSession;
-import ru.cip.ws.erp.jdbc.entity.ImpSession;
-import ru.cip.ws.erp.jdbc.entity.ImpSessionEvent;
-import ru.cip.ws.erp.jdbc.entity.StatusErp;
+import ru.cip.ws.erp.jdbc.entity.sessions.ExpSession;
+import ru.cip.ws.erp.jdbc.entity.sessions.ImpSession;
+import ru.cip.ws.erp.jdbc.entity.sessions.ImpSessionEvent;
+import ru.cip.ws.erp.jdbc.entity.enums.StatusErp;
 
 import javax.jms.*;
 import javax.xml.bind.JAXBException;

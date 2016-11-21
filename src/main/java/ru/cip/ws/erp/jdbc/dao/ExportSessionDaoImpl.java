@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.cip.ws.erp.jdbc.entity.ExpSession;
-import ru.cip.ws.erp.jdbc.entity.ExpSessionEvent;
-import ru.cip.ws.erp.jdbc.entity.SessionStatus;
+import ru.cip.ws.erp.jdbc.entity.sessions.ExpSession;
+import ru.cip.ws.erp.jdbc.entity.sessions.ExpSessionEvent;
+import ru.cip.ws.erp.jdbc.entity.enums.SessionStatus;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jdbc.entity.views;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,12 +11,11 @@ import java.util.Date;
 /**
  * Author: Upatov Egor <br>
  * Date: 08.10.2016, 22:20 <br>
- * Company: Bars Group [ www.bars.open.ru ]
- * Description:
+ * Description:  Первичное размещение и корректировка выявленных нарушений по результатам проведения плановых проверок 294 ФЗ
  */
 @Entity
 @Table(name = "CIP_ACT_CHECK_VIOLATION_V", schema = "ODOPM_SRC")
-public class CipActCheckViolation {
+public class PlanActViolation {
     @Id
     @Column(name = "VIOLATION_ID")
     private BigInteger VIOLATION_ID;
@@ -123,7 +122,7 @@ public class CipActCheckViolation {
     @Column(name = "LAWSUIT_SEC_VII")
     private String LAWSUIT_SEC_VII;
 
-    public CipActCheckViolation() {
+    public PlanActViolation() {
     }
 
     public BigInteger getACT_ID() {

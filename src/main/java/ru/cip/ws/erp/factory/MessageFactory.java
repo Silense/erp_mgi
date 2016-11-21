@@ -4,7 +4,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import ru.cip.ws.erp.generated.erptypes.*;
-import ru.cip.ws.erp.jdbc.entity.*;
+import ru.cip.ws.erp.jdbc.entity.views.*;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -48,7 +48,7 @@ public class MessageFactory {
             final String KO_NAME,
             final String acceptedName,
             final Integer year,
-            final List<CipCheckPlanRecord> checkPlanRecords,
+            final List<PlanRecord> checkPlanRecords,
             final BigInteger planID,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
@@ -64,7 +64,7 @@ public class MessageFactory {
         // ИД из уже отосланного плана
         message.setID(planID);
         final List<InspectionRegular294CorrectionType> inspectionList = message.getInspectionRegular294Correction();
-        for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
+        for (PlanRecord checkPlanRecord : checkPlanRecords) {
             inspectionList.add(
                     constructInspectionRegular294CorrectionType(
                             checkPlanRecord, erpIDByCorrelatedID.get(
@@ -83,7 +83,7 @@ public class MessageFactory {
             final String KO_NAME,
             final Uplan uplan,
             final BigInteger id,
-            final List<UplanAddress> addressList,
+            final List<UplanRecord> addressList,
             final Map<Long, BigInteger> erpIDByCorrelatedID
     ) {
         final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
@@ -125,14 +125,14 @@ public class MessageFactory {
         message.setUSERNOTE(uplan.getUSER_NOTE());
         message.setTYPEOFINSP(TypeOfUnplannedInspection.fromValue(uplan.getTYPE_OF_INSP()));
         final List<UinspectionUnregular294CorrectionType> inspections = message.getUinspectionUnregular294Correction();
-        for (UplanAddress address : addressList) {
+        for (UplanRecord address : addressList) {
             inspections.add(constructUinspectionUnregular294CorrectionType(address, erpIDByCorrelatedID.get(address.getCORRELATION_ID())));
         }
         return extendMessage(requestId, messageToERP294Type);
     }
 
     private static UinspectionUnregular294CorrectionType constructUinspectionUnregular294CorrectionType(
-            final UplanAddress source, final BigInteger id
+            final UplanRecord source, final BigInteger id
     ) {
         final UinspectionUnregular294CorrectionType result = new UinspectionUnregular294CorrectionType();
         result.setID(id);
@@ -170,7 +170,7 @@ public class MessageFactory {
             final String KO_NAME,
             final String acceptedName,
             final int year,
-            final List<CipCheckPlanRecord> checkPlanRecords
+            final List<PlanRecord> checkPlanRecords
     ) {
         final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.PlanRegular294Initialization message = of.createMessageToERP294TypePlanRegular294Initialization();
@@ -182,7 +182,7 @@ public class MessageFactory {
         message.setYEAR(year);
         message.setDATEFORM(wrapDate(new Date()));
         final List<InspectionRegular294InitializationType> inspectionList = message.getInspectionRegular294Initialization();
-        for (CipCheckPlanRecord checkPlanRecord : checkPlanRecords) {
+        for (PlanRecord checkPlanRecord : checkPlanRecords) {
             inspectionList.add(constructInspectionRegular294InitializationType(checkPlanRecord));
         }
         return extendMessage(requestId, messageToERP294Type);
@@ -194,7 +194,7 @@ public class MessageFactory {
             final MessageToERPModelType.Addressee addressee,
             final String KO_NAME,
             final Uplan uplan,
-            final List<UplanAddress> addressList
+            final List<UplanRecord> addressList
     ) {
         final MessageToERP294Type messageToERP294Type = constructMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.UplanUnregular294Initialization message = of.createMessageToERP294TypeUplanUnregular294Initialization();
@@ -235,13 +235,13 @@ public class MessageFactory {
         message.setUSERNOTE(uplan.getUSER_NOTE());
         message.setTYPEOFINSP(TypeOfUnplannedInspection.fromValue(uplan.getTYPE_OF_INSP()));
         final List<UinspectionUnregular294InitializationType> inspections = message.getUinspectionUnregular294Initialization();
-        for (UplanAddress address : addressList) {
+        for (UplanRecord address : addressList) {
             inspections.add(constructUinspectionUnregular294Initialization(address));
         }
         return extendMessage(requestId, messageToERP294Type);
     }
 
-    private static UinspectionUnregular294InitializationType constructUinspectionUnregular294Initialization(final UplanAddress source) {
+    private static UinspectionUnregular294InitializationType constructUinspectionUnregular294Initialization(final UplanRecord source) {
         final UinspectionUnregular294InitializationType result = new UinspectionUnregular294InitializationType();
         result.setID(null);
         result.setORGNAME(source.getORG_NAME());
@@ -277,7 +277,7 @@ public class MessageFactory {
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final int year,
-            final Map<CipActCheck, List<CipActCheckViolation>> actMap,
+            final Map<PlanAct, List<PlanActViolation>> actMap,
             final BigInteger planID,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
@@ -288,8 +288,8 @@ public class MessageFactory {
         message.setYEAR(year);
         // ИД из уже отосланного плана
         message.setID(planID);
-        for (Map.Entry<CipActCheck, List<CipActCheckViolation>> entry : actMap.entrySet()) {
-            final CipActCheck key = entry.getKey();
+        for (Map.Entry<PlanAct, List<PlanActViolation>> entry : actMap.entrySet()) {
+            final PlanAct key = entry.getKey();
             message.getInspectionResult294Correction().add(
                     constructInspectionResultCorrection(key, entry.getValue(), erpIDByCorrelatedID.get(key.getCorrelationID()))
             );
@@ -303,7 +303,7 @@ public class MessageFactory {
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final int year,
-            final Map<CipActCheck, List<CipActCheckViolation>> actMap,
+            final Map<PlanAct, List<PlanActViolation>> actMap,
             final BigInteger planID,
             final Map<Integer, BigInteger> erpIDByCorrelatedID
     ) {
@@ -314,8 +314,8 @@ public class MessageFactory {
         message.setYEAR(year);
         // ИД из уже отосланного плана
         message.setID(planID);
-        for (Map.Entry<CipActCheck, List<CipActCheckViolation>> entry : actMap.entrySet()) {
-            final CipActCheck key = entry.getKey();
+        for (Map.Entry<PlanAct, List<PlanActViolation>> entry : actMap.entrySet()) {
+            final PlanAct key = entry.getKey();
             message.getInspectionResult294Initialization().add(
                     constructInspectionResultInit(key, entry.getValue(), erpIDByCorrelatedID.get(key.getCorrelationID()))
             );
@@ -325,7 +325,7 @@ public class MessageFactory {
 
 
     private static MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction constructInspectionResultCorrection(
-            final CipActCheck act, final List<CipActCheckViolation> violations, final BigInteger erpID
+            final PlanAct act, final List<PlanActViolation> violations, final BigInteger erpID
     ) {
         final MessageToERP294Type.PlanResult294Correction.InspectionResult294Correction result = of
                 .createMessageToERP294TypePlanResult294CorrectionInspectionResult294Correction();
@@ -343,14 +343,14 @@ public class MessageFactory {
         result.setUNDOIGSECI(act.getUNDOIG_SEC_I());
         result.setUNIMPOSSIBLEREASONI(act.getUNIMPOSSIBLE_REASON_I());
         result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
-        for (CipActCheckViolation violation : violations) {
+        for (PlanActViolation violation : violations) {
             result.getInspectionViolation294Correction().add(constructInspectionViolationCorrection(violation));
         }
         return result;
     }
 
     private static MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization constructInspectionResultInit(
-            final CipActCheck act, final List<CipActCheckViolation> violations, final BigInteger erpID
+            final PlanAct act, final List<PlanActViolation> violations, final BigInteger erpID
     ) {
         final MessageToERP294Type.PlanResult294Initialization.InspectionResult294Initialization result = of
                 .createMessageToERP294TypePlanResult294InitializationInspectionResult294Initialization();
@@ -368,14 +368,14 @@ public class MessageFactory {
         result.setUNIMPOSSIBLEREASONI(act.getUNIMPOSSIBLE_REASON_I());
         result.setWRONGDATAANOTHER(act.getWRONG_DATA_ANOTHER());
         result.setWRONGDATAREASONSECI(act.getWRONG_DATA_REASON_SEC_I());
-        for (CipActCheckViolation violation : violations) {
+        for (PlanActViolation violation : violations) {
             result.getInspectionViolation294Initialization().add(constructInspectionViolationInit(violation));
         }
         return result;
     }
 
 
-    private static InspectionViolation294InitializationType constructInspectionViolationInit(final CipActCheckViolation violation) {
+    private static InspectionViolation294InitializationType constructInspectionViolationInit(final PlanActViolation violation) {
         final InspectionViolation294InitializationType result = of.createInspectionViolation294InitializationType();
         result.setVIOLATIONID(violation.getVIOLATION_ID().intValue());
         result.setVIOLATIONNOTE(violation.getVIOLATION_NOTE());
@@ -397,7 +397,7 @@ public class MessageFactory {
         return result;
     }
 
-    private static InspectionViolation294CorrectionType constructInspectionViolationCorrection(final CipActCheckViolation violation) {
+    private static InspectionViolation294CorrectionType constructInspectionViolationCorrection(final PlanActViolation violation) {
         final InspectionViolation294CorrectionType result = of.createInspectionViolation294CorrectionType();
         result.setVIOLATIONID(violation.getVIOLATION_ID().intValue());
         result.setVIOLATIONNOTE(violation.getVIOLATION_NOTE());
@@ -437,7 +437,7 @@ public class MessageFactory {
         return result;
     }
 
-    private static InspectionRegular294InitializationType constructInspectionRegular294InitializationType(final CipCheckPlanRecord record) {
+    private static InspectionRegular294InitializationType constructInspectionRegular294InitializationType(final PlanRecord record) {
         final InspectionRegular294InitializationType result = of.createInspectionRegular294InitializationType();
         result.setORGNAME(record.getORG_NAME());
         result.setADRSECI(StringUtils.defaultString(record.getADR_SEC_I()));
@@ -473,7 +473,7 @@ public class MessageFactory {
     }
 
     private static InspectionRegular294CorrectionType constructInspectionRegular294CorrectionType(
-            final CipCheckPlanRecord record, final BigInteger erpID
+            final PlanRecord record, final BigInteger erpID
     ) {
         final InspectionRegular294CorrectionType result = of.createInspectionRegular294CorrectionType();
         result.setORGNAME(record.getORG_NAME());

@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.cip.ws.erp.jdbc.entity.ExpSession;
-import ru.cip.ws.erp.jdbc.entity.ImpSession;
-import ru.cip.ws.erp.jdbc.entity.ImpSessionEvent;
-import ru.cip.ws.erp.jdbc.entity.SessionStatus;
+import ru.cip.ws.erp.jdbc.entity.sessions.ExpSession;
+import ru.cip.ws.erp.jdbc.entity.sessions.ImpSession;
+import ru.cip.ws.erp.jdbc.entity.sessions.ImpSessionEvent;
+import ru.cip.ws.erp.jdbc.entity.enums.SessionStatus;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

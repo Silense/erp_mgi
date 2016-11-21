@@ -5,13 +5,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.generated.erptypes.*;
-import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.PlanCheckErpDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.PlanCheckRecordErpDaoImpl;
-import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
-import ru.cip.ws.erp.jdbc.entity.PlanCheckRecErp;
-import ru.cip.ws.erp.jdbc.entity.StatusErp;
+import ru.cip.ws.erp.jdbc.dao.PlanDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanRecordDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanErpDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanRecordErpDaoImpl;
+import ru.cip.ws.erp.jdbc.entity.PlanErp;
+import ru.cip.ws.erp.jdbc.entity.PlanRecErp;
+import ru.cip.ws.erp.jdbc.entity.enums.StatusErp;
 
 import javax.xml.bind.JAXBElement;
 import java.util.List;
@@ -30,16 +30,16 @@ public class IncomingMessageProcessor {
 
 
     @Autowired
-    private CheckPlanDaoImpl planViewDao;
+    private PlanDaoImpl planViewDao;
 
     @Autowired
-    private PlanCheckErpDaoImpl planDao;
+    private PlanErpDaoImpl planDao;
 
     @Autowired
-    private CheckPlanRecordDaoImpl planRecordViewDao;
+    private PlanRecordDaoImpl planRecordViewDao;
 
     @Autowired
-    private PlanCheckRecordErpDaoImpl planRecordDao;
+    private PlanRecordErpDaoImpl planRecordDao;
 
 
     public void process(final String requestId, final FindInspectionResponseType findInspectionResponse, final StatusErp statusMessage) {
@@ -62,16 +62,16 @@ public class IncomingMessageProcessor {
     public void processPlanRegular294Notification(
             final String requestId, final MessageFromERP294Type.PlanRegular294Notification response, final StatusErp status
     ) {
-        final PlanCheckErp planCheckErp = planDao.getByRequestId(requestId);
-        if (planCheckErp == null) {
+        final PlanErp planErp = planDao.getByRequestId(requestId);
+        if (planErp == null) {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
-        logger.info("{} : is message for {}", requestId, planCheckErp);
-        planDao.setIDFromErp(planCheckErp, response.getID(), status, getTotalValid(response.getRest()));
-        final List<PlanCheckRecErp> records = planRecordDao.getRecordsByPlan(planCheckErp);
+        logger.info("{} : is message for {}", requestId, planErp);
+        planDao.setIDFromErp(planErp, response.getID(), status, getTotalValid(response.getRest()));
+        final List<PlanRecErp> records = planRecordDao.getRecordsByPlan(planErp);
         for (InspectionRegular294ResponseType responseRow : response.getInspectionRegular294Notification()) {
-            for (PlanCheckRecErp localRow : records) {
+            for (PlanRecErp localRow : records) {
                 if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
                     logger.info(
                             "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with PlanCheckRecErp[{}]",
@@ -100,16 +100,16 @@ public class IncomingMessageProcessor {
     public void processPlanRegular294Response(
             final String requestId, final MessageFromERP294Type.PlanRegular294Response response, final StatusErp status
     ) {
-        final PlanCheckErp planCheckErp = planDao.getByRequestId(requestId);
-        if (planCheckErp == null) {
+        final PlanErp planErp = planDao.getByRequestId(requestId);
+        if (planErp == null) {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
-        logger.info("{} : is message for {}", requestId, planCheckErp);
-        planDao.setIDFromErp(planCheckErp, response.getID(), status, getTotalValid(response.getRest()));
-        final List<PlanCheckRecErp> records = planRecordDao.getRecordsByPlan(planCheckErp);
+        logger.info("{} : is message for {}", requestId, planErp);
+        planDao.setIDFromErp(planErp, response.getID(), status, getTotalValid(response.getRest()));
+        final List<PlanRecErp> records = planRecordDao.getRecordsByPlan(planErp);
         for (InspectionRegular294ResponseType responseRow : response.getInspectionRegular294Response()) {
-            for (PlanCheckRecErp localRow : records) {
+            for (PlanRecErp localRow : records) {
                 if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
                     logger.info(
                             "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with PlanCheckRecErp[{}]",
@@ -139,19 +139,19 @@ public class IncomingMessageProcessor {
     public void processPlanResult294Notification(
             final String requestId, final MessageFromERP294Type.PlanResult294Notification response, final StatusErp status
     ) {
-        final PlanCheckErp planCheckErp = planDao.getByRequestId(requestId);
-        if (planCheckErp == null) {
+        final PlanErp planErp = planDao.getByRequestId(requestId);
+        if (planErp == null) {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
-        logger.info("{} : is message for {}", requestId, planCheckErp);
-        planDao.setIDFromErp(planCheckErp, response.getID(), status, null);
-        final List<PlanCheckRecErp> records = planRecordDao.getRecordsByPlan(planCheckErp);
+        logger.info("{} : is message for {}", requestId, planErp);
+        planDao.setIDFromErp(planErp, response.getID(), status, null);
+        final List<PlanRecErp> records = planRecordDao.getRecordsByPlan(planErp);
 
         for (MessageFromERP294Type.PlanResult294Notification.InspectionResult294Notification responseRow : response
                 .getInspectionResult294Notification()) {
             if (responseRow.getID() != null) {
-                for (PlanCheckRecErp localRow : records) {
+                for (PlanRecErp localRow : records) {
                     if (Objects.equals(localRow.getErpId(), responseRow.getID())) {
                         logger.info(
                                 "{} : InspectionResult294Notification[LOCATION='{}'] correlated with PlanCheckRecErp[{}]",
@@ -202,12 +202,12 @@ public class IncomingMessageProcessor {
 
 
     public void processStatusMessage(final String requestId, final ResponseMsg msg, final StatusErp status) {
-        final PlanCheckErp planCheckErp = planDao.getByRequestId(requestId);
-        if (planCheckErp == null) {
+        final PlanErp planErp = planDao.getByRequestId(requestId);
+        if (planErp == null) {
             logger.warn("{} : Skip. No PlanCheckErp found", requestId);
             return;
         }
-        logger.info("{} : Founded PlanCheckErp: {}", requestId, planCheckErp);
-        planDao.setStatus(planCheckErp, status);
+        logger.info("{} : Founded PlanCheckErp: {}", requestId, planErp);
+        planDao.setStatus(planErp, status);
     }
 }

@@ -2,8 +2,8 @@ package ru.cip.ws.erp.jdbc.dao;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
-import ru.cip.ws.erp.jdbc.entity.CipCheckPlanRecord;
+import ru.cip.ws.erp.jdbc.entity.views.Plan;
+import ru.cip.ws.erp.jdbc.entity.views.PlanRecord;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -17,17 +17,17 @@ import java.util.List;
  */
 @Repository
 @Transactional
-public class CheckPlanRecordDaoImpl {
+public class PlanRecordDaoImpl {
 
     @PersistenceContext
     private EntityManager em;
 
-    public List<CipCheckPlanRecord> getAllRecords() {
-        return em.createQuery("SELECT a FROM CipCheckPlanRecord a ", CipCheckPlanRecord.class).getResultList();
+    public List<PlanRecord> getAllRecords() {
+        return em.createQuery("SELECT a FROM PlanRecord a ", PlanRecord.class).getResultList();
     }
 
-    public List<CipCheckPlanRecord> getRecordsByPlan(final CipCheckPlan plan) {
-        return em.createQuery("SELECT a FROM CipCheckPlanRecord a WHERE a.plan.id = :plan_id", CipCheckPlanRecord.class)
+    public List<PlanRecord> getRecordsByPlan(final Plan plan) {
+        return em.createQuery("SELECT a FROM PlanRecord a WHERE a.plan.id = :plan_id", PlanRecord.class)
                 .setParameter("plan_id", plan.getId()).getResultList();
     }
 

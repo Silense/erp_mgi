@@ -6,12 +6,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestHandler;
-import ru.cip.ws.erp.jdbc.dao.CheckPlanDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.CheckPlanRecordDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.PlanCheckErpDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.PlanCheckRecordErpDaoImpl;
-import ru.cip.ws.erp.jdbc.entity.CipCheckPlan;
-import ru.cip.ws.erp.jdbc.entity.PlanCheckErp;
+import ru.cip.ws.erp.jdbc.dao.PlanDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanErpDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanRecordDaoImpl;
+import ru.cip.ws.erp.jdbc.dao.PlanRecordErpDaoImpl;
+import ru.cip.ws.erp.jdbc.entity.PlanErp;
+import ru.cip.ws.erp.jdbc.entity.views.Plan;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -34,16 +34,16 @@ public class stopErpUpdateService implements HttpRequestHandler {
     private static final String PARAM_NAME_CHECK_PLAN_ID = "CHECK_PLAN_ID";
 
     @Autowired
-    private CheckPlanDaoImpl planViewDao;
+    private PlanDaoImpl planViewDao;
 
     @Autowired
-    private PlanCheckErpDaoImpl planDao;
+    private PlanErpDaoImpl planDao;
 
     @Autowired
-    private CheckPlanRecordDaoImpl planRecordViewDao;
+    private PlanRecordDaoImpl planRecordViewDao;
 
     @Autowired
-    private PlanCheckRecordErpDaoImpl planRecordDao;
+    private PlanRecordErpDaoImpl planRecordDao;
 
 
     @Override
@@ -73,23 +73,23 @@ public class stopErpUpdateService implements HttpRequestHandler {
         final Integer param_check_plan_id = getIntegerParameter(request, PARAM_NAME_CHECK_PLAN_ID);
         logger.info("{} : is processPlanCheckCancel param ({}={})", requestId, PARAM_NAME_CHECK_PLAN_ID, param_check_plan_id);
         if (param_check_plan_id != null) {
-            final CipCheckPlan checkPlan = planViewDao.getById(param_check_plan_id);
+            final Plan checkPlan = planViewDao.getById(param_check_plan_id);
             if (checkPlan == null) {
                 logger.warn("{} : End. CheckPlan[{}] not found ", requestId, param_check_plan_id);
                 response.getWriter().print(String.format("Не найден план проверки [%s]", param_check_plan_id));
                 response.setStatus(500);
                 return;
             }
-            final List<PlanCheckErp> activeByPlan = planDao.getActiveByPlan(checkPlan, dataKind);
+            final List<PlanErp> activeByPlan = planDao.getActiveByPlan(checkPlan, dataKind);
             if (activeByPlan.isEmpty()) {
                 logger.warn("{} : End. No active plan found ", requestId);
                 response.getWriter().print("Нет сессий, доступных для прерывания");
                 response.setStatus(500);
                 return;
             }
-            for (PlanCheckErp planCheckErp : activeByPlan) {
-                planDao.cancel(planCheckErp);
-                logger.info("{} : : Canceled {}", requestId, planCheckErp);
+            for (PlanErp planErp : activeByPlan) {
+                planDao.cancel(planErp);
+                logger.info("{} : : Canceled {}", requestId, planErp);
             }
             response.getWriter().print("Сессия завершена по запросу пользователя");
             response.setStatus(200);

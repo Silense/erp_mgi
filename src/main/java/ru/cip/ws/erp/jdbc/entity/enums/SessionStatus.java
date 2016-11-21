@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jdbc.entity.enums;
 
 /**
  * Author: Upatov Egor <br>

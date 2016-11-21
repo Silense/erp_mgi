@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jdbc.entity.views;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -6,12 +6,11 @@ import java.util.Date;
 /**
  * Author: Upatov Egor <br>
  * Date: 11.09.2016, 15:43 <br>
- * Company: Bars Group [ www.bars.open.ru ]
- * Description:
+ * Description: Плановые проверки для первичного размещения и корректировки 294 ФЗ
  */
 @Entity
 @Table(name = "CIP_CHECK_PLAN_RECORD_V", schema = "ODOPM_SRC")
-public class CipCheckPlanRecord {
+public class PlanRecord {
     @Id
     @Column(name = "CORRELATION_ID")
     private Integer correlationId;
@@ -102,10 +101,10 @@ public class CipCheckPlanRecord {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "CHECK_PLAN_ID")
-    private CipCheckPlan plan;
+    private Plan plan;
 
 
-    public CipCheckPlanRecord() {
+    public PlanRecord() {
     }
 
     public Integer getCorrelationId() {
@@ -340,11 +339,11 @@ public class CipCheckPlanRecord {
         this.LAST_VIOLATION_DATE = LAST_VIOLATION_DATE;
     }
 
-    public CipCheckPlan getPlan() {
+    public Plan getPlan() {
         return plan;
     }
 
-    public void setPlan(final CipCheckPlan plan) {
+    public void setPlan(final Plan plan) {
         this.plan = plan;
     }
 

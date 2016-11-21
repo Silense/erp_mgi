@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.factory.MessageFactory;
 import ru.cip.ws.erp.jdbc.entity.*;
+import ru.cip.ws.erp.jdbc.entity.views.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -61,11 +62,11 @@ public class TestMessageProcessor {
     }
 
     public void processPlanRegular294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
-        final CipCheckPlan planCheck = new CipCheckPlan();
+        final Plan planCheck = new Plan();
         planCheck.setId(999999);
 
-        final List<CipCheckPlanRecord> planRecords = new ArrayList<>(3);
-        final CipCheckPlanRecord r_1 = new CipCheckPlanRecord();
+        final List<PlanRecord> planRecords = new ArrayList<>(3);
+        final PlanRecord r_1 = new PlanRecord();
         r_1.setORG_NAME("Общество с ограниченной ответственностью ;Информационный вычислительный центр;");
         r_1.setADR_SEC_I("603104, Нижегородская область, г. Нижний Новгород, ул. Нартова, д.6");
         r_1.setADR_SEC_II("");
@@ -86,7 +87,7 @@ public class TestMessageProcessor {
         r_1.setORDER_NUM("");
         r_1.setCorrelationId(10001);
 
-        final CipCheckPlanRecord r_2 = new CipCheckPlanRecord();
+        final PlanRecord r_2 = new PlanRecord();
         r_2.setORG_NAME("ФГУП ;Главный центр специальной связи; филиал Управление специальной связи по Нижегородской области");
         r_2.setADR_SEC_I("603000, Нижегородская область, г. Нижний Новгород, ул. Большая Покровская, д. 56");
         r_2.setADR_SEC_II("");
@@ -106,7 +107,7 @@ public class TestMessageProcessor {
         r_2.setORDER_NUM("");
         r_2.setCorrelationId(10002);
 
-        final CipCheckPlanRecord r_3 = new CipCheckPlanRecord();
+        final PlanRecord r_3 = new PlanRecord();
         r_3.setORG_NAME("Якоби Виктор Владимирович");
         r_3.setADR_SEC_I("");
         r_3.setADR_SEC_II("Адрес местонахождения  ИП");
@@ -151,16 +152,16 @@ public class TestMessageProcessor {
             final String requestId, final HttpServletResponse response
     ) throws IOException {
 
-        final CipCheckPlan planCheck = new CipCheckPlan();
+        final Plan planCheck = new Plan();
         planCheck.setId(999999);
 
-        final PlanCheckErp planCheckErp = new PlanCheckErp();
-        planCheckErp.setCipChPlLglApprvdId(planCheck.getId());
-        planCheckErp.setErpId(new BigInteger("2016000109"));
+        final PlanErp planErp = new PlanErp();
+        planErp.setCipChPlLglApprvdId(planCheck.getId());
+        planErp.setErpId(new BigInteger("2016000109"));
 
-        final List<CipCheckPlanRecord> planRecords = new ArrayList<>(3);
+        final List<PlanRecord> planRecords = new ArrayList<>(3);
         final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(3);
-        final CipCheckPlanRecord r_1 = new CipCheckPlanRecord();
+        final PlanRecord r_1 = new PlanRecord();
         r_1.setORG_NAME("Общество с ограниченной ответственностью ;Информационный вычислительный центр;");
         r_1.setADR_SEC_I("603104, Нижегородская область, г. Нижний Новгород, ул. Нартова, д.6");
         r_1.setADR_SEC_II("");
@@ -181,7 +182,7 @@ public class TestMessageProcessor {
         r_1.setCorrelationId(10001);
         erpIDByCorrelatedID.put(10001, new BigInteger("201600000533"));
 
-        final CipCheckPlanRecord r_2 = new CipCheckPlanRecord();
+        final PlanRecord r_2 = new PlanRecord();
         r_2.setORG_NAME("ФГУП ;Главный центр специальной связи; филиал Управление специальной связи по Нижегородской области");
         r_2.setADR_SEC_I("603000, Нижегородская область, г. Нижний Новгород, ул. Большая Покровская, д. 56");
         r_2.setADR_SEC_II("");
@@ -204,7 +205,7 @@ public class TestMessageProcessor {
         r_2.setCorrelationId(10002);
         erpIDByCorrelatedID.put(10002, new BigInteger("201600000534"));
 
-        final CipCheckPlanRecord a_3 = new CipCheckPlanRecord();
+        final PlanRecord a_3 = new PlanRecord();
         a_3.setORG_NAME("Якоби Виктор Владимирович");
         a_3.setADR_SEC_I("");
         a_3.setADR_SEC_II("Адрес местонахождения  ИП");
@@ -240,7 +241,7 @@ public class TestMessageProcessor {
                 MessageFactory.constructAddressee("1020500000", "Прокуратура Московской области "),
                 "Федеральная налоговая служба",
                 planCheck,
-                planCheckErp.getErpId(),
+                planErp.getErpId(),
                 "",
                 2016,
                 planRecords,
@@ -250,16 +251,16 @@ public class TestMessageProcessor {
     }
 
     public void processPlanResult294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
-        final CipCheckPlan planCheck = new CipCheckPlan();
+        final Plan planCheck = new Plan();
         planCheck.setId(999999);
 
-        final PlanCheckErp planCheckErp = new PlanCheckErp();
-        planCheckErp.setCipChPlLglApprvdId(planCheck.getId());
-        planCheckErp.setErpId(new BigInteger("2016000109"));
+        final PlanErp planErp = new PlanErp();
+        planErp.setCipChPlLglApprvdId(planCheck.getId());
+        planErp.setErpId(new BigInteger("2016000109"));
 
-        final Map<CipActCheck, List<CipActCheckViolation>> actMap = new HashMap<>(1);
-        final List<CipActCheckViolation> violationList = new ArrayList<>(2);
-        final CipActCheck act = new CipActCheck();
+        final Map<PlanAct, List<PlanActViolation>> actMap = new HashMap<>(1);
+        final List<PlanActViolation> violationList = new ArrayList<>(2);
+        final PlanAct act = new PlanAct();
         act.setACT_DATE_CREATE(parseTestDate("2015-07-29"));
         act.setACT_TIME_CREATE(parseTestDate("15:45:00", "HH:mm:ss"));
         act.setACT_PLACE_CREATE("Место составления акта - адрес");
@@ -275,7 +276,7 @@ public class TestMessageProcessor {
         act.setUNDOIG_SEC_I("");
         act.setCorrelationID(10001);
 
-        final CipActCheckViolation v_1 = new CipActCheckViolation();
+        final PlanActViolation v_1 = new PlanActViolation();
         v_1.setVIOLATION_ID(new BigInteger("1"));
         v_1.setVIOLATION_NOTE("Нарушено столько то раз там-то там -то правовой акт №1");
         v_1.setVIOLATION_ACT("Правовой акт №1");
@@ -294,7 +295,7 @@ public class TestMessageProcessor {
         v_1.setLAWSUIT_SEC_VII("");
         violationList.add(v_1);
 
-        final CipActCheckViolation v_2 = new CipActCheckViolation();
+        final PlanActViolation v_2 = new PlanActViolation();
         v_2.setVIOLATION_ID(new BigInteger("2"));
         v_2.setVIOLATION_NOTE("Нарушено столько то раз там-то там -то правовой акт №2");
         v_2.setVIOLATION_ACT("Правовой акт №2");
@@ -325,7 +326,7 @@ public class TestMessageProcessor {
                 MessageFactory.constructAddressee("1020500000", "Прокуратура Московской области "),
                 "Федеральная налоговая служба",
                 planCheck,
-                planCheckErp.getErpId(),
+                planErp.getErpId(),
                 2016,
                 actMap,
                 erpIDByCorrelatedID
@@ -334,16 +335,16 @@ public class TestMessageProcessor {
     }
 
     public void processPlanResult294Correction(final String requestId, final HttpServletResponse response) throws IOException {
-        final CipCheckPlan planCheck = new CipCheckPlan();
+        final Plan planCheck = new Plan();
         planCheck.setId(999999);
 
-        final PlanCheckErp planCheckErp = new PlanCheckErp();
-        planCheckErp.setCipChPlLglApprvdId(planCheck.getId());
-        planCheckErp.setErpId(new BigInteger("2016000109"));
+        final PlanErp planErp = new PlanErp();
+        planErp.setCipChPlLglApprvdId(planCheck.getId());
+        planErp.setErpId(new BigInteger("2016000109"));
 
-        final Map<CipActCheck, List<CipActCheckViolation>> actMap = new HashMap<>(1);
-        final List<CipActCheckViolation> violationList = new ArrayList<>(1);
-        final CipActCheck act = new CipActCheck();
+        final Map<PlanAct, List<PlanActViolation>> actMap = new HashMap<>(1);
+        final List<PlanActViolation> violationList = new ArrayList<>(1);
+        final PlanAct act = new PlanAct();
         act.setACT_DATE_CREATE(parseTestDate("2015-07-29"));
         act.setACT_TIME_CREATE(parseTestDate("15:45:00", "HH:mm:ss"));
         act.setACT_PLACE_CREATE("Место составления акта - адрес");
@@ -359,7 +360,7 @@ public class TestMessageProcessor {
         act.setUNDOIG_SEC_I("");
         act.setCorrelationID(10002);
 
-        final CipActCheckViolation v_1 = new CipActCheckViolation();
+        final PlanActViolation v_1 = new PlanActViolation();
         v_1.setVIOLATION_ID(new BigInteger("1"));
         v_1.setVIOLATION_NOTE("Нарушено столько то раз там-то там -то правовой акт №1");
         v_1.setVIOLATION_ACT("Правовой акт №1");
@@ -388,7 +389,7 @@ public class TestMessageProcessor {
                 MessageFactory.constructMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10001696877")),
                 MessageFactory.constructAddressee("1020500000", "Прокуратура Московской области "),
                 planCheck,
-                planCheckErp.getErpId(),
+                planErp.getErpId(),
                 2016,
                 actMap,
                 erpIDByCorrelatedID
@@ -418,9 +419,9 @@ public class TestMessageProcessor {
         uplan.setNOTICE_WAY("Почтой");
         uplan.setTYPE_OF_INSP("Заявление КО");
 
-        final List<UplanAddress> addressList = new ArrayList<>(2);
+        final List<UplanRecord> addressList = new ArrayList<>(2);
 
-        final UplanAddress a1 = new UplanAddress();
+        final UplanRecord a1 = new UplanRecord();
         a1.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
         a1.setINN("7729138352");
         a1.setOGRN("1034230001882");
@@ -430,7 +431,7 @@ public class TestMessageProcessor {
         a1.setCORRELATION_ID((long) 10001);
         addressList.add(a1);
 
-        final UplanAddress a2 = new UplanAddress();
+        final UplanRecord a2 = new UplanRecord();
         a2.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
         a2.setINN("7729138352");
         a2.setOGRN("1034230001882");
@@ -477,9 +478,9 @@ public class TestMessageProcessor {
         uplan.setORDER_DATE(parseTestDate("2015-08-01"));
         uplan.setORDER_NUM("Номер приказа о проведении");
 
-        final List<UplanAddress> addressList = new ArrayList<>(2);
+        final List<UplanRecord> addressList = new ArrayList<>(2);
 
-        final UplanAddress a1 = new UplanAddress();
+        final UplanRecord a1 = new UplanRecord();
         a1.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
         a1.setINN("7729138352");
         a1.setOGRN("1034230001882");
@@ -489,7 +490,7 @@ public class TestMessageProcessor {
         a1.setCORRELATION_ID((long) 10001);
         addressList.add(a1);
 
-        final UplanAddress a2 = new UplanAddress();
+        final UplanRecord a2 = new UplanRecord();
         a2.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
         a2.setINN("7729138352");
         a2.setOGRN("1034230001882");
@@ -519,11 +520,18 @@ public class TestMessageProcessor {
     }
 
     public void processUplanResult294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
-        final String s = "4.1.10 :: Эталонный :: Запрос на повторное первичное размещение результатов внеплановой проверки с корректными данными";
-        /**
-         *  MessageFactory.constructMailer("ФНС России", "1047707030513", 10000001169L, 10001696877L),
-         MessageFactory.constructAddressee("1020500000", "Прокуратура Московской области "),
-         */
+        final String result = messageService.setUplanResult294Initialization(
+                requestId,
+                "4.1.10 :: Эталонный :: Запрос на повторное первичное размещение результатов внеплановой проверки с корректными данными",
+                MessageFactory.constructMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10001696877")),
+                MessageFactory.constructAddressee("1020500000", "Прокуратура Московской области "),
+                "Федеральная налоговая служба",
+                uplan,
+                new BigInteger("2016000119"),
+                addressList,
+                erpIDByCorrelatedID
+        );
+        wrapResponse(response, result);
     }
 
     public void processUplanResult294Correction(final String requestId, final HttpServletResponse response) throws IOException {

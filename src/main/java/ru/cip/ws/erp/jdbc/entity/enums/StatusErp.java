@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jdbc.entity.enums;
 
 import ru.cip.ws.erp.generated.erptypes.StatusCode;
 

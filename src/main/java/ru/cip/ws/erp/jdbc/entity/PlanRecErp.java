@@ -1,5 +1,7 @@
 package ru.cip.ws.erp.jdbc.entity;
 
+import ru.cip.ws.erp.jdbc.entity.enums.StatusErp;
+
 import javax.persistence.*;
 import java.math.BigInteger;
 
@@ -11,7 +13,7 @@ import java.math.BigInteger;
  */
 @Entity
 @Table(name = "CIP_PLANCHECK_REC_ERP", schema = "ODOPM_SRC", catalog = "")
-public class PlanCheckRecErp {
+public class PlanRecErp {
 
     @Id
     @Column(name = "ID_CHECK_PLAN_REC_ERP")
@@ -21,7 +23,7 @@ public class PlanCheckRecErp {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ID_CHECK_PLAN_ERP")
-    private PlanCheckErp plan;
+    private PlanErp plan;
 
 
     @Column(name = "CODE_CHECK_PLAN_REC_ERP")
@@ -37,7 +39,7 @@ public class PlanCheckRecErp {
     @Column(name = "REC_TOTAL_VALID")
     private String totalValid;
 
-    public PlanCheckRecErp() {
+    public PlanRecErp() {
     }
 
     public Integer getCorrelationId() {
@@ -64,11 +66,11 @@ public class PlanCheckRecErp {
         this.id = id;
     }
 
-    public PlanCheckErp getPlan() {
+    public PlanErp getPlan() {
         return plan;
     }
 
-    public void setPlan(final PlanCheckErp plan) {
+    public void setPlan(final PlanErp plan) {
         this.plan = plan;
     }
 
@@ -97,7 +99,7 @@ public class PlanCheckRecErp {
             return false;
         }
 
-        final PlanCheckRecErp that = (PlanCheckRecErp) o;
+        final PlanRecErp that = (PlanRecErp) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;

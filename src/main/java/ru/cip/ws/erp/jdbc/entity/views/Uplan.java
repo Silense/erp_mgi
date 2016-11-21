@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jdbc.entity.views;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,8 +10,9 @@ import java.util.Date;
 /**
  * Author: Upatov Egor <br>
  * Date: 20.11.2016, 6:53 <br>
- * Company: Bars Group [ www.bars.open.ru ]
- * Description:
+ * Description: 6.	Перечень атрибутов Распоряжений по внеплановой проверке,
+ * ожидаемых  в ЕРП от ЕИС МЖИ
+ * (более подробно см. пункт № 4.3.28 из руководства пользователя «РП_вида_сведений_ АС_ ЕПР_ СМЭВ_3_2.1»)
  */
 @Entity
 @Table(name = "CIP_UNSCHEDL_CHECK_INSTR_V", schema = "ODOPM_SRC")

@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jdbc.entity.views;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -7,11 +7,11 @@ import java.util.Date;
  * Author: Upatov Egor <br>
  * Date: 16.09.2016, 2:32 <br>
  * Company: Bars Group [ www.bars.open.ru ]
- * Description:
+ * Description: Утвержденные планы проверок ЮЛ/ИП
  */
 @Entity
 @Table(name = "CIP_CHECK_PLAN_LGL_APPRVD_V", schema = "ODOPM_SRC")
-public class CipCheckPlan {
+public class Plan {
     @Id
     @Column(name = "CHECK_PLAN_ID")
     private Integer id;
@@ -26,7 +26,7 @@ public class CipCheckPlan {
     @Column(name = "ACCEPTED_NAME")
     private String acceptedName;
 
-    public CipCheckPlan() {
+    public Plan() {
     }
 
     public String getAcceptedName() {

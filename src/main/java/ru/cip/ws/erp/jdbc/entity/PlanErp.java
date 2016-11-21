@@ -1,5 +1,7 @@
 package ru.cip.ws.erp.jdbc.entity;
 
+import ru.cip.ws.erp.jdbc.entity.enums.StatusErp;
+import ru.cip.ws.erp.jdbc.entity.sessions.ExpSession;
 import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.persistence.*;
@@ -8,12 +10,11 @@ import java.math.BigInteger;
 /**
  * Author: Upatov Egor <br>
  * Date: 18.09.2016, 16:28 <br>
- * Company: Bars Group [ www.bars.open.ru ]
- * Description:
+ * Description: Утвержденные планы проверок ЮЛ/ИП
  */
 @Entity
 @Table(name = "CIP_PLANCHECK_ERP", schema = "ODOPM_SRC", catalog = "")
-public class PlanCheckErp {
+public class PlanErp {
 
     @Id
     @Column(name = "ID_CHECK_PLAN_ERP")
@@ -51,7 +52,7 @@ public class PlanCheckErp {
     @Column(name = "PLAN_TOTAL_VALID")
     private String totalValid;
 
-    public PlanCheckErp() {
+    public PlanErp() {
     }
 
     public Integer getId() {
@@ -140,7 +141,7 @@ public class PlanCheckErp {
             return false;
         }
 
-        final PlanCheckErp that = (PlanCheckErp) o;
+        final PlanErp that = (PlanErp) o;
 
         if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;
