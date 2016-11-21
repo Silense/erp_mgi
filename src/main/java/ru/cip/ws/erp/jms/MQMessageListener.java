@@ -8,12 +8,12 @@ import org.springframework.jms.core.MessageCreator;
 import ru.cip.ws.erp.business.IncomingMessageProcessor;
 import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.generated.erptypes.*;
-import ru.cip.ws.erp.jdbc.dao.ExportSessionDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.ImportSessionDaoImpl;
-import ru.cip.ws.erp.jdbc.entity.sessions.ExpSession;
-import ru.cip.ws.erp.jdbc.entity.sessions.ImpSession;
-import ru.cip.ws.erp.jdbc.entity.sessions.ImpSessionEvent;
-import ru.cip.ws.erp.jdbc.entity.enums.StatusErp;
+import ru.cip.ws.erp.jpa.dao.ExportSessionDaoImpl;
+import ru.cip.ws.erp.jpa.dao.ImportSessionDaoImpl;
+import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
+import ru.cip.ws.erp.jpa.entity.sessions.ImpSession;
+import ru.cip.ws.erp.jpa.entity.sessions.ImpSessionEvent;
+import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 
 import javax.jms.*;
 import javax.xml.bind.JAXBException;

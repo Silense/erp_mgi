@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.factory.MessageFactory;
-import ru.cip.ws.erp.jdbc.entity.*;
-import ru.cip.ws.erp.jdbc.entity.views.*;
+import ru.cip.ws.erp.jpa.entity.*;
+import ru.cip.ws.erp.jpa.entity.views.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

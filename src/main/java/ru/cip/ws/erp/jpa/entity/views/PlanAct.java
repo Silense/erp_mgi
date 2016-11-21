@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity.views;
+package ru.cip.ws.erp.jpa.entity.views;
 
 import javax.persistence.*;
 import java.math.BigInteger;

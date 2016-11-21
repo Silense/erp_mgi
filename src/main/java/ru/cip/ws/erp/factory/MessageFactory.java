@@ -4,7 +4,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import ru.cip.ws.erp.generated.erptypes.*;
-import ru.cip.ws.erp.jdbc.entity.views.*;
+import ru.cip.ws.erp.jpa.entity.views.*;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;

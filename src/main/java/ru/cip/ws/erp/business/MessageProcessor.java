@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.factory.MessageFactory;
 import ru.cip.ws.erp.factory.PropertiesHolder;
-import ru.cip.ws.erp.jdbc.dao.*;
-import ru.cip.ws.erp.jdbc.entity.*;
-import ru.cip.ws.erp.jdbc.entity.views.PlanAct;
-import ru.cip.ws.erp.jdbc.entity.views.PlanActViolation;
-import ru.cip.ws.erp.jdbc.entity.views.Plan;
-import ru.cip.ws.erp.jdbc.entity.views.PlanRecord;
+import ru.cip.ws.erp.jpa.dao.*;
+import ru.cip.ws.erp.jpa.entity.*;
+import ru.cip.ws.erp.jpa.entity.views.PlanAct;
+import ru.cip.ws.erp.jpa.entity.views.PlanActViolation;
+import ru.cip.ws.erp.jpa.entity.views.Plan;
+import ru.cip.ws.erp.jpa.entity.views.PlanRecord;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;

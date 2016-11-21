@@ -1,6 +1,6 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jpa.entity;
 
-import ru.cip.ws.erp.jdbc.entity.enums.StatusErp;
+import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 
 import javax.persistence.*;
 import java.math.BigInteger;

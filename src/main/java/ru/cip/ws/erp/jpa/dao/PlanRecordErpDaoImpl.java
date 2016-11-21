@@ -1,11 +1,11 @@
-package ru.cip.ws.erp.jdbc.dao;
+package ru.cip.ws.erp.jpa.dao;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.cip.ws.erp.jdbc.entity.views.PlanRecord;
-import ru.cip.ws.erp.jdbc.entity.PlanErp;
-import ru.cip.ws.erp.jdbc.entity.PlanRecErp;
-import ru.cip.ws.erp.jdbc.entity.enums.StatusErp;
+import ru.cip.ws.erp.jpa.entity.views.PlanRecord;
+import ru.cip.ws.erp.jpa.entity.PlanErp;
+import ru.cip.ws.erp.jpa.entity.PlanRecErp;
+import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

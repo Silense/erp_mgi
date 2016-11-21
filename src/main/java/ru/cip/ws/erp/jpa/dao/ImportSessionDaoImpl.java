@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.dao;
+package ru.cip.ws.erp.jpa.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.cip.ws.erp.jdbc.entity.sessions.ExpSession;
-import ru.cip.ws.erp.jdbc.entity.sessions.ImpSession;
-import ru.cip.ws.erp.jdbc.entity.sessions.ImpSessionEvent;
-import ru.cip.ws.erp.jdbc.entity.enums.SessionStatus;
+import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
+import ru.cip.ws.erp.jpa.entity.sessions.ImpSession;
+import ru.cip.ws.erp.jpa.entity.sessions.ImpSessionEvent;
+import ru.cip.ws.erp.jpa.entity.enums.SessionStatus;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

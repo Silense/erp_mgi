@@ -1,4 +1,4 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jpa.entity;
 
 import javax.persistence.*;
 import java.util.Date;

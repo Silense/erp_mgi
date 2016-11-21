@@ -1,13 +1,13 @@
-package ru.cip.ws.erp.jdbc.dao;
+package ru.cip.ws.erp.jpa.dao;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.cip.ws.erp.jdbc.entity.views.Plan;
-import ru.cip.ws.erp.jdbc.entity.sessions.ExpSession;
-import ru.cip.ws.erp.jdbc.entity.PlanErp;
-import ru.cip.ws.erp.jdbc.entity.enums.StatusErp;
+import ru.cip.ws.erp.jpa.entity.views.Plan;
+import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
+import ru.cip.ws.erp.jpa.entity.PlanErp;
+import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.persistence.EntityManager;

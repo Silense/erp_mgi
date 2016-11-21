@@ -74,7 +74,7 @@
     </logger>
 
     <!--Для DAO-->
-    <logger name="ru.cip.ws.erp.jdbc.dao" level="DEBUG" additivity="true">
+    <logger name="ru.cip.ws.erp.jpa.dao" level="DEBUG" additivity="true">
         <appender-ref ref="APPENDER_DAO"/>
     </logger>
 

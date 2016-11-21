@@ -1,11 +1,11 @@
-package ru.cip.ws.erp.jdbc.dao;
+package ru.cip.ws.erp.jpa.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.cip.ws.erp.jdbc.entity.views.PlanAct;
-import ru.cip.ws.erp.jdbc.entity.views.PlanActViolation;
-import ru.cip.ws.erp.jdbc.entity.views.Plan;
+import ru.cip.ws.erp.jpa.entity.views.PlanAct;
+import ru.cip.ws.erp.jpa.entity.views.PlanActViolation;
+import ru.cip.ws.erp.jpa.entity.views.Plan;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

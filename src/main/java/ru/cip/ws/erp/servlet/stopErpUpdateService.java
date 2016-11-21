@@ -6,12 +6,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.HttpRequestHandler;
-import ru.cip.ws.erp.jdbc.dao.PlanDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.PlanErpDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.PlanRecordDaoImpl;
-import ru.cip.ws.erp.jdbc.dao.PlanRecordErpDaoImpl;
-import ru.cip.ws.erp.jdbc.entity.PlanErp;
-import ru.cip.ws.erp.jdbc.entity.views.Plan;
+import ru.cip.ws.erp.jpa.dao.PlanDaoImpl;
+import ru.cip.ws.erp.jpa.dao.PlanErpDaoImpl;
+import ru.cip.ws.erp.jpa.dao.PlanRecordDaoImpl;
+import ru.cip.ws.erp.jpa.dao.PlanRecordErpDaoImpl;
+import ru.cip.ws.erp.jpa.entity.PlanErp;
+import ru.cip.ws.erp.jpa.entity.views.Plan;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

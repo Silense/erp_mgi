@@ -1,7 +1,7 @@
-package ru.cip.ws.erp.jdbc.entity;
+package ru.cip.ws.erp.jpa.entity;
 
-import ru.cip.ws.erp.jdbc.entity.enums.StatusErp;
-import ru.cip.ws.erp.jdbc.entity.sessions.ExpSession;
+import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
+import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
 import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.persistence.*;
