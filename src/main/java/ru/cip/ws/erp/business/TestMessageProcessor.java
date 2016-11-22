@@ -156,7 +156,7 @@ public class TestMessageProcessor {
         plan.setId(999999);
 
         final PlanErp planErp = new PlanErp();
-        planErp.setCipChPlLglApprvdId(plan.getId());
+        planErp.setPlanId(plan.getId());
         planErp.setErpId(new BigInteger("2016000109"));
 
         final List<PlanRecord> planRecords = new ArrayList<>(3);
@@ -255,7 +255,7 @@ public class TestMessageProcessor {
         plan.setId(999999);
 
         final PlanErp planErp = new PlanErp();
-        planErp.setCipChPlLglApprvdId(plan.getId());
+        planErp.setPlanId(plan.getId());
         planErp.setErpId(new BigInteger("2016000109"));
 
         final Map<PlanAct, List<PlanActViolation>> actMap = new HashMap<>(1);

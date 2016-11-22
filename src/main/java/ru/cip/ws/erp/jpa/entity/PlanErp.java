@@ -33,7 +33,7 @@ public class PlanErp {
     private StatusErp status;
 
     @Column(name = "CIP_CH_PL_LGL_APPRVD_ID")
-    private Integer cipChPlLglApprvdId;
+    private Integer planId;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "EXP_SESSION_ID", nullable = true)
@@ -87,12 +87,12 @@ public class PlanErp {
         this.status = status;
     }
 
-    public Integer getCipChPlLglApprvdId() {
-        return cipChPlLglApprvdId;
+    public Integer getPlanId() {
+        return planId;
     }
 
-    public void setCipChPlLglApprvdId(final Integer cipChPlLglApprvdId) {
-        this.cipChPlLglApprvdId = cipChPlLglApprvdId;
+    public void setPlanId(final Integer planId) {
+        this.planId = planId;
     }
 
     public ExpSession getExpSession() {
@@ -125,7 +125,7 @@ public class PlanErp {
         result = 31 * result + (prosecutor != null ? prosecutor.hashCode() : 0);
         result = 31 * result + (erpId != null ? erpId.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
-        result = 31 * result + (cipChPlLglApprvdId != null ? cipChPlLglApprvdId.hashCode() : 0);
+        result = 31 * result + (planId != null ? planId.hashCode() : 0);
         result = 31 * result + (expSession != null ? expSession.hashCode() : 0);
         result = 31 * result + (dataKind != null ? dataKind.hashCode() : 0);
         result = 31 * result + (totalValid != null ? totalValid.hashCode() : 0);
@@ -155,7 +155,7 @@ public class PlanErp {
         if (status != null ? !status.equals(that.status) : that.status != null) {
             return false;
         }
-        if (cipChPlLglApprvdId != null ? !cipChPlLglApprvdId.equals(that.cipChPlLglApprvdId) : that.cipChPlLglApprvdId != null) {
+        if (planId != null ? !planId.equals(that.planId) : that.planId != null) {
             return false;
         }
         if (expSession != null ? !expSession.equals(that.expSession) : that.expSession != null) {
@@ -175,7 +175,7 @@ public class PlanErp {
         sb.append(", prosecutor=").append(prosecutor);
         sb.append(", dataKind=").append(dataKind);
         sb.append(", erpId=").append(erpId);
-        sb.append(", cipChPlLglApprvdId=").append(cipChPlLglApprvdId);
+        sb.append(", planId=").append(planId);
         sb.append(", expSessionId=").append(expSession != null ? expSession.getId() : null);
         sb.append(", totalValid='").append(totalValid).append('\'');
         sb.append('}');

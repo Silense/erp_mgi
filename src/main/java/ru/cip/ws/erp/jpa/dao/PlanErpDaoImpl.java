@@ -4,10 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.cip.ws.erp.jpa.entity.views.Plan;
-import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
 import ru.cip.ws.erp.jpa.entity.PlanErp;
 import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
+import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
+import ru.cip.ws.erp.jpa.entity.views.Plan;
 import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.persistence.EntityManager;
@@ -34,11 +34,7 @@ public class PlanErpDaoImpl {
 
 
     public PlanErp createPlanErp(
-            final Plan plan,
-            final Integer prosecutorId,
-            final DataKindEnum dataKind,
-            final ExpSession expSession,
-            final BigInteger erpID
+            final Plan plan, final Integer prosecutorId, final DataKindEnum dataKind, final ExpSession expSession, final BigInteger erpID
     ) {
         return createPlanErp(plan.getId(), prosecutorId, dataKind, expSession, erpID);
     }
@@ -59,7 +55,7 @@ public class PlanErpDaoImpl {
         }
         result.setDataKind(dataKind);
         result.setStatus(StatusErp.WAIT);
-        result.setCipChPlLglApprvdId(cipPlanID);
+        result.setPlanId(cipPlanID);
         result.setExpSession(expSession);
         em.persist(result);
         return result;
@@ -95,8 +91,9 @@ public class PlanErpDaoImpl {
     }
 
     private PlanErp getByExportSession(final Integer expSessionId) {
-        final List<PlanErp> resultList = em.createQuery("SELECT a FROM PlanErp a WHERE a.expSession.id = :expSessionId", PlanErp.class)
-                .setParameter("expSessionId", expSessionId).getResultList();
+        final List<PlanErp> resultList = em.createQuery("SELECT a FROM PlanErp a WHERE a.expSession.id = :expSessionId", PlanErp.class).setParameter(
+                "expSessionId", expSessionId
+        ).getResultList();
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
 
@@ -113,16 +110,13 @@ public class PlanErpDaoImpl {
 
     public List<PlanErp> getActiveByPlan(final Plan plan) {
         return em.createQuery(
-                "SELECT a FROM PlanErp a " +
-                        "WHERE a.cipChPlLglApprvdId = :planId " +
-                        "AND a.status NOT IN :statuses" +
-                        " ORDER BY a.expSession.START_DATE DESC", PlanErp.class
+                "SELECT a FROM PlanErp a WHERE a.planId = :planId AND a.status NOT IN :statuses ORDER BY a.expSession.START_DATE DESC", PlanErp.class
         ).setParameter("planId", plan.getId()).setParameter("statuses", StatusErp.incorrectStatuses()).getResultList();
     }
 
     public List<PlanErp> getActiveByPlan(final Plan plan, final DataKindEnum dataKind) {
         return em.createQuery(
-                "SELECT a FROM PlanErp a WHERE a.cipChPlLglApprvdId = :planId AND a.dataKind = :dataKind AND a.status NOT IN :statuses" + " ORDER BY a.expSession.START_DATE DESC",
+                "SELECT a FROM PlanErp a WHERE a.planId = :planId AND a.dataKind = :dataKind AND a.status NOT IN :statuses ORDER BY a.expSession.START_DATE DESC",
                 PlanErp.class
         ).setParameter("planId", plan.getId()).setParameter("statuses", StatusErp.incorrectStatuses()).setParameter("dataKind", dataKind)
                 .getResultList();
@@ -140,10 +134,7 @@ public class PlanErpDaoImpl {
 
     public PlanErp getLastFaultByPlan(final Plan plan) {
         final List<PlanErp> resultList = em.createQuery(
-                "SELECT a FROM PlanErp a " +
-                        "WHERE a.cipChPlLglApprvdId = :planId " +
-                        "AND a.status = :status" +
-                        " ORDER BY a.expSession.START_DATE DESC", PlanErp.class
+                "SELECT a FROM PlanErp a WHERE a.planId = :planId AND a.status = :status ORDER BY a.expSession.START_DATE DESC", PlanErp.class
         ).setParameter("planId", plan.getId()).setParameter("status", StatusErp.FAULT).getResultList();
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }

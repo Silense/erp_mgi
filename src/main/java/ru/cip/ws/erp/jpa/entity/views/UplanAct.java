@@ -1,7 +1,9 @@
 package ru.cip.ws.erp.jpa.entity.views;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -11,7 +13,15 @@ import java.util.Date;
  * Company: Bars Group [ www.bars.open.ru ]
  * Description:
  */
-//TODO
+/**
+ * TODO  Не до конца совпадает
+ * 1) нет ID
+ * 2) ACT_TIME_CREATE - в  БД дата+время (не критично)
+ * 3) DURATION - Должно быть целочисленным (количество дней затраченных на проверку) [0,17 - это 4 часа (4/24)? возможно следует тогда ставить 1]
+ */
+
+@Entity
+@Table(name="CIP_UNSCHEDL_CHECK_ACT_V", schema = "ODOPM_SRC")
 public class UplanAct {
 
     /**

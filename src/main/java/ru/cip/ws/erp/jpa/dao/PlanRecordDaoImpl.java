@@ -27,8 +27,8 @@ public class PlanRecordDaoImpl {
     }
 
     public List<PlanRecord> getRecordsByPlan(final Plan plan) {
-        return em.createQuery("SELECT a FROM PlanRecord a WHERE a.plan.id = :plan_id", PlanRecord.class)
-                .setParameter("plan_id", plan.getId()).getResultList();
+        return em.createQuery("SELECT a FROM PlanRecord a WHERE a.plan.id = :plan_id", PlanRecord.class).setParameter("plan_id", plan.getId())
+                .getResultList();
     }
 
 }

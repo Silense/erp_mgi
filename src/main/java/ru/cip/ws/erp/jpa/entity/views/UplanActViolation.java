@@ -1,7 +1,6 @@
 package ru.cip.ws.erp.jpa.entity.views;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
 
 /**
@@ -17,8 +16,17 @@ public class UplanActViolation {
      * Идентификатор нарушения в рамках результатов по проверке
      */
     @Id
-    @Column(name = " VIOLATION_ID")
+    @Column(name = "VIOLATION_ID")
     private Integer VIOLATION_ID;
+
+    /**
+     * Ссылка на акт, в рамках которого было найдено нарушение
+     * TODO  @ManyToOne(fetch = FetchType.EAGER)
+     * TODO  @JoinColumn(name = "ACT_ID")
+     * TODO  private UplanAct act;
+     */
+    @Column(name = "ACT_ID")
+    private Integer ACT_ID;
 
     /**
      * Характер  выявленного нарушения
@@ -251,5 +259,13 @@ public class UplanActViolation {
 
     public void setVIOLATION_NOTE(final String VIOLATION_NOTE) {
         this.VIOLATION_NOTE = VIOLATION_NOTE;
+    }
+
+    public Integer getACT_ID() {
+        return ACT_ID;
+    }
+
+    public void setACT_ID(final Integer ACT_ID) {
+        this.ACT_ID = ACT_ID;
     }
 }
