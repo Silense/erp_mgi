@@ -162,6 +162,7 @@ public class Uplan {
      **/
     @Column(name = "TYPE_OF_INSP")
     private String TYPE_OF_INSP;
+
     /**
      * ID проверки
      **/

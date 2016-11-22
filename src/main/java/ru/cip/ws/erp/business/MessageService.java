@@ -13,11 +13,11 @@ import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
 import ru.cip.ws.erp.generated.erptypes.ProsecutorAskType;
 import ru.cip.ws.erp.generated.erptypes.RequestMsg;
 import ru.cip.ws.erp.jms.MQMessageSender;
-import ru.cip.ws.erp.jpa.dao.ExportSessionDaoImpl;
-import ru.cip.ws.erp.jpa.dao.PlanErpDaoImpl;
-import ru.cip.ws.erp.jpa.dao.PlanRecordErpDaoImpl;
+import ru.cip.ws.erp.jpa.dao.*;
 import ru.cip.ws.erp.jpa.entity.PlanErp;
 import ru.cip.ws.erp.jpa.entity.PlanRecErp;
+import ru.cip.ws.erp.jpa.entity.UplanErp;
+import ru.cip.ws.erp.jpa.entity.UplanRecErp;
 import ru.cip.ws.erp.jpa.entity.enums.SessionStatus;
 import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
@@ -50,14 +50,39 @@ public class MessageService {
     private PlanErpDaoImpl planDao;
 
     @Autowired
+    private UplanErpDaoImpl uplanDao;
+
+    @Autowired
     private PlanRecordErpDaoImpl planRecordDao;
 
     @Autowired
     private ExportSessionDaoImpl exportSessionDao;
 
+    private ExpSession createExportInfo(final String requestId, final String description, final String messageType) {
+        final ExpSession result = exportSessionDao.createExportSession(description, messageType, requestId);
+        logger.info("{} : Created ExportSession: {}", requestId, result);
+        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, result);
+        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
+        return result;
+    }
+
     public String sendProsecutorAck(final String requestId, final String description) {
         logger.info("{} : Start processing ProsecutorAsk message", requestId);
-        return sendMessage(requestId, MessageFactory.createProsecutorAsk(requestId), description, ProsecutorAskType.class.getSimpleName());
+        final JAXBElement<RequestMsg> prosecutorAsk = MessageFactory.createProsecutorAsk(requestId);
+        final String result = JAXBMarshallerUtil.marshalAsString(prosecutorAsk, requestId);
+        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        if (StringUtils.isEmpty(result)) {
+            return null;
+        }
+        final ExpSession exportSession = createExportInfo(requestId, description, ProsecutorAskType.class.getSimpleName());
+        try {
+            messageSender.send(result);
+            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            return result;
+        } catch (final Exception e) {
+            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
+            return null;
+        }
     }
 
 
@@ -99,27 +124,18 @@ public class MessageService {
             planRecErpList.add(planRecErp);
             logger.info("{} : Created PlanRecErp: {}", requestId, planRecErp);
         }
-
         try {
-            final String messageId = messageSender.send(result);
-            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+            messageSender.send(result);
+            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            return result;
         } catch (final Exception e) {
             exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
             planDao.setStatus(planErp, StatusErp.ERROR);
             planRecordDao.setStatus(planRecErpList, StatusErp.ERROR);
             return null;
         }
-        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
-        return result;
     }
 
-    private ExpSession createExportInfo(final String requestId, final String description, final String messageType) {
-        final ExpSession result = exportSessionDao.createExportSession(description, messageType, requestId);
-        logger.info("{} : Created ExportSession: {}", requestId, result);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, result);
-        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
-        return result;
-    }
 
     public String sendUplanUnregular294Initialization(
             final String requestId,
@@ -128,10 +144,10 @@ public class MessageService {
             final MessageToERPModelType.Addressee addressee,
             final String KO_NAME,
             final Uplan uplan,
-            final List<UplanRecord> addressList
+            final List<UplanRecord> uplanRecords
     ) {
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanUnregular294Initialization(
-                requestId, mailer, addressee, KO_NAME, uplan, addressList
+                requestId, mailer, addressee, KO_NAME, uplan, uplanRecords
         );
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
         logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
@@ -141,18 +157,18 @@ public class MessageService {
         final ExpSession exportSession = createExportInfo(
                 requestId, description, MessageToERP294Type.UplanUnregular294Initialization.class.getSimpleName()
         );
-        //TODO
+        final Tuple<UplanErp, List<UplanRecErp>> uplanErpTuple = uplanDao.createErp(
+                requestId, uplan, uplanRecords, null, DataKindEnum.UPLAN_UNREGULAR_294_INITIALIZATION, exportSession
+        );
         try {
-            final String messageId = messageSender.send(result);
-            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+            messageSender.send(result);
+            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            return result;
         } catch (final Exception e) {
-            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
-//            planDao.setStatus(planErp, StatusErp.ERROR);
-//            planRecordDao.setStatus(planRecErpList, StatusErp.ERROR); TODO
+            logger.error("{} : Error while sending JMS message", requestId, e);
+            uplanDao.setErrorStatus(uplanErpTuple, "Not sent to JMS: " + e.getMessage());
             return null;
         }
-        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
-        return result;
     }
 
 
@@ -190,18 +206,16 @@ public class MessageService {
             planRecErpList.add(planRecErp);
             logger.info("{} : Created PlanRecErp: {}", requestId, planRecErp);
         }
-
         try {
-            final String messageId = messageSender.send(result);
-            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+            messageSender.send(result);
+            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            return result;
         } catch (final Exception e) {
             exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
             planDao.setStatus(planErp, StatusErp.ERROR);
             planRecordDao.setStatus(planRecErpList, StatusErp.ERROR);
             return null;
         }
-        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
-        return result;
     }
 
     public String sendUplanUnregular294Correction(
@@ -212,12 +226,11 @@ public class MessageService {
             final String KO_NAME,
             final Uplan uplan,
             final BigInteger id,
-            final List<UplanRecord> addressList,
+            final List<UplanRecord> uplanRecords,
             final Map<Long, BigInteger> erpIDByCorrelatedID
     ) {
-
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanUnregular294Correction(
-                requestId, mailer, addressee, KO_NAME, uplan, id, addressList, erpIDByCorrelatedID
+                requestId, mailer, addressee, KO_NAME, uplan, id, uplanRecords, erpIDByCorrelatedID
         );
         final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
         logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
@@ -227,18 +240,18 @@ public class MessageService {
         final ExpSession exportSession = createExportInfo(
                 requestId, description, MessageToERP294Type.UplanUnregular294Correction.class.getSimpleName()
         );
-        //TODO
+        final Tuple<UplanErp, List<UplanRecErp>> uplanErpTuple = uplanDao.createErp(
+                requestId, uplan, id, uplanRecords, erpIDByCorrelatedID, null, DataKindEnum.UPLAN_UNREGULAR_294_CORRECTION, exportSession
+        );
         try {
-            final String messageId = messageSender.send(result);
-            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+            messageSender.send(result);
+            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            return result;
         } catch (final Exception e) {
-            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
-//            planDao.setStatus(planErp, StatusErp.ERROR);
-//            planRecordDao.setStatus(planRecErpList, StatusErp.ERROR); TODO
+            logger.error("{} : Error while sending JMS message", requestId, e);
+            uplanDao.setErrorStatus(uplanErpTuple, "Not sent to JMS: " + e.getMessage());
             return null;
         }
-        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
-        return result;
     }
 
     public String sendPlanResult294Initialization(
@@ -263,9 +276,7 @@ public class MessageService {
         }
 
         final ExpSession exportSession = createExportInfo(
-                requestId,
-                description,
-                MessageToERP294Type.PlanResult294Initialization.class.getSimpleName()
+                requestId, description, MessageToERP294Type.PlanResult294Initialization.class.getSimpleName()
         );
 
         final PlanErp planErp = planDao.createPlanErp(plan, null, DataKindEnum.PLAN_RESULT_294_INITIALIZATION, exportSession, erpID);
@@ -279,18 +290,16 @@ public class MessageService {
             planRecErpList.add(planRecErp);
             logger.info("{} : Created PlanRecErp: {}", requestId, planRecErp);
         }
-
         try {
-            final String messageId = messageSender.send(result);
-            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+            messageSender.send(result);
+            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            return result;
         } catch (final Exception e) {
             exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
             planDao.setStatus(planErp, StatusErp.ERROR);
             planRecordDao.setStatus(planRecErpList, StatusErp.ERROR);
             return null;
         }
-        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
-        return result;
     }
 
     public String sendUplanResult294Initialization(
@@ -311,22 +320,19 @@ public class MessageService {
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-
         final ExpSession exportSession = createExportInfo(
-                requestId,
-                description,
-                MessageToERP294Type.UplanResult294Initialization.class.getSimpleName()
+                requestId, description, MessageToERP294Type.UplanResult294Initialization.class.getSimpleName()
         );
-
+        //TODO
         try {
-            final String messageId = messageSender.send(result);
-            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+            messageSender.send(result);
+            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            return result;
         } catch (final Exception e) {
             exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
             return null;
         }
-        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
-        return result;
+
     }
 
 
@@ -364,41 +370,15 @@ public class MessageService {
             planRecErpList.add(planRecErp);
             logger.info("{} : Created PlanRecErp: {}", requestId, planRecErp);
         }
-
         try {
-            final String messageId = messageSender.send(result);
-            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
+            messageSender.send(result);
+            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            return result;
         } catch (final Exception e) {
             exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
             planDao.setStatus(planErp, StatusErp.ERROR);
             planRecordDao.setStatus(planRecErpList, StatusErp.ERROR);
             return null;
         }
-        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
-        return result;
-
     }
-
-
-    private <T> String sendMessage(
-            final String requestId, final JAXBElement<T> requestMessage, final String description, final String messageType
-    ) {
-        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
-        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
-        if (StringUtils.isEmpty(result)) {
-            return null;
-        }
-        final ExpSession exportSession = createExportInfo(requestId, description, messageType);
-        try {
-            final String messageId = messageSender.send(result);
-            logger.info("{} : After send JMS.MessageID = \'{}\'", requestId, messageId);
-        } catch (final Exception e) {
-            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
-            return null;
-        }
-        exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
-        return result;
-    }
-
-
 }

@@ -12,7 +12,7 @@ import java.math.BigInteger;
  */
 
 @Entity
-@Table(name="CIP_UNSCHEDLCHECK_ERP", schema = "ODOPM_SRC")
+@Table(name="CIP_UNSCHEDLCHECK_REC_ERP", schema = "ODOPM_SRC")
 public class UplanRecErp {
     /**
      * Идентификатор записи (Автоинкремент)
@@ -47,7 +47,7 @@ public class UplanRecErp {
      * Наш внутренний идентифкатор Строки Внеплановой Проверки
      */
     @Column(name="CORRELATION_ID", nullable = false)
-    private Integer correlationId;
+    private Long correlationId;
 
     /**
      * Сообщение от ЕРП о состоянии плана проверки
@@ -58,11 +58,11 @@ public class UplanRecErp {
     public UplanRecErp() {
     }
 
-    public Integer getCorrelationId() {
+    public Long getCorrelationId() {
         return correlationId;
     }
 
-    public void setCorrelationId(final Integer correlationId) {
+    public void setCorrelationId(final Long correlationId) {
         this.correlationId = correlationId;
     }
 

@@ -395,6 +395,7 @@ public class TestMessageProcessor {
 
     public void processUplanUnRegular294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
         final Uplan uplan = new Uplan();
+        uplan.setCHECK_ID(new BigInteger("999999"));
         uplan.setREQUEST_NUM("Номер решения №");
         uplan.setREQUEST_DATE(parseTestDate("2015-08-12"));
         uplan.setSTART_DATE(parseTestDate("2015-08-13"));
@@ -451,7 +452,7 @@ public class TestMessageProcessor {
 
     public void processUplanUnRegular294Correction(final String requestId, final HttpServletResponse response) throws IOException {
         final Uplan uplan = new Uplan();
-        uplan.setCHECK_ID(new BigInteger("2016000119"));
+        uplan.setCHECK_ID(new BigInteger("999999"));
         uplan.setREQUEST_NUM("Номер решения №");
         uplan.setREQUEST_DATE(parseTestDate("2015-08-12"));
         uplan.setSTART_DATE(parseTestDate("2015-08-13"));
