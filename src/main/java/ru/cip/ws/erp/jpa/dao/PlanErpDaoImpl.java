@@ -1,19 +1,25 @@
 package ru.cip.ws.erp.jpa.dao;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.jpa.entity.PlanErp;
+import ru.cip.ws.erp.jpa.entity.PlanRecErp;
 import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
 import ru.cip.ws.erp.jpa.entity.views.Plan;
+import ru.cip.ws.erp.jpa.entity.views.PlanAct;
+import ru.cip.ws.erp.jpa.entity.views.PlanActViolation;
+import ru.cip.ws.erp.jpa.entity.views.PlanRecord;
 import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigInteger;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
@@ -32,76 +38,41 @@ public class PlanErpDaoImpl {
     @Autowired
     private ExportSessionDaoImpl exportSessionDao;
 
-
     public PlanErp createPlanErp(
-            final Plan plan, final Integer prosecutorId, final DataKindEnum dataKind, final ExpSession expSession, final BigInteger erpID
-    ) {
-        return createPlanErp(plan.getId(), prosecutorId, dataKind, expSession, erpID);
-    }
-
-    public PlanErp createPlanErp(final Plan plan, final Integer prosecutorId, final DataKindEnum dataKind, final ExpSession expSession) {
-        return createPlanErp(plan.getId(), prosecutorId, dataKind, expSession, null);
-    }
-
-    public PlanErp createPlanErp(
-            final Integer cipPlanID, final Integer prosecutorId, final DataKindEnum dataKind, final ExpSession expSession, final BigInteger erpID
+            final Integer planId, final Integer prosecutorId, final DataKindEnum dataKind, final ExpSession expSession, final BigInteger erpID
     ) {
         final PlanErp result = new PlanErp();
         result.setProsecutor(prosecutorId);
-        if (erpID != null) {
-            result.setErpId(erpID);
-        } else {
-            result.setErpId(null);
-        }
+        result.setErpId(erpID);
         result.setDataKind(dataKind);
         result.setStatus(StatusErp.WAIT);
-        result.setPlanId(cipPlanID);
+        result.setPlanId(planId);
         result.setExpSession(expSession);
         em.persist(result);
         return result;
     }
 
-    public void setStatus(final PlanErp planErp, final StatusErp status) {
-        planErp.setStatus(status);
-        em.merge(planErp);
+    public PlanRecErp createPlanRecErp(final PlanErp plan, final Long correlationId, final BigInteger erpID) {
+        final PlanRecErp result = new PlanRecErp();
+        result.setPlan(plan);
+        result.setErpId(erpID);
+        result.setStatus(StatusErp.WAIT);
+        result.setCorrelationId(correlationId);
+        em.persist(result);
+        return result;
     }
 
-    public PlanErp getById(final Integer id) {
-        return em.find(PlanErp.class, id);
-    }
 
-    public void setExportSessionAndStatus(final PlanErp planErp, final StatusErp status, final ExpSession exportSession) {
-        planErp.setExpSession(exportSession);
-        setStatus(planErp, status);
-    }
-
-    public PlanErp getByRequestId(final String requestId) {
-        if (StringUtils.isEmpty(requestId)) {
-            return null;
-        }
-        final ExpSession exp_session = exportSessionDao.getSessionByEXT_PACKAGE_ID(requestId);
-        return getByExportSession(exp_session);
-    }
-
-    private PlanErp getByExportSession(final ExpSession exp_session) {
-        if (exp_session == null) {
-            return null;
-        }
-        return getByExportSession(exp_session.getId());
-    }
-
-    private PlanErp getByExportSession(final Integer expSessionId) {
-        final List<PlanErp> resultList = em.createQuery("SELECT a FROM PlanErp a WHERE a.expSession.id = :expSessionId", PlanErp.class).setParameter(
-                "expSessionId", expSessionId
-        ).getResultList();
+    public PlanErp getByUUID(final String uuid) {
+        final List<PlanErp> resultList = em.createQuery(
+                "SELECT a FROM PlanErp a " +
+                        "INNER JOIN a.expSession s " +
+                        "LEFT JOIN FETCH a.records r " +
+                        "WHERE s.EXT_PACKAGE_ID = :uuid", PlanErp.class
+        ).setParameter("uuid", uuid).getResultList();
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
 
-    public void setIDFromErp(final PlanErp planErp, final BigInteger erpID, final StatusErp status, final String totalValid) {
-        planErp.setErpId(erpID);
-        planErp.setTotalValid(totalValid);
-        setStatus(planErp, status);
-    }
 
     public boolean hasActivePlan(final Plan plan) {
         final List<PlanErp> resultList = getActiveByPlan(plan);
@@ -118,8 +89,9 @@ public class PlanErpDaoImpl {
         return em.createQuery(
                 "SELECT a FROM PlanErp a WHERE a.planId = :planId AND a.dataKind = :dataKind AND a.status NOT IN :statuses ORDER BY a.expSession.START_DATE DESC",
                 PlanErp.class
-        ).setParameter("planId", plan.getId()).setParameter("statuses", StatusErp.incorrectStatuses()).setParameter("dataKind", dataKind)
-                .getResultList();
+        ).setParameter("planId", plan.getId()).setParameter("statuses", StatusErp.incorrectStatuses()).setParameter(
+                "dataKind", dataKind
+        ).getResultList();
     }
 
     public void cancel(final PlanErp planErp) {
@@ -142,5 +114,68 @@ public class PlanErpDaoImpl {
     public PlanErp getLastActiveByPlanOrFault(final Plan plan) {
         final PlanErp result = getLastActiveByPlan(plan);
         return result != null ? result : getLastFaultByPlan(plan);
+    }
+
+
+    public Tuple<PlanErp, Set<PlanRecErp>> createErp(
+            final Plan plan,
+            final BigInteger erpID,
+            final Set<PlanRecord> records,
+            final Map<Long, BigInteger> erpIDMap,
+            final Integer prosecutor,
+            final DataKindEnum dataKind,
+            final ExpSession session
+    ) {
+        final PlanErp planErp = createPlanErp(plan.getId(), prosecutor, dataKind, session, erpID);
+        final Set<PlanRecErp> recs = new LinkedHashSet<>(records.size());
+        for (PlanRecord x : records) {
+            recs.add(createPlanRecErp(planErp, x.getCORRELATION_ID(), erpIDMap != null ? erpIDMap.get(x.getCORRELATION_ID()) : null));
+        }
+        return new Tuple<>(planErp, recs);
+    }
+
+    public Tuple<PlanErp, Set<PlanRecErp>> createErp(
+            final Plan plan,
+            final BigInteger erpID,
+            final Map<PlanAct, Set<PlanActViolation>> actMap,
+            final Map<Long, BigInteger> erpIDMap,
+            final Integer prosecutor,
+            final DataKindEnum dataKind,
+            final ExpSession session
+    ) {
+        final PlanErp planErp = createPlanErp(plan.getId(), prosecutor, dataKind, session, erpID);
+        final Set<PlanRecErp> recs = new LinkedHashSet<>(actMap.size());
+        for (PlanAct x : actMap.keySet()) {
+            recs.add(createPlanRecErp(planErp, x.getCorrelationID(), erpIDMap != null ? erpIDMap.get(x.getCorrelationID()) : null));
+        }
+        return new Tuple<>(planErp, recs);
+    }
+
+
+    public void setStatus(final StatusErp status, final PlanErp planErp, final Set<PlanRecErp> records, final String message) {
+        setStatus(status, planErp, message);
+        for (PlanRecErp x : records) {
+            x.setStatus(status);
+            x.setTotalValid(message);
+            em.merge(x);
+        }
+    }
+
+
+    public void setStatus(final StatusErp status, final PlanErp planErp, final String message) {
+        planErp.setStatus(status);
+        planErp.setTotalValid(message);
+        em.merge(planErp);
+    }
+
+    public void setErpId(final PlanErp planErp, final BigInteger erpId, final StatusErp status, final String totalValid) {
+        planErp.setErpId(erpId);
+        setStatus(status, planErp, totalValid);
+    }
+    public void setErpId(final PlanRecErp planRecErp, final BigInteger erpId, final StatusErp status, final String totalValid) {
+        planRecErp.setErpId(erpId);
+        planRecErp.setStatus(status);
+        planRecErp.setTotalValid(totalValid);
+        em.merge(planRecErp);
     }
 }

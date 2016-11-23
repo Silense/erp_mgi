@@ -65,7 +65,7 @@ public class TestMessageProcessor {
         final Plan plan = new Plan();
         plan.setId(999999);
 
-        final List<PlanRecord> planRecords = new ArrayList<>(3);
+        final Set<PlanRecord> planRecords = new LinkedHashSet<>(3);
         final PlanRecord r_1 = new PlanRecord();
         r_1.setORG_NAME("Общество с ограниченной ответственностью ;Информационный вычислительный центр;");
         r_1.setADR_SEC_I("603104, Нижегородская область, г. Нижний Новгород, ул. Нартова, д.6");
@@ -85,7 +85,7 @@ public class TestMessageProcessor {
         r_1.setUSER_NOTE("");
         r_1.setNOTICE_WAY("");
         r_1.setORDER_NUM("");
-        r_1.setCorrelationId(10001);
+        r_1.setCORRELATION_ID((long) 10001);
 
         final PlanRecord r_2 = new PlanRecord();
         r_2.setORG_NAME("ФГУП ;Главный центр специальной связи; филиал Управление специальной связи по Нижегородской области");
@@ -105,7 +105,7 @@ public class TestMessageProcessor {
         r_2.setUSER_NOTE("");
         r_2.setNOTICE_WAY("");
         r_2.setORDER_NUM("");
-        r_2.setCorrelationId(10002);
+        r_2.setCORRELATION_ID((long) 10002);
 
         final PlanRecord r_3 = new PlanRecord();
         r_3.setORG_NAME("Якоби Виктор Владимирович");
@@ -128,7 +128,7 @@ public class TestMessageProcessor {
         r_3.setUSER_NOTE("");
         r_3.setNOTICE_WAY("");
         r_3.setORDER_NUM("");
-        r_3.setCorrelationId(10003);
+        r_3.setCORRELATION_ID((long) 10003);
 
         planRecords.add(r_1);
         planRecords.add(r_2);
@@ -137,7 +137,12 @@ public class TestMessageProcessor {
         final String result = messageService.sendPlanRegular294Initialization(
                 requestId,
                 "4.1.2 :: Эталонный :: Запрос на первичное размещение плана плановых проверок (сценарий 2)",
-                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"),Long.valueOf("10000037754")),
+                MessageFactory.createMailer(
+                        "ФНС России",
+                        "1047707030513",
+                        Long.valueOf("10000001169"),
+                        Long.valueOf("10000037754")
+                ),
                 MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
                 "Управление Роскомнадзора по Приволжскому федеральному округу",
                 plan,
@@ -159,8 +164,8 @@ public class TestMessageProcessor {
         planErp.setPlanId(plan.getId());
         planErp.setErpId(new BigInteger("2016000109"));
 
-        final List<PlanRecord> planRecords = new ArrayList<>(3);
-        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(3);
+        final Set<PlanRecord> planRecords = new HashSet<>(3);
+        final Map<Long, BigInteger> erpIDMap = new HashMap<>(3);
         final PlanRecord r_1 = new PlanRecord();
         r_1.setORG_NAME("Общество с ограниченной ответственностью ;Информационный вычислительный центр;");
         r_1.setADR_SEC_I("603104, Нижегородская область, г. Нижний Новгород, ул. Нартова, д.6");
@@ -179,8 +184,8 @@ public class TestMessageProcessor {
         r_1.setKO_JOINTLY("");
         r_1.setREASON_SEC_I_DENY(1);
         r_1.setUSER_NOTE("we");
-        r_1.setCorrelationId(10001);
-        erpIDByCorrelatedID.put(10001, new BigInteger("201600000533"));
+        r_1.setCORRELATION_ID((long) 10001);
+        erpIDMap.put((long) 10001, new BigInteger("201600000533"));
 
         final PlanRecord r_2 = new PlanRecord();
         r_2.setORG_NAME("ФГУП ;Главный центр специальной связи; филиал Управление специальной связи по Нижегородской области");
@@ -202,8 +207,8 @@ public class TestMessageProcessor {
         r_2.setUSER_NOTE("");
         r_2.setORDER_NUM("Приказ в проведении №");
         r_2.setORDER_DATE(parseTestDate("2016-03-25"));
-        r_2.setCorrelationId(10002);
-        erpIDByCorrelatedID.put(10002, new BigInteger("201600000534"));
+        r_2.setCORRELATION_ID((long) 10002);
+        erpIDMap.put((long) 10002, new BigInteger("201600000534"));
 
         final PlanRecord a_3 = new PlanRecord();
         a_3.setORG_NAME("Якоби Виктор Владимирович");
@@ -227,8 +232,8 @@ public class TestMessageProcessor {
         );
         a_3.setUSER_NOTE("");
         a_3.setORDER_NUM("");
-        a_3.setCorrelationId(10003);
-        erpIDByCorrelatedID.put(10003, new BigInteger("201600000535"));
+        a_3.setCORRELATION_ID((long) 10003);
+        erpIDMap.put((long) 10003, new BigInteger("201600000535"));
 
         planRecords.add(r_1);
         planRecords.add(r_2);
@@ -237,7 +242,7 @@ public class TestMessageProcessor {
         final String result = messageService.sendPlanRegular294Correction(
                 requestId,
                 "4.1.3 :: Эталонный :: Запрос на размещение корректировки плана плановых проверок (сценарий 3)",
-                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"),Long.valueOf("10000037754")),
+                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10000037754")),
                 MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
                 "Управление Роскомнадзора по Приволжскому федеральному округу",
                 plan,
@@ -245,7 +250,7 @@ public class TestMessageProcessor {
                 "",
                 2016,
                 planRecords,
-                erpIDByCorrelatedID
+                erpIDMap
         );
         wrapResponse(response, result);
     }
@@ -258,8 +263,8 @@ public class TestMessageProcessor {
         planErp.setPlanId(plan.getId());
         planErp.setErpId(new BigInteger("2016000109"));
 
-        final Map<PlanAct, List<PlanActViolation>> actMap = new HashMap<>(1);
-        final List<PlanActViolation> violationList = new ArrayList<>(2);
+        final Map<PlanAct, Set<PlanActViolation>> actMap = new HashMap<>(1);
+        final Set<PlanActViolation> violationList = new HashSet<>(2);
         final PlanAct act = new PlanAct();
         act.setACT_DATE_CREATE(parseTestDate("2015-07-29"));
         act.setACT_TIME_CREATE(parseTestDate("15:45:00", "HH:mm:ss"));
@@ -274,7 +279,7 @@ public class TestMessageProcessor {
         act.setADR_INSPECTION("Фактический адрес проведения");
         act.setINSPECTORS("Иванов И.И.");
         act.setUNDOIG_SEC_I("");
-        act.setCorrelationID(10001);
+        act.setCorrelationID((long) 10001);
 
         final PlanActViolation v_1 = new PlanActViolation();
         v_1.setVIOLATION_ID(new BigInteger("1"));
@@ -316,8 +321,8 @@ public class TestMessageProcessor {
 
         actMap.put(act, violationList);
 
-        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(1);
-        erpIDByCorrelatedID.put(act.getCorrelationID(), new BigInteger("201600000534"));
+        final Map<Long, BigInteger> erpIDMap = new HashMap<>(1);
+        erpIDMap.put(act.getCorrelationID(), new BigInteger("201600000534"));
 
         final String result = messageService.sendPlanResult294Initialization(
                 requestId,
@@ -329,7 +334,7 @@ public class TestMessageProcessor {
                 planErp.getErpId(),
                 2016,
                 actMap,
-                erpIDByCorrelatedID
+                erpIDMap
         );
         wrapResponse(response, result);
     }
@@ -338,8 +343,8 @@ public class TestMessageProcessor {
         final Plan plan = new Plan();
         plan.setId(999999);
 
-        final Map<PlanAct, List<PlanActViolation>> actMap = new HashMap<>(1);
-        final List<PlanActViolation> violationList = new ArrayList<>(1);
+        final Map<PlanAct, Set<PlanActViolation>> actMap = new HashMap<>(1);
+        final Set<PlanActViolation> violationList = new HashSet<>(1);
         final PlanAct act = new PlanAct();
         act.setACT_DATE_CREATE(parseTestDate("2015-07-29"));
         act.setACT_TIME_CREATE(parseTestDate("15:45:00", "HH:mm:ss"));
@@ -354,7 +359,7 @@ public class TestMessageProcessor {
         act.setADR_INSPECTION("Фактический адрес проведения");
         act.setINSPECTORS("Иванов И.И.");
         act.setUNDOIG_SEC_I("");
-        act.setCorrelationID(10002);
+        act.setCorrelationID((long) 10002);
 
         final PlanActViolation v_1 = new PlanActViolation();
         v_1.setVIOLATION_ID(new BigInteger("1"));
@@ -376,19 +381,24 @@ public class TestMessageProcessor {
         violationList.add(v_1);
         actMap.put(act, violationList);
 
-        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(1);
-        erpIDByCorrelatedID.put(act.getCorrelationID(), new BigInteger("201600000535"));
+        final Map<Long, BigInteger> erpIDMap = new HashMap<>(1);
+        erpIDMap.put(act.getCorrelationID(), new BigInteger("201600000535"));
 
         final String result = messageService.sendPlanResult294Correction(
                 requestId,
                 "4.1.6 :: Эталонный :: Запрос на корректировку результатов плановых проверок (сценарий 6)",
-                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10000037754")),
+                MessageFactory.createMailer(
+                        "ФНС России",
+                        "1047707030513",
+                        Long.valueOf("10000001169"),
+                        Long.valueOf("10000037754")
+                ),
                 MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
                 plan,
                 new BigInteger("2016000109"),
                 2016,
                 actMap,
-                erpIDByCorrelatedID
+                erpIDMap
         );
         wrapResponse(response, result);
     }
@@ -416,7 +426,7 @@ public class TestMessageProcessor {
         uplan.setNOTICE_WAY("Почтой");
         uplan.setTYPE_OF_INSP("Заявление КО");
 
-        final List<UplanRecord> addressList = new ArrayList<>(2);
+        final Set<UplanRecord> addressList = new HashSet<>(2);
 
         final UplanRecord a1 = new UplanRecord();
         a1.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
@@ -475,7 +485,7 @@ public class TestMessageProcessor {
         uplan.setORDER_DATE(parseTestDate("2015-08-01"));
         uplan.setORDER_NUM("Номер приказа о проведении");
 
-        final List<UplanRecord> addressList = new ArrayList<>(2);
+        final Set<UplanRecord> addressList = new HashSet<>(2);
 
         final UplanRecord a1 = new UplanRecord();
         a1.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
@@ -497,33 +507,27 @@ public class TestMessageProcessor {
         a2.setCORRELATION_ID((long) 10002);
         addressList.add(a2);
 
-        final Map<Long, BigInteger> erpIDByCorrelatedID = new HashMap<>(2);
-        erpIDByCorrelatedID.put(a1.getCORRELATION_ID(), new BigInteger("201600000859"));
-        erpIDByCorrelatedID.put(a2.getCORRELATION_ID(), new BigInteger("201600000860"));
+        final Map<Long, BigInteger> erpIDMap = new HashMap<>(2);
+        erpIDMap.put(a1.getCORRELATION_ID(), new BigInteger("201600000859"));
+        erpIDMap.put(a2.getCORRELATION_ID(), new BigInteger("201600000860"));
 
 
         final String result = messageService.sendUplanUnregular294Correction(
                 requestId,
                 "4.1.8 :: Эталонный :: Запрос на корректировку результатов внеплановой проверки",
-                MessageFactory.createMailer(
-                        "ФНС России", "1047707030513", Long.valueOf(
-                                "10000001169"
-                        ), Long.valueOf(
-                                "10001696877"
-                        )
-                ),
+                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10001696877")),
                 MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
                 "Федеральная налоговая служба",
                 uplan,
                 new BigInteger("2016000119"),
                 addressList,
-                erpIDByCorrelatedID
+                erpIDMap
         );
         wrapResponse(response, result);
     }
 
     public void processUplanResult294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
-        final Map<UplanAct, List<UplanActViolation>> violations = new HashMap<>(1);
+        final Map<UplanAct, Set<UplanActViolation>> violations = new HashMap<>(1);
         final UplanAct k1 = new UplanAct();
         k1.setID(new BigInteger("201600000859"));
         k1.setACT_DATE_CREATE(parseTestDate("2015-08-25"));
@@ -540,7 +544,7 @@ public class TestMessageProcessor {
         k1.setINSPECTORS("ФИО и должности должностного лица или должностных лиц, проводивших проверку");
         k1.setUNDOIG_SEC_I("");
 
-        final List<UplanActViolation> v1 = new ArrayList<>(2);
+        final Set<UplanActViolation> v1 = new HashSet<>(2);
         final UplanActViolation v1_1 = new UplanActViolation();
         v1_1.setVIOLATION_ID(1);
         v1_1.setVIOLATION_NOTE("Нарушение такое-то, выявлено в № случаях на территории такой-то");

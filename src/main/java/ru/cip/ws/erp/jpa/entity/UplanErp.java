@@ -12,6 +12,7 @@ import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.persistence.*;
 import java.math.BigInteger;
+import java.util.Set;
 
 @Entity
 @Table(name="CIP_UNSCHEDLCHECK_ERP", schema = "ODOPM_SRC")
@@ -75,6 +76,10 @@ public class UplanErp {
     @Enumerated(EnumType.STRING)
     @Column(name="ENUM_ERP_DATA_KIND")
     private DataKindEnum dataKind;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "plan")
+    private Set<UplanRecErp> records;
+
 
     public UplanErp() {
     }
@@ -143,6 +148,14 @@ public class UplanErp {
         this.totalValid = totalValid;
     }
 
+    public Set<UplanRecErp> getRecords() {
+        return records;
+    }
+
+    public void setRecords(final Set<UplanRecErp> records) {
+        this.records = records;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UplanErp[").append(id);
@@ -151,7 +164,7 @@ public class UplanErp {
         sb.append(", erpId=").append(erpId);
         sb.append(", status=").append(status);
         sb.append(", planId=").append(planId);
-        sb.append(", expSession=").append(expSession);
+        sb.append(", expSessionId =").append(expSession != null ? expSession.getId() : null);
         sb.append(", totalValid='").append(totalValid).append('\'');
         sb.append('}');
         return sb.toString();

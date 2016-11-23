@@ -2,12 +2,11 @@ package ru.cip.ws.erp.jpa.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.cip.ws.erp.jpa.entity.PlanErp;
 import ru.cip.ws.erp.jpa.entity.UplanErp;
 import ru.cip.ws.erp.jpa.entity.UplanRecErp;
-import ru.cip.ws.erp.jpa.entity.enums.SessionStatus;
 import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
 import ru.cip.ws.erp.jpa.entity.views.Uplan;
@@ -17,14 +16,14 @@ import ru.cip.ws.erp.servlet.DataKindEnum;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigInteger;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
  * Date: 22.11.2016, 7:27 <br>
- * Company: Bars Group [ www.bars.open.ru ]
  * Description:
  */
 @Repository
@@ -35,52 +34,33 @@ public class UplanErpDaoImpl {
     @PersistenceContext
     private EntityManager em;
 
-    @Autowired
-    private ExportSessionDaoImpl exportSessionDao;
+    public UplanErp getByUUID(final String uuid) {
+        final List<UplanErp> resultList = em.createQuery(
+                "SELECT a FROM UplanErp a " +
+                        "INNER JOIN a.expSession s " +
+                        "LEFT JOIN FETCH a.records r " +
+                        "WHERE s.EXT_PACKAGE_ID = :uuid", UplanErp.class
+        ).setParameter("uuid", uuid).getResultList();
+        return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
+    }
 
-    public Tuple<UplanErp, List<UplanRecErp>> createErp(
-            final String requestId,
+
+
+    public Tuple<UplanErp, Set<UplanRecErp>> createErp(
             final Uplan uplan,
-            final BigInteger uplanId,
-            final List<UplanRecord> uplanRecords,
-            final Map<Long, BigInteger> erpIDByCorrelatedID,
+            final BigInteger erpID,
+            final Set<UplanRecord> records,
+            final Map<Long, BigInteger> erpIDMap,
             final Integer prosecutor,
             final DataKindEnum dataKind,
             final ExpSession exportSession
     ) {
-        final UplanErp uplanErp = createUplanErp(uplan, prosecutor, dataKind, exportSession, uplanId);
-        logger.info("{} : Created: {}", requestId, uplanErp);
-        final List<UplanRecErp> uplanRecErpList = new ArrayList<>(uplanRecords.size());
-        for (UplanRecord record : uplanRecords) {
-            final UplanRecErp uplanRecErp;
-            if(erpIDByCorrelatedID != null && erpIDByCorrelatedID.containsKey(record.getCORRELATION_ID())) {
-                uplanRecErp = createUplanRecErp(uplanErp, record, erpIDByCorrelatedID.get(record.getCORRELATION_ID()));
-            } else {
-                uplanRecErp = createUplanRecErp(uplanErp, record);
-            }
-            uplanRecErpList.add(uplanRecErp);
-            logger.info("{} : Created: {}", requestId, uplanRecErp);
+        final UplanErp uplanErp = createUplanErp(uplan, prosecutor, dataKind, exportSession, erpID);
+        final Set<UplanRecErp> recs = new HashSet<>(records.size());
+        for (UplanRecord x : records) {
+            recs.add(createUplanRecErp(uplanErp, x.getCORRELATION_ID(), erpIDMap != null ? erpIDMap.get(x.getCORRELATION_ID()) : null));
         }
-        return new Tuple<>(uplanErp, uplanRecErpList);
-    }
-
-    public Tuple<UplanErp, List<UplanRecErp>> createErp(
-            final String requestId,
-            final Uplan uplan,
-            final List<UplanRecord> uplanRecords,
-            final Integer prosecutor,
-            final DataKindEnum dataKind,
-            final ExpSession exportSession
-    ) {
-       return createErp(requestId, uplan, null, uplanRecords, null, prosecutor, dataKind, exportSession);
-    }
-
-    public UplanErp createUplanErp(final Uplan uplan, final DataKindEnum dataKind, final ExpSession exportSession) {
-        return createUplanErp(uplan, null, dataKind, exportSession);
-    }
-
-    public UplanErp createUplanErp(final Uplan uplan, final Integer prosecutor, final DataKindEnum dataKind, final ExpSession exportSession) {
-        return createUplanErp(uplan, prosecutor, dataKind, exportSession, null);
+        return new Tuple<>(uplanErp, recs);
     }
 
     public UplanErp createUplanErp(
@@ -101,32 +81,30 @@ public class UplanErpDaoImpl {
         return result;
     }
 
-
-    public UplanRecErp createUplanRecErp(final UplanErp uplanErp, final UplanRecord record) {
-        return createUplanRecErp(uplanErp, record, null);
-    }
-
-    public UplanRecErp createUplanRecErp(final UplanErp uplanErp, final UplanRecord record, final BigInteger erpId) {
+    public UplanRecErp createUplanRecErp(final UplanErp uplanErp, final Long correlationId, final BigInteger erpId) {
         final UplanRecErp result = new UplanRecErp();
-        result.setUplanErp(uplanErp);
+        result.setPlan(uplanErp);
         result.setErpId(erpId);
         result.setStatus(StatusErp.WAIT);
-        result.setCorrelationId(record.getCORRELATION_ID());
+        result.setCorrelationId(correlationId);
         em.persist(result);
         return result;
     }
 
-    public void setErrorStatus(final Tuple<UplanErp, List<UplanRecErp>> tuple, final String message) {
-        final UplanErp uplanErp = tuple.left;
-        uplanErp.setStatus(StatusErp.ERROR);
-        uplanErp.setTotalValid(message);
-        em.merge(uplanErp);
-        for (UplanRecErp recErp : tuple.right) {
-            recErp.setStatus(StatusErp.ERROR);
-            recErp.setTotalValid(message);
-            em.merge(recErp);
+    public void setStatus(final StatusErp status, final UplanErp planErp, final Set<UplanRecErp> records, final String message) {
+        setStatus(status, planErp, message);
+        for (UplanRecErp x : records) {
+            x.setStatus(status);
+            x.setTotalValid(message);
+            em.merge(x);
         }
-        exportSessionDao.setSessionInfo(uplanErp.getExpSession(), SessionStatus.ERROR, message);
+    }
+
+
+    public void setStatus(final StatusErp status, final UplanErp planErp, final String message) {
+        planErp.setStatus(status);
+        planErp.setTotalValid(message);
+        em.merge(planErp);
     }
 
 

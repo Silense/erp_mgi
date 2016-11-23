@@ -34,7 +34,7 @@ public class ExportSessionDaoImpl {
     private EntityManager em;
 
 
-    public ExpSession createExportSession(final String description, final String message, final String requestId) {
+    public ExpSession createExportSession(final String description, final String message, final String uuid) {
         final Date now = new Date();
         final ExpSession result = new ExpSession();
         result.setSYSTEM_SERVICE_ID(appID);
@@ -44,7 +44,7 @@ public class ExportSessionDaoImpl {
         result.setSESSION_DESCRIPTION(description);
         result.setSESSION_MSG(message);
         result.setRV(1);
-        result.setEXT_PACKAGE_ID(requestId);
+        result.setEXT_PACKAGE_ID(uuid);
         result.setEXT_PACKAGE_CNT(1);
         result.setCREATE_DATE(now);
         result.setUPDATE_DATE(now);
@@ -66,9 +66,9 @@ public class ExportSessionDaoImpl {
 
     }
 
-    public ExpSession getSessionByEXT_PACKAGE_ID(final String ext_package_id) {
-        final List<ExpSession> resultList = em.createQuery("SELECT a FROM ExpSession a WHERE a.EXT_PACKAGE_ID = :ext_pakage_id", ExpSession.class)
-                .setParameter("ext_pakage_id", ext_package_id)
+    public ExpSession getSessionByEXT_PACKAGE_ID(final String uuid) {
+        final List<ExpSession> resultList = em.createQuery("SELECT a FROM ExpSession a WHERE a.EXT_PACKAGE_ID = :ext_package_id", ExpSession.class)
+                .setParameter("ext_package_id", uuid)
                 .getResultList();
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
@@ -90,5 +90,11 @@ public class ExportSessionDaoImpl {
 
     public ExpSession merge(final ExpSession expSession) {
         return em.merge(expSession);
+    }
+
+    public Tuple<ExpSession, ExpSessionEvent> createExportSessionInfo(final String uuid, final String description, final String messageType) {
+        final ExpSession session = createExportSession(description, messageType, uuid);
+        final ExpSessionEvent event = createExportEvent(messageType, session);
+        return new Tuple<>(session, event);
     }
 }

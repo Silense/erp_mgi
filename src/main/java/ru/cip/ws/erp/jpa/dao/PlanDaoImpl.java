@@ -6,7 +6,8 @@ import ru.cip.ws.erp.jpa.entity.views.Plan;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
@@ -23,15 +24,16 @@ public class PlanDaoImpl {
     @PersistenceContext
     private EntityManager em;
 
-    public List<Plan> getAll() {
-        return em.createQuery("SELECT a FROM Plan a ", Plan.class).getResultList();
+    public Set<Plan> getAll() {
+        return new LinkedHashSet<>(em.createQuery("SELECT a FROM Plan a ", Plan.class).getResultList());
     }
 
     public Plan getById(final int id) {
         return em.find(Plan.class, id);
     }
 
-    public List<Plan> getByYear(final int year) {
-        return em.createQuery("SELECT a FROM Plan a WHERE a.year = :year", Plan.class).setParameter("year", year).getResultList();
+    public Set<Plan> getByYear(final int year) {
+        return new LinkedHashSet<>(em.createQuery("SELECT a FROM Plan a WHERE a.year = :year", Plan.class).setParameter("year", year).getResultList());
     }
+
 }

@@ -6,6 +6,7 @@ import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.persistence.*;
 import java.math.BigInteger;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
@@ -51,6 +52,9 @@ public class PlanErp {
 
     @Column(name = "PLAN_TOTAL_VALID")
     private String totalValid;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "plan")
+    private Set<PlanRecErp> records;
 
     public PlanErp() {
     }
@@ -166,6 +170,14 @@ public class PlanErp {
         }
         return !(totalValid != null ? !totalValid.equals(that.totalValid) : that.totalValid != null);
 
+    }
+
+    public Set<PlanRecErp> getRecords() {
+        return records;
+    }
+
+    public void setRecords(final Set<PlanRecErp> records) {
+        this.records = records;
     }
 
     @Override

@@ -10,10 +10,10 @@ import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.generated.erptypes.*;
 import ru.cip.ws.erp.jpa.dao.ExportSessionDaoImpl;
 import ru.cip.ws.erp.jpa.dao.ImportSessionDaoImpl;
+import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
 import ru.cip.ws.erp.jpa.entity.sessions.ImpSession;
 import ru.cip.ws.erp.jpa.entity.sessions.ImpSessionEvent;
-import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 
 import javax.jms.*;
 import javax.xml.bind.JAXBException;
@@ -24,7 +24,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * Created by Igor on 2014.07.31.
  * Modified by Egor on 2016.09.10.
  */
-public class MQMessageListener implements MessageListener {
+public class MQMessageListener
+        implements MessageListener {
 
     private static final Logger logger = LoggerFactory.getLogger(MQMessageListener.class);
     private static AtomicInteger counter = new AtomicInteger(0);
@@ -36,52 +37,49 @@ public class MQMessageListener implements MessageListener {
     private ImportSessionDaoImpl importSessionDao;
     @Autowired
     private ExportSessionDaoImpl exportSessionDao;
+
     @Autowired
     private IncomingMessageProcessor messageProcessor;
 
     @Override
     public void onMessage(Message message) {
         final int requestNumber = counter.incrementAndGet();
+        if (!(message instanceof TextMessage)) {
+            logger.warn("#{} End. Is not TextMessage and will be skipped.", requestNumber);
+            return;
+        }
         try {
-            if (isTextMessage(message)) {
-                // Process text message
-                final TextMessage textMessage = (TextMessage) message;
-                logger.info("#{} MessageBody:\n{}\n", requestNumber, textMessage.getText());
-                final ResponseMsg msg = JAXBMarshallerUtil.unmarshalResponse(textMessage.getText());
-                if (msg == null) {
-                    logger.error("#{} End. Cannot marshal to ResponseMsg", requestNumber);
-                    return;
-                }
-                final String requestId = msg.getRequestId();
-                logger.info("#{} RequestId = \'{}\'", requestNumber, requestId);
-                ImpSession importSession = importSessionDao.getByEXT_PACKAGE_ID(requestId);
-                if (importSession != null) {
-                    logger.info("{} : Found existed ImportSession[EXT_PACKAGE_ID]: {}", requestId, importSession);
-                } else {
-                    importSession = importSessionDao.createNewImportSession("Ответ от ЕРП", msg.getStatusMessage(), requestId);
-                    logger.info("{} : Created ImportSession: {}", requestId, importSession);
-                }
-                final String messageType = getMessageType(msg);
-                logger.info("{} : Message of type \'{}\'", requestId, messageType);
-                final ImpSessionEvent importEvent = importSessionDao.createNewImportEvent(messageType, importSession);
-                logger.info("{} : Created ImportEvent: {}", requestId, importEvent);
-                if (importSession.getExportSession() != null) {
-                    final ExpSession expSession = importSession.getExportSession();
-                    expSession.setImportSession(importSession);
-                    expSession.setSESSION_MSG(msg.getStatusCode().toString());
-                    exportSessionDao.merge(expSession);
-                }
-                processMessage(requestId, msg);
-                // ready for reply
-                final Destination replyTo = message.getJMSReplyTo();
-                if (replyTo == null) { // quite eating messages without JMSReplyTo
-                    logger.warn("#{} comes without JMSReplyTo", requestNumber);
-                } else {
-                    reply(message.getJMSMessageID(), replyTo, requestNumber);
-                }
+            // Process text message
+            final TextMessage textMessage = (TextMessage) message;
+            logger.info("#{} MessageBody:\n{}\n", requestNumber, textMessage.getText());
+            final ResponseMsg msg = JAXBMarshallerUtil.unmarshalResponse(textMessage.getText());
+            if (msg == null) {
+                logger.error("#{} End. Cannot marshal to ResponseMsg", requestNumber);
+                return;
+            }
+            final String uuid = msg.getRequestId();
+            logger.info("#{} RequestId = '{}'", requestNumber, uuid);
+            ImpSession importSession = importSessionDao.getByEXT_PACKAGE_ID(uuid);
+            if (importSession != null) {
+                logger.info("{} : Found existed ImportSession[EXT_PACKAGE_ID]: {}", uuid, importSession);
             } else {
-                logger.warn("#{} is not TextMessage", requestNumber);
-                throw new JMSException("We don't handle messages other then TextMessage.");
+                importSession = importSessionDao.createNewImportSession("Ответ от ЕРП", msg.getStatusMessage(), uuid);
+                logger.info("{} : Created ImportSession: {}", uuid, importSession);
+            }
+            final String messageType = getMessageType(msg);
+            logger.info("{} : Message of type '{}' with StatusCode={}", uuid, messageType, msg.getStatusCode());
+            final ImpSessionEvent importEvent = importSessionDao.createNewImportEvent(messageType, importSession);
+            logger.info("{} : Created ImportEvent: {}", uuid, importEvent);
+            if (importSession.getExportSession() != null) {
+                final ExpSession expSession = importSession.getExportSession();
+                expSession.setImportSession(importSession);
+                expSession.setSESSION_MSG(msg.getStatusCode().toString());
+                exportSessionDao.merge(expSession);
+            }
+            processMessage(uuid, msg);
+            final Destination replyTo = message.getJMSReplyTo();
+            if (replyTo != null) {
+                reply(message.getJMSMessageID(), replyTo, requestNumber);
             }
         } catch (JMSException e) {
             logger.error("#{} Exception in onMessage : ", requestNumber, e);
@@ -92,7 +90,6 @@ public class MQMessageListener implements MessageListener {
 
     private void processMessage(final String requestId, final ResponseMsg msg) {
         final StatusErp status = StatusErp.valueOf(msg.getStatusCode());
-        logger.debug("{} : Start processing with statusMessage=\'{}\'", requestId, status);
         final ResponseBody responseBody = msg.getResponseBody();
         if (responseBody != null) {
             final LetterFromERPType response = responseBody.getResponse();
@@ -205,7 +202,4 @@ public class MQMessageListener implements MessageListener {
         logger.info("#{} Sent reply for {} with MessageId={}", currentRequestNumber, correlationId, reposentRef.get().getJMSMessageID());
     }
 
-    public boolean isTextMessage(Message message) {
-        return message instanceof TextMessage;
-    }
 }

@@ -7,20 +7,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.factory.MessageFactory;
 import ru.cip.ws.erp.factory.PropertiesHolder;
-import ru.cip.ws.erp.jpa.dao.*;
-import ru.cip.ws.erp.jpa.entity.*;
+import ru.cip.ws.erp.jpa.dao.PlanActDaoImpl;
+import ru.cip.ws.erp.jpa.dao.PlanDaoImpl;
+import ru.cip.ws.erp.jpa.dao.PlanErpDaoImpl;
+import ru.cip.ws.erp.jpa.entity.PlanErp;
+import ru.cip.ws.erp.jpa.entity.PlanRecErp;
+import ru.cip.ws.erp.jpa.entity.views.Plan;
 import ru.cip.ws.erp.jpa.entity.views.PlanAct;
 import ru.cip.ws.erp.jpa.entity.views.PlanActViolation;
-import ru.cip.ws.erp.jpa.entity.views.Plan;
-import ru.cip.ws.erp.jpa.entity.views.PlanRecord;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
@@ -46,44 +48,46 @@ public class MessageProcessor {
     private PlanErpDaoImpl planDao;
 
     @Autowired
-    private PlanRecordDaoImpl planRecordViewDao;
-
-    @Autowired
-    private PlanRecordErpDaoImpl planRecordDao;
-
-    @Autowired
     private PlanActDaoImpl actDao;
 
+    private static void wrapResponse(final HttpServletResponse response, final String result) {
+        if (StringUtils.isNotEmpty(result)) {
+            try {
+                response.setStatus(200);
+                response.setContentType("text/xml");
+                response.getWriter().println(result);
+            } catch (IOException e) {
+                logger.error("Error in wrapResponse", e);
+            }
+        } else {
+            wrapErrorResponse(response, "Ошибка");
+        }
+    }
 
-    public void processProsecutorAsk(final HttpServletResponse response, final String requestId) throws IOException {
+    private static void wrapErrorResponse(final HttpServletResponse response, final String message) {
+        try {
+            response.setStatus(500);
+            response.getWriter().println(message);
+        } catch (IOException e) {
+            logger.error("Error in wrapResponse", e);
+        }
+    }
+
+    public void processProsecutorAsk(final HttpServletResponse response, final String uuid) throws IOException {
         final String result = messageService.sendProsecutorAck(
-                requestId, "4.1.1 Запрос на получение справочника территориальных юрисдикций прокуратур Российской Федерации"
+                uuid, "4.1.1 Запрос на получение справочника территориальных юрисдикций прокуратур Российской Федерации"
         );
         wrapResponse(response, result);
     }
 
     public void processPlanRegular294Initialization(
-            final String requestId, final HttpServletResponse response, final Integer planId, final Integer year, final String acceptedName
-    ) throws IOException {
+            final String uuid, final HttpServletResponse response, final Integer planId, final Integer year, final String acceptedName
+    ) {
         final Plan plan = planViewDao.getById(planId);
-        if (plan == null) {
-            logger.warn("{} : End. Plan not found", requestId);
-            wrapErrorResponse(response, String.format("Не найден план проверки [%d]", planId));
+        logger.info("{} : founded Plan: {}", uuid, plan);
+        if (!isPlanValid(uuid, response, planId, plan)) {
             return;
         }
-        logger.info("{} : founded Plan: {}", requestId, plan);
-
-        final List<PlanRecord> planRecords = planRecordViewDao.getRecordsByPlan(plan);
-        if (planRecords == null || planRecords.isEmpty()) {
-            logger.warn("{} : End. Not found any PlanRecords by plan_id = {}", requestId, plan.getId());
-            wrapErrorResponse(response, String.format("По плану проверок [%d] не найдено проверок", plan.getId()));
-            return;
-        } else if (logger.isDebugEnabled()) {
-            for (PlanRecord planRecord : planRecords) {
-                logger.info("{} : Founded record: {}", requestId, planRecord);
-            }
-        }
-
         final PlanErp lastActiveByPlan = planDao.getLastActiveByPlan(plan);
         if (lastActiveByPlan != null) {
             String message = "%d";
@@ -105,48 +109,59 @@ public class MessageProcessor {
                     break;
             }
             final String sub_result = String.format(message, plan.getId());
-            logger.warn("{} : End. Already was initialized or wait for response from ERP / {}", requestId, sub_result);
+            logger.warn("{} : End. Already was initialized or wait for response from ERP / {}", uuid, sub_result);
             wrapErrorResponse(response, sub_result);
             return;
         }
-        final String result = messageService.sendPlanRegular294Initialization(
-                requestId,
-                "4.1.2 Запрос на первичное размещение плана плановых проверок",
-                MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
-                MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
-                prop.KO_NAME,
-                plan,
-                acceptedName,
-                year,
-                planRecords
+        wrapResponse(
+                response, messageService.sendPlanRegular294Initialization(
+                        uuid,
+                        "4.1.2 Запрос на первичное размещение плана плановых проверок",
+                        MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                        MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                        prop.KO_NAME,
+                        plan,
+                        acceptedName,
+                        year,
+                        plan.getRecords()
+                )
         );
-        wrapResponse(response, result);
+
     }
 
+    private boolean isPlanValid(final String uuid, final HttpServletResponse response, final Integer planId, final Plan plan) {
+        if (plan == null) {
+            logger.warn("{} : End. Plan not found", uuid);
+            wrapErrorResponse(response, String.format("Не найден план проверки [%d]", planId));
+            return false;
+        }
+        if (plan.getRecords().isEmpty()) {
+            logger.warn("{} : End. Not found any PlanRecords by plan_id = {}", uuid, plan.getId());
+            wrapErrorResponse(response, String.format("По плану проверок [%d] не найдено проверок", plan.getId()));
+            return false;
+        }
+        return true;
+    }
 
     public void processPlanRegular294Correction(
-            final String requestId, final HttpServletResponse response, final Integer planId, final Integer year, final String acceptedName
-    ) throws IOException {
+            final String uuid, final HttpServletResponse response, final Integer planId, final Integer year, final String acceptedName
+    ) {
         final Plan plan = planViewDao.getById(planId);
-        if (plan == null) {
-            logger.warn("{} : End. Plan not found", requestId);
-            wrapErrorResponse(response, String.format("Не найден план проверки [%d]", planId));
+        logger.info("{} : founded Plan: {}", uuid, plan);
+        if (!isPlanValid(uuid, response, planId, plan)) {
             return;
         }
-        logger.info("{} : founded Plan: {}", requestId, plan);
-
         final PlanErp planErp = planDao.getLastActiveByPlanOrFault(plan);
-        logger.info("{} : founded PlanErp: {}", requestId, planErp);
-
+        logger.info("{} : founded PlanErp: {}", uuid, planErp);
         if (planErp == null) {
-            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, plan.getId());
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", uuid, plan.getId());
             wrapErrorResponse(
                     response, String.format("Нельзя корректировать план: План %d еще не был первично выгружен в ЕРП", plan.getId())
             );
             return;
         }
         if (planErp.getErpId() == null) {
-            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, plan.getId());
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", uuid, plan.getId());
             wrapErrorResponse(
                     response, String.format(
                             "Нельзя корректировать план: По первичному размещению плана %d еще не было ответа из ЕРП", plan.getId()
@@ -154,112 +169,88 @@ public class MessageProcessor {
             );
             return;
         }
-        final List<PlanRecord> planRecords = planRecordViewDao.getRecordsByPlan(plan);
-        if (planRecords.isEmpty()) {
-            logger.warn("{} : End. Not found any PlanRecords by plan_id = {}", requestId, plan.getId());
-            wrapErrorResponse(response, String.format("По плану проверок [%d] не найдено проверок", plan.getId()));
-            return;
-        } else if (logger.isDebugEnabled()) {
-            for (PlanRecord checkPlanRecord : planRecords) {
-                logger.info("{} :  Founded record: {}", requestId, checkPlanRecord);
-            }
+        final Map<Long, BigInteger> erpIDMap = new HashMap<>(planErp.getRecords().size());
+        for (PlanRecErp x : planErp.getRecords()) {
+            erpIDMap.put(x.getCorrelationId(), x.getErpId());
         }
-
-        final List<PlanRecErp> sentPlanRecords = planRecordDao.getRecordsByPlan(planErp);
-        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(sentPlanRecords.size());
-        for (PlanRecErp record : sentPlanRecords) {
-            erpIDByCorrelatedID.put(record.getCorrelationId(), record.getErpId());
-        }
-
-        final String result = messageService.sendPlanRegular294Correction(
-                requestId,
-                "4.1.3 Запрос на размещение корректировки плана плановых проверок",
-                MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
-                MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
-                prop.KO_NAME,
-                plan,
-                planErp.getErpId(),
-                StringUtils.defaultString(plan.getAcceptedName(), acceptedName),
-                year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
-                planRecords,
-                erpIDByCorrelatedID
+        wrapResponse(
+                response, messageService.sendPlanRegular294Correction(
+                        uuid,
+                        "4.1.3 Запрос на размещение корректировки плана плановых проверок",
+                        MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                        MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                        prop.KO_NAME,
+                        plan,
+                        planErp.getErpId(),
+                        StringUtils.defaultString(plan.getAcceptedName(), acceptedName),
+                        year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
+                        plan.getRecords(),
+                        erpIDMap
+                )
         );
-        wrapResponse(response, result);
     }
 
-
-    public void processPlanResult294Initialization(
-            final String requestId, final HttpServletResponse response, final Integer planId, final Integer year
-    ) throws IOException {
+    public void processPlanResult294Initialization(final String uuid, final HttpServletResponse response, final Integer planId, final Integer year) {
         final Plan plan = planViewDao.getById(planId);
-        if (plan == null) {
-            logger.warn("{} : End. Plan not found", requestId);
-            wrapErrorResponse(response, String.format("Не найден план проверки [%d]", planId));
+        logger.info("{} : founded Plan: {}", uuid, plan);
+        if (!isPlanValid(uuid, response, planId, plan)) {
             return;
         }
-        logger.info("{} : founded Plan: {}", requestId, plan);
-
         final PlanErp planErp = planDao.getLastActiveByPlanOrFault(plan);
-        logger.info("{} : founded PlanErp: {}", requestId, planErp);
-
+        logger.info("{} : founded PlanErp: {}", uuid, planErp);
         if (planErp == null) {
-            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, plan.getId());
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", uuid, plan.getId());
             wrapErrorResponse(
                     response, String.format("Нельзя корректировать план: План %d еще не был первично выгружен в ЕРП", plan.getId())
             );
             return;
         }
         if (planErp.getErpId() == null) {
-            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, plan.getId());
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", uuid, plan.getId());
             wrapErrorResponse(
                     response, String.format("Нельзя корректировать план: По первичному размещению плана %d еще не было ответа из ЕРП", plan.getId())
             );
             return;
         }
-        final Map<PlanAct, List<PlanActViolation>> actMap = actDao.getWithViolationsByPlan(plan);
-        final List<PlanRecErp> sentPlanRecords = planRecordDao.getRecordsByPlan(planErp);
-        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(sentPlanRecords.size());
-        for (PlanRecErp record : sentPlanRecords) {
-            erpIDByCorrelatedID.put(record.getCorrelationId(), record.getErpId());
+        final Map<PlanAct, Set<PlanActViolation>> actMap = actDao.getWithViolationsByPlan(plan);
+        final Map<Long, BigInteger> erpIDMap = new HashMap<>(planErp.getRecords().size());
+        for (PlanRecErp record : planErp.getRecords()) {
+            erpIDMap.put(record.getCorrelationId(), record.getErpId());
         }
-        final String result = messageService.sendPlanResult294Initialization(
-                requestId,
-                "4.1.2 Запрос на первичное размещение результатов по нескольким проверкам из плана",
-                MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
-                MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
-                prop.KO_NAME,
-                plan,
-                planErp.getErpId(),
-                year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
-                actMap,
-                erpIDByCorrelatedID
+        wrapResponse(
+                response, messageService.sendPlanResult294Initialization(
+                        uuid,
+                        "4.1.2 Запрос на первичное размещение результатов по нескольким проверкам из плана",
+                        MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                        MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                        prop.KO_NAME,
+                        plan,
+                        planErp.getErpId(),
+                        year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
+                        actMap,
+                        erpIDMap
+                )
         );
-        wrapResponse(response, result);
     }
 
-    public void processPlanResult294Correction(
-            final String requestId, final HttpServletResponse response, final Integer planId, final Integer year
-    ) throws IOException {
+    public void processPlanResult294Correction(final String uuid, final HttpServletResponse response, final Integer planId, final Integer year) {
         final Plan plan = planViewDao.getById(planId);
-        if (plan == null) {
-            logger.warn("{} : End. Plan not found", requestId);
-            wrapErrorResponse(response, String.format("Не найден план проверки [%d]", planId));
+        logger.info("{} : founded Plan: {}", uuid, plan);
+        if (!isPlanValid(uuid, response, planId, plan)) {
             return;
         }
-        logger.info("{} : founded Plan: {}", requestId, plan);
 
-        PlanErp planErp = planDao.getLastActiveByPlanOrFault(plan);
-        logger.info("{} : founded PlanErp: {}", requestId, planErp);
-
+        final PlanErp planErp = planDao.getLastActiveByPlanOrFault(plan);
+        logger.info("{} : founded PlanErp: {}", uuid, planErp);
         if (planErp == null) {
-            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, plan.getId());
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", uuid, plan.getId());
             wrapErrorResponse(
                     response, String.format("Нельзя корректировать план: План %d еще не был первично выгружен в ЕРП", plan.getId())
             );
             return;
         }
         if (planErp.getErpId() == null) {
-            logger.warn("{} : End. PLAN[{}] is not send for ERP", requestId, plan.getId());
+            logger.warn("{} : End. PLAN[{}] is not send for ERP", uuid, plan.getId());
             wrapErrorResponse(
                     response, String.format(
                             "Нельзя корректировать план: По первичному размещению плана %d еще не было ответа из ЕРП", plan.getId()
@@ -268,42 +259,23 @@ public class MessageProcessor {
             return;
         }
 
-        final Map<PlanAct, List<PlanActViolation>> actMap = actDao.getWithViolationsByPlan(plan);
-        final List<PlanRecErp> sentPlanRecords = planRecordDao.getRecordsByPlan(planErp);
-        final Map<Integer, BigInteger> erpIDByCorrelatedID = new HashMap<>(sentPlanRecords.size());
-        for (PlanRecErp record : sentPlanRecords) {
-            erpIDByCorrelatedID.put(record.getCorrelationId(), record.getErpId());
+        final Map<PlanAct, Set<PlanActViolation>> actMap = actDao.getWithViolationsByPlan(plan);
+        final Map<Long, BigInteger> erpIDMap = new HashMap<>(planErp.getRecords().size());
+        for (PlanRecErp record : planErp.getRecords()) {
+            erpIDMap.put(record.getCorrelationId(), record.getErpId());
         }
-        final String result = messageService.sendPlanResult294Correction(
-                requestId,
-                "4.1.6 Запрос на размещение корректировки результатов проверкам плана ",
-                MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
-                MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
-                plan,
-                planErp.getErpId(),
-                year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
-                actMap,
-                erpIDByCorrelatedID
+        wrapResponse(
+                response, messageService.sendPlanResult294Correction(
+                        uuid,
+                        "4.1.6 Запрос на размещение корректировки результатов проверкам плана ",
+                        MessageFactory.createMailer(prop.MGI_ORG_NAME, prop.MGI_OGRN, prop.MGI_FRGU_ORG_ID, prop.MGI_FRGU_SERV_ID),
+                        MessageFactory.createAddressee(prop.ADDRESSEE_CODE, prop.ADDRESSEE_NAME),
+                        plan,
+                        planErp.getErpId(),
+                        year != null ? year : Calendar.getInstance().get(Calendar.YEAR),
+                        actMap,
+                        erpIDMap
+                )
         );
-        wrapResponse(response, result);
     }
-
-
-
-    private static void wrapResponse(final HttpServletResponse response, final String result) throws IOException {
-        if (StringUtils.isNotEmpty(result)) {
-            response.setContentType("text/xml");
-            response.getWriter().println(result);
-            response.setStatus(200);
-        } else {
-            wrapErrorResponse(response, "Ошибка");
-        }
-    }
-
-    private static void wrapErrorResponse(final HttpServletResponse response, final String message) throws IOException {
-        response.getWriter().println(message);
-        response.setStatus(500);
-    }
-
-
 }

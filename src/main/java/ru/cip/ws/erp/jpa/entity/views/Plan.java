@@ -2,6 +2,7 @@ package ru.cip.ws.erp.jpa.entity.views;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
@@ -26,6 +27,9 @@ public class Plan {
     @Column(name = "ACCEPTED_NAME")
     private String acceptedName;
 
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "plan")
+    private Set<PlanRecord> records;
+
     public Plan() {
     }
 
@@ -33,32 +37,40 @@ public class Plan {
         return acceptedName;
     }
 
-    public void setAcceptedName(final String acceptedName) {
-        this.acceptedName = acceptedName;
-    }
-
     public Date getDateFrom() {
         return dateFrom;
-    }
-
-    public void setDateFrom(final Date dateFrom) {
-        this.dateFrom = dateFrom;
     }
 
     public Integer getId() {
         return id;
     }
 
+    public void setAcceptedName(final String acceptedName) {
+        this.acceptedName = acceptedName;
+    }
+
+    public void setDateFrom(final Date dateFrom) {
+        this.dateFrom = dateFrom;
+    }
+
     public void setId(final Integer id) {
         this.id = id;
+    }
+
+    public void setRecords(final Set<PlanRecord> records) {
+        this.records = records;
+    }
+
+    public void setYear(final Integer year) {
+        this.year = year;
     }
 
     public Integer getYear() {
         return year;
     }
 
-    public void setYear(final Integer year) {
-        this.year = year;
+    public Set<PlanRecord> getRecords() {
+        return records;
     }
 
     @Override
@@ -67,7 +79,14 @@ public class Plan {
         sb.append("]{ acceptedName='").append(acceptedName).append('\'');
         sb.append(", year=").append(year);
         sb.append(", dateFrom=").append(dateFrom);
+        sb.append(", records[").append(records.size()).append("]");
+        for (PlanRecord x : records) {
+            sb.append("\n").append(x);
+        }
         sb.append('}');
         return sb.toString();
     }
+
+
+
 }

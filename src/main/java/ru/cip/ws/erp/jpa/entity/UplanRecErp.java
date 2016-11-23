@@ -28,7 +28,7 @@ public class UplanRecErp {
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="UNSCHEDLCHECK_ERP_ID", nullable = false)
-    private UplanErp uplanErp;
+    private UplanErp plan;
 
     /**
      * Код Строки Внеплановой Проверки назначенный в ЕРП
@@ -98,12 +98,12 @@ public class UplanRecErp {
         this.totalValid = totalValid;
     }
 
-    public UplanErp getUplanErp() {
-        return uplanErp;
+    public UplanErp getPlan() {
+        return plan;
     }
 
-    public void setUplanErp(final UplanErp uplanErp) {
-        this.uplanErp = uplanErp;
+    public void setPlan(final UplanErp plan) {
+        this.plan = plan;
     }
 
     @Override
@@ -113,7 +113,7 @@ public class UplanRecErp {
         sb.append(", erpId=").append(erpId);
         sb.append(", status=").append(status);
         sb.append(", totalValid='").append(totalValid).append('\'');
-        sb.append(", uplanErp=").append(uplanErp);
+        sb.append(", plan=").append(plan != null ? plan.getId() : null);
         sb.append('}');
         return sb.toString();
     }

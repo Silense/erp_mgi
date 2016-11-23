@@ -96,7 +96,7 @@ public class PlanAct {
     private String UNDOIG_SEC_I;
 
     @Column(name="CHECK_PLAN_RECORD_ID")
-    private Integer correlationID;
+    private Long correlationID;
 
 
     public PlanAct() {
@@ -230,11 +230,11 @@ public class PlanAct {
         this.WRONG_DATA_REASON_SEC_I = WRONG_DATA_REASON_SEC_I;
     }
 
-    public Integer getCorrelationID() {
+    public Long getCorrelationID() {
         return correlationID;
     }
 
-    public void setCorrelationID(final Integer correlationId) {
+    public void setCorrelationID(final Long correlationId) {
         this.correlationID = correlationId;
     }
 

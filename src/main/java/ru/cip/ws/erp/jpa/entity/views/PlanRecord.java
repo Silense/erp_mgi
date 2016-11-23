@@ -13,7 +13,7 @@ import java.util.Date;
 public class PlanRecord {
     @Id
     @Column(name = "CORRELATION_ID")
-    private Integer correlationId;
+    private Long CORRELATION_ID;
 
     @Column(name = "ORG_NAME")
     private String ORG_NAME;
@@ -107,12 +107,12 @@ public class PlanRecord {
     public PlanRecord() {
     }
 
-    public Integer getCorrelationId() {
-        return correlationId;
+    public Long getCORRELATION_ID() {
+        return CORRELATION_ID;
     }
 
-    public void setCorrelationId(final Integer correlationId) {
-        this.correlationId = correlationId;
+    public void setCORRELATION_ID(final Long CORRELATION_ID) {
+        this.CORRELATION_ID = CORRELATION_ID;
     }
 
     public String getORG_NAME() {
@@ -349,7 +349,7 @@ public class PlanRecord {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("PlanRecord[").append("correlationId=").append(correlationId);
+        final StringBuilder sb = new StringBuilder("PlanRecord[").append("CORRELATION_ID=").append(CORRELATION_ID);
         sb.append("]{ ORG_NAME='").append(ORG_NAME).append('\'');
         sb.append(", ADR_SEC_I='").append(ADR_SEC_I).append('\'');
         sb.append(", ADR_SEC_II='").append(ADR_SEC_II).append('\'');

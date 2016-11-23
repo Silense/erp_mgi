@@ -25,7 +25,6 @@ public class PlanRecErp {
     @JoinColumn(name = "ID_CHECK_PLAN_ERP")
     private PlanErp plan;
 
-
     @Column(name = "CODE_CHECK_PLAN_REC_ERP")
     private BigInteger erpId;
 
@@ -34,7 +33,7 @@ public class PlanRecErp {
     private StatusErp status;
 
     @Column(name = "CIP_CH_PL_REC_CORREL_ID")
-    private Integer correlationId;
+    private Long correlationId;
 
     @Column(name = "REC_TOTAL_VALID")
     private String totalValid;
@@ -42,11 +41,11 @@ public class PlanRecErp {
     public PlanRecErp() {
     }
 
-    public Integer getCorrelationId() {
+    public Long getCorrelationId() {
         return correlationId;
     }
 
-    public void setCorrelationId(final Integer correlationId) {
+    public void setCorrelationId(final Long correlationId) {
         this.correlationId = correlationId;
     }
 

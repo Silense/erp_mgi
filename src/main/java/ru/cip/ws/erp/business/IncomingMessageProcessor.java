@@ -5,12 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.generated.erptypes.*;
-import ru.cip.ws.erp.jpa.dao.PlanDaoImpl;
-import ru.cip.ws.erp.jpa.dao.PlanRecordDaoImpl;
 import ru.cip.ws.erp.jpa.dao.PlanErpDaoImpl;
-import ru.cip.ws.erp.jpa.dao.PlanRecordErpDaoImpl;
+import ru.cip.ws.erp.jpa.dao.UplanErpDaoImpl;
 import ru.cip.ws.erp.jpa.entity.PlanErp;
 import ru.cip.ws.erp.jpa.entity.PlanRecErp;
+import ru.cip.ws.erp.jpa.entity.UplanErp;
 import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
 
 import javax.xml.bind.JAXBElement;
@@ -30,67 +29,60 @@ public class IncomingMessageProcessor {
 
 
     @Autowired
-    private PlanDaoImpl planViewDao;
+    private PlanErpDaoImpl planErpDao;
 
     @Autowired
-    private PlanErpDaoImpl planDao;
-
-    @Autowired
-    private PlanRecordDaoImpl planRecordViewDao;
-
-    @Autowired
-    private PlanRecordErpDaoImpl planRecordDao;
+    private UplanErpDaoImpl uplanErpDao;
 
 
-    public void process(final String requestId, final FindInspectionResponseType findInspectionResponse, final StatusErp statusMessage) {
+    public void process(final String uuid, final FindInspectionResponseType findInspectionResponse, final StatusErp statusMessage) {
         //TODO
         return;
     }
 
     public void process(
-            final String requestId,
+            final String uuid,
             final ListOfProcsecutorsTerritorialJurisdictionResponseType listOfProcsecutorsTerritorialJurisdictionResponse,
             final StatusErp statusMessage
     ) {
         return;
     }
 
-    public void process(final String requestId, final List<ERPResponseType> erpResponse, final StatusErp statusMessage) {
+    public void process(final String uuid, final List<ERPResponseType> erpResponse, final StatusErp statusMessage) {
 
     }
 
     public void processPlanRegular294Notification(
-            final String requestId, final MessageFromERP294Type.PlanRegular294Notification response, final StatusErp status
+            final String uuid, final MessageFromERP294Type.PlanRegular294Notification response, final StatusErp status
     ) {
-        final PlanErp planErp = planDao.getByRequestId(requestId);
+        final PlanErp planErp = planErpDao.getByUUID(uuid);
         if (planErp == null) {
-            logger.warn("{} : Skip. No PlankErp found", requestId);
+            logger.warn("{} : Skip. No PlankErp found", uuid);
             return;
         }
-        logger.info("{} : is message for {}", requestId, planErp);
-        planDao.setIDFromErp(planErp, response.getID(), status, getTotalValid(response.getRest()));
-        final List<PlanRecErp> records = planRecordDao.getRecordsByPlan(planErp);
+        logger.info("{} : is message for {}", uuid, planErp);
+        planErpDao.setErpId(planErp, response.getID(), status, getTotalValid(response.getRest()));
         for (InspectionRegular294ResponseType responseRow : response.getInspectionRegular294Notification()) {
-            for (PlanRecErp localRow : records) {
+            for (PlanRecErp localRow : planErp.getRecords()) {
                 if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
                     logger.info(
                             "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with PlanRecErp[{}]",
-                            requestId,
+                            uuid,
                             responseRow.getOGRN(),
                             localRow.getId()
                     );
-                    planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
                     break;
                 } else if (responseRow.getCORRELATIONID() != null && Objects.equals(
-                        localRow.getCorrelationId(), responseRow.getCORRELATIONID().intValue()
+                        localRow.getCorrelationId(), responseRow.getCORRELATIONID()
                 )) {
                     logger.info(
                             "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with PlanRecErp[{}]",
-                            requestId,
+                            uuid,
                             responseRow.getOGRN(),
                             localRow.getId()
                     );
-                    planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
                     break;
                 }
             }
@@ -98,37 +90,36 @@ public class IncomingMessageProcessor {
     }
 
     public void processPlanRegular294Response(
-            final String requestId, final MessageFromERP294Type.PlanRegular294Response response, final StatusErp status
+            final String uuid, final MessageFromERP294Type.PlanRegular294Response response, final StatusErp status
     ) {
-        final PlanErp planErp = planDao.getByRequestId(requestId);
+        final PlanErp planErp = planErpDao.getByUUID(uuid);
         if (planErp == null) {
-            logger.warn("{} : Skip. No PlanErp found", requestId);
+            logger.warn("{} : Skip. No PlanErp found", uuid);
             return;
         }
-        logger.info("{} : is message for {}", requestId, planErp);
-        planDao.setIDFromErp(planErp, response.getID(), status, getTotalValid(response.getRest()));
-        final List<PlanRecErp> records = planRecordDao.getRecordsByPlan(planErp);
+        logger.info("{} : is message for {}", uuid, planErp);
+        planErpDao.setErpId(planErp, response.getID(), status, getTotalValid(response.getRest()));
         for (InspectionRegular294ResponseType responseRow : response.getInspectionRegular294Response()) {
-            for (PlanRecErp localRow : records) {
+            for (PlanRecErp localRow : planErp.getRecords()) {
                 if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
                     logger.info(
                             "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with PlanRecErp[{}]",
-                            requestId,
+                            uuid,
                             responseRow.getOGRN(),
                             localRow.getId()
                     );
-                    planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
                     break;
                 } else if (responseRow.getCORRELATIONID() != null && Objects.equals(
-                        localRow.getCorrelationId(), responseRow.getCORRELATIONID().intValue()
+                        localRow.getCorrelationId(), responseRow.getCORRELATIONID()
                 )) {
                     logger.info(
                             "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with PlanRecErp[{}]",
-                            requestId,
+                            uuid,
                             responseRow.getOGRN(),
                             localRow.getId()
                     );
-                    planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
                     break;
                 }
             }
@@ -137,34 +128,31 @@ public class IncomingMessageProcessor {
 
 
     public void processPlanResult294Notification(
-            final String requestId, final MessageFromERP294Type.PlanResult294Notification response, final StatusErp status
+            final String uuid, final MessageFromERP294Type.PlanResult294Notification response, final StatusErp status
     ) {
-        final PlanErp planErp = planDao.getByRequestId(requestId);
+        final PlanErp planErp = planErpDao.getByUUID(uuid);
         if (planErp == null) {
-            logger.warn("{} : Skip. No PlanErp found", requestId);
+            logger.warn("{} : Skip. No PlanErp found", uuid);
             return;
         }
-        logger.info("{} : is message for {}", requestId, planErp);
-        planDao.setIDFromErp(planErp, response.getID(), status, null);
-        final List<PlanRecErp> records = planRecordDao.getRecordsByPlan(planErp);
-
-        for (MessageFromERP294Type.PlanResult294Notification.InspectionResult294Notification responseRow : response
-                .getInspectionResult294Notification()) {
+        logger.info("{} : is message for {}", uuid, planErp);
+        planErpDao.setErpId(planErp, response.getID(), status, null);
+        for (MessageFromERP294Type.PlanResult294Notification.InspectionResult294Notification responseRow : response.getInspectionResult294Notification()) {
             if (responseRow.getID() != null) {
-                for (PlanRecErp localRow : records) {
-                    if (Objects.equals(localRow.getErpId(), responseRow.getID())) {
+                for (PlanRecErp x : planErp.getRecords()) {
+                    if (Objects.equals(x.getErpId(), responseRow.getID())) {
                         logger.info(
                                 "{} : InspectionResult294Notification[LOCATION='{}'] correlated with PlanRecErp[{}]",
-                                requestId,
+                                uuid,
                                 responseRow.getLOCATION(),
-                                localRow.getId()
+                                x.getId()
                         );
-                        planRecordDao.setIDFromErp(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                        planErpDao.setErpId(x, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
                         break;
                     }
                 }
             } else {
-                logger.warn("{} : InspectionRegular294Response[ID='{}'] has NULL as ID or NULL correlationId", requestId, responseRow.getID());
+                logger.warn("{} : InspectionRegular294Response[ID='{}'] has NULL as ID or NULL correlationId", uuid, responseRow.getID());
             }
         }
     }
@@ -201,13 +189,19 @@ public class IncomingMessageProcessor {
     }
 
 
-    public void processStatusMessage(final String requestId, final ResponseMsg msg, final StatusErp status) {
-        final PlanErp planErp = planDao.getByRequestId(requestId);
-        if (planErp == null) {
-            logger.warn("{} : Skip. No PlanErp found", requestId);
+    public void processStatusMessage(final String uuid, final ResponseMsg msg, final StatusErp status) {
+        final UplanErp uplanErp = uplanErpDao.getByUUID(uuid);
+        if (uplanErp != null) {
+            logger.info("{} : Founded UplanErp: {}", uuid, uplanErp);
+            uplanErpDao.setStatus(status, uplanErp, uplanErp.getRecords(), msg.getStatusMessage());
             return;
         }
-        logger.info("{} : Founded PlanErp: {}", requestId, planErp);
-        planDao.setStatus(planErp, status);
+        final PlanErp planErp = planErpDao.getByUUID(uuid);
+        if (planErp != null) {
+            logger.info("{} : Founded PlanErp: {}", uuid, planErp);
+            planErpDao.setStatus(status, planErp, planErp.getRecords(), msg.getStatusMessage());
+            return;
+        }
+        logger.warn("{} : No sent to ERP data found!", uuid);
     }
 }

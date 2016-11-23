@@ -8,12 +8,13 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.factory.MessageFactory;
-import ru.cip.ws.erp.generated.erptypes.MessageToERP294Type;
 import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
-import ru.cip.ws.erp.generated.erptypes.ProsecutorAskType;
 import ru.cip.ws.erp.generated.erptypes.RequestMsg;
 import ru.cip.ws.erp.jms.MQMessageSender;
-import ru.cip.ws.erp.jpa.dao.*;
+import ru.cip.ws.erp.jpa.dao.ExportSessionDaoImpl;
+import ru.cip.ws.erp.jpa.dao.PlanErpDaoImpl;
+import ru.cip.ws.erp.jpa.dao.Tuple;
+import ru.cip.ws.erp.jpa.dao.UplanErpDaoImpl;
 import ru.cip.ws.erp.jpa.entity.PlanErp;
 import ru.cip.ws.erp.jpa.entity.PlanRecErp;
 import ru.cip.ws.erp.jpa.entity.UplanErp;
@@ -27,15 +28,13 @@ import ru.cip.ws.erp.servlet.DataKindEnum;
 
 import javax.xml.bind.JAXBElement;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
  * Date: 18.09.2016, 14:24 <br>
- * Company: Bars Group [ www.bars.open.ru ]
- * Description:
+ * Description: Сервис для обработки и отправки сообщений (как эталонных, так и нет)
  */
 @Repository
 @Transactional
@@ -52,42 +51,35 @@ public class MessageService {
     @Autowired
     private UplanErpDaoImpl uplanDao;
 
-    @Autowired
-    private PlanRecordErpDaoImpl planRecordDao;
 
     @Autowired
-    private ExportSessionDaoImpl exportSessionDao;
+    private ExportSessionDaoImpl expSessionDao;
 
-    private ExpSession createExportInfo(final String requestId, final String description, final String messageType) {
-        final ExpSession result = exportSessionDao.createExportSession(description, messageType, requestId);
-        logger.info("{} : Created ExportSession: {}", requestId, result);
-        final ExpSessionEvent exportEvent = exportSessionDao.createExportEvent(messageType, result);
-        logger.info("{} : Created ExportEvent: {}", requestId, exportEvent);
-        return result;
-    }
 
-    public String sendProsecutorAck(final String requestId, final String description) {
-        logger.info("{} : Start processing ProsecutorAsk message", requestId);
-        final JAXBElement<RequestMsg> prosecutorAsk = MessageFactory.createProsecutorAsk(requestId);
-        final String result = JAXBMarshallerUtil.marshalAsString(prosecutorAsk, requestId);
-        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+    public String sendProsecutorAck(final String uuid, final String description) {
+        final DataKindEnum dataKind = DataKindEnum.PROSECUTOR_ACK;
+        logger.info("{} : Start processing ProsecutorAsk message", uuid);
+        final JAXBElement<RequestMsg> prosecutorAsk = MessageFactory.createProsecutorAsk(uuid);
+        final String result = JAXBMarshallerUtil.marshalAsString(prosecutorAsk, uuid);
+        logger.debug("{} : MESSAGE BODY:\n {}", uuid, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-        final ExpSession exportSession = createExportInfo(requestId, description, ProsecutorAskType.class.getSimpleName());
+        final Tuple<ExpSession, ExpSessionEvent> tupleExpSession = expSessionDao.createExportSessionInfo(uuid, description, dataKind.getCode());
+        logTuple(uuid, tupleExpSession, logger);
         try {
             messageSender.send(result);
-            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            expSessionDao.setSessionStatus(tupleExpSession.left, SessionStatus.DONE);
             return result;
         } catch (final Exception e) {
-            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
+            expSessionDao.setSessionInfo(tupleExpSession.left, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
             return null;
         }
     }
 
 
     public String sendPlanRegular294Initialization(
-            final String requestId,
+            final String uuid,
             final String description,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
@@ -95,85 +87,77 @@ public class MessageService {
             final Plan plan,
             final String acceptedName,
             final Integer year,
-            final List<PlanRecord> planRecords
+            final Set<PlanRecord> records
     ) {
+        final DataKindEnum dataKind = DataKindEnum.PLAN_REGULAR_294_INITIALIZATION;
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createPlanRegular294Initialization(
-                requestId,
+                uuid,
                 mailer,
                 addressee,
                 KO_NAME,
                 StringUtils.defaultString(acceptedName, plan.getAcceptedName()),
                 year != null ? year : plan.getYear(),
-                planRecords
+                records
         );
-        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
-        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, uuid);
+        logger.debug("{} : MESSAGE BODY:\n {}", uuid, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-
-        final ExpSession exportSession = createExportInfo(
-                requestId, description, MessageToERP294Type.PlanRegular294Initialization.class.getSimpleName()
-        );
-
-        final PlanErp planErp = planDao.createPlanErp(plan, null, DataKindEnum.PLAN_REGULAR_294_INITIALIZATION, exportSession);
-        logger.info("{} : Created PlanErp: {}", requestId, planErp);
-        final List<PlanRecErp> planRecErpList = new ArrayList<>(planRecords.size());
-        for (PlanRecord record : planRecords) {
-            final PlanRecErp planRecErp = planRecordDao.createPlanRecErp(planErp, record);
-            planRecErpList.add(planRecErp);
-            logger.info("{} : Created PlanRecErp: {}", requestId, planRecErp);
-        }
+        final Tuple<ExpSession, ExpSessionEvent> tupleExpSession = expSessionDao.createExportSessionInfo(uuid, description, dataKind.getCode());
+        final Tuple<PlanErp, Set<PlanRecErp>> tupleErp = planDao.createErp(plan, null, records, null, null, dataKind, tupleExpSession.left);
+        logPlanTuples(uuid, tupleExpSession, tupleErp, logger);
         try {
             messageSender.send(result);
-            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            expSessionDao.setSessionStatus(tupleExpSession.left, SessionStatus.DONE);
             return result;
         } catch (final Exception e) {
-            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
-            planDao.setStatus(planErp, StatusErp.ERROR);
-            planRecordDao.setStatus(planRecErpList, StatusErp.ERROR);
+            logger.error("{} : Error while sending JMS message", uuid, e);
+            final String errorMessage = "Not sent to JMS: " + e.getMessage();
+            expSessionDao.setSessionInfo(tupleExpSession.left, SessionStatus.ERROR, errorMessage);
+            planDao.setStatus(StatusErp.ERROR, tupleErp.left, tupleErp.right, errorMessage);
             return null;
         }
     }
 
 
     public String sendUplanUnregular294Initialization(
-            final String requestId,
+            final String uuid,
             final String description,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final String KO_NAME,
             final Uplan uplan,
-            final List<UplanRecord> uplanRecords
+            final Set<UplanRecord> records
     ) {
+        final DataKindEnum dataKind = DataKindEnum.UPLAN_UNREGULAR_294_INITIALIZATION;
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanUnregular294Initialization(
-                requestId, mailer, addressee, KO_NAME, uplan, uplanRecords
+                uuid, mailer, addressee, KO_NAME, uplan, records
         );
-        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
-        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, uuid);
+        logger.debug("{} : MESSAGE BODY:\n {}", uuid, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-        final ExpSession exportSession = createExportInfo(
-                requestId, description, MessageToERP294Type.UplanUnregular294Initialization.class.getSimpleName()
-        );
-        final Tuple<UplanErp, List<UplanRecErp>> uplanErpTuple = uplanDao.createErp(
-                requestId, uplan, uplanRecords, null, DataKindEnum.UPLAN_UNREGULAR_294_INITIALIZATION, exportSession
-        );
+        final Tuple<ExpSession, ExpSessionEvent> tupleExpSession = expSessionDao.createExportSessionInfo(uuid, description, dataKind.getCode());
+        final Tuple<UplanErp, Set<UplanRecErp>> tupleErp = uplanDao.createErp(uplan, null, records, null, null, dataKind, tupleExpSession.left);
+        logPlanTuples(uuid, tupleExpSession, tupleErp, logger);
         try {
             messageSender.send(result);
-            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            expSessionDao.setSessionStatus(tupleExpSession.left, SessionStatus.DONE);
             return result;
         } catch (final Exception e) {
-            logger.error("{} : Error while sending JMS message", requestId, e);
-            uplanDao.setErrorStatus(uplanErpTuple, "Not sent to JMS: " + e.getMessage());
+            logger.error("{} : Error while sending JMS message", uuid, e);
+            final String errorMessage = "Not sent to JMS: " + e.getMessage();
+            expSessionDao.setSessionInfo(tupleExpSession.left, SessionStatus.ERROR, errorMessage);
+            uplanDao.setStatus(StatusErp.ERROR, tupleErp.left, tupleErp.right, errorMessage);
             return null;
         }
     }
 
 
     public String sendPlanRegular294Correction(
-            final String requestId,
+            final String uuid,
             final String description,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
@@ -182,80 +166,72 @@ public class MessageService {
             final BigInteger erpID,
             final String acceptedName,
             final int year,
-            final List<PlanRecord> planRecords,
-            final Map<Integer, BigInteger> erpIDByCorrelatedID
+            final Set<PlanRecord> records,
+            final Map<Long, BigInteger> erpIDMap
     ) {
+        final DataKindEnum dataKind = DataKindEnum.PLAN_REGULAR_294_CORRECTION;
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createPlanRegular294Correction(
-                requestId, mailer, addressee, KO_NAME, StringUtils.defaultString(acceptedName), year, planRecords, erpID, erpIDByCorrelatedID
+                uuid, mailer, addressee, KO_NAME, StringUtils.defaultString(acceptedName), year, records, erpID, erpIDMap
         );
-        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
-        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, uuid);
+        logger.debug("{} : MESSAGE BODY:\n {}", uuid, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-        final ExpSession exportSession = createExportInfo(requestId, description, MessageToERP294Type.PlanRegular294Correction.class.getSimpleName());
-
-        final PlanErp planErp = planDao.createPlanErp(plan, null, DataKindEnum.PLAN_REGULAR_294_CORRECTION, exportSession, erpID);
-        logger.info("{} : Created PlanErp: {}", requestId, planErp);
-
-        final List<PlanRecErp> planRecErpList = new ArrayList<>(planRecords.size());
-        for (PlanRecord record : planRecords) {
-            final PlanRecErp planRecErp = planRecordDao.createPlanRecErp(
-                    planErp, record, erpIDByCorrelatedID.get(record.getCorrelationId())
-            );
-            planRecErpList.add(planRecErp);
-            logger.info("{} : Created PlanRecErp: {}", requestId, planRecErp);
-        }
+        final Tuple<ExpSession, ExpSessionEvent> tupleExpSession = expSessionDao.createExportSessionInfo(uuid, description, dataKind.getCode());
+        final Tuple<PlanErp, Set<PlanRecErp>> tupleErp = planDao.createErp(plan, erpID, records, erpIDMap, null, dataKind, tupleExpSession.left);
+        logPlanTuples(uuid, tupleExpSession, tupleErp, logger);
         try {
             messageSender.send(result);
-            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            expSessionDao.setSessionStatus(tupleExpSession.left, SessionStatus.DONE);
             return result;
         } catch (final Exception e) {
-            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
-            planDao.setStatus(planErp, StatusErp.ERROR);
-            planRecordDao.setStatus(planRecErpList, StatusErp.ERROR);
+            logger.error("{} : Error while sending JMS message", uuid, e);
+            final String errorMessage = "Not sent to JMS: " + e.getMessage();
+            expSessionDao.setSessionInfo(tupleExpSession.left, SessionStatus.ERROR, errorMessage);
+            planDao.setStatus(StatusErp.ERROR, tupleErp.left, tupleErp.right, errorMessage);
             return null;
         }
     }
 
     public String sendUplanUnregular294Correction(
-            final String requestId,
+            final String uuid,
             final String description,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final String KO_NAME,
             final Uplan uplan,
             final BigInteger id,
-            final List<UplanRecord> uplanRecords,
-            final Map<Long, BigInteger> erpIDByCorrelatedID
+            final Set<UplanRecord> records,
+            final Map<Long, BigInteger> erpIDMap
     ) {
+        final DataKindEnum dataKind = DataKindEnum.UPLAN_UNREGULAR_294_CORRECTION;
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanUnregular294Correction(
-                requestId, mailer, addressee, KO_NAME, uplan, id, uplanRecords, erpIDByCorrelatedID
+                uuid, mailer, addressee, KO_NAME, uplan, id, records, erpIDMap
         );
-        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
-        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, uuid);
+        logger.debug("{} : MESSAGE BODY:\n {}", uuid, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-        final ExpSession exportSession = createExportInfo(
-                requestId, description, MessageToERP294Type.UplanUnregular294Correction.class.getSimpleName()
-        );
-        final Tuple<UplanErp, List<UplanRecErp>> uplanErpTuple = uplanDao.createErp(
-                requestId, uplan, id, uplanRecords, erpIDByCorrelatedID, null, DataKindEnum.UPLAN_UNREGULAR_294_CORRECTION, exportSession
-        );
+        final Tuple<ExpSession, ExpSessionEvent> tupleExpSession = expSessionDao.createExportSessionInfo(uuid, description, dataKind.getCode());
+        final Tuple<UplanErp, Set<UplanRecErp>> tupleErp = uplanDao.createErp(uplan, id, records, erpIDMap, null, dataKind, tupleExpSession.left);
+        logPlanTuples(uuid, tupleExpSession, tupleErp, logger);
         try {
             messageSender.send(result);
-            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            expSessionDao.setSessionStatus(tupleExpSession.left, SessionStatus.DONE);
             return result;
         } catch (final Exception e) {
-            logger.error("{} : Error while sending JMS message", requestId, e);
-            uplanDao.setErrorStatus(uplanErpTuple, "Not sent to JMS: " + e.getMessage());
+            logger.error("{} : Error while sending JMS message", uuid, e);
+            final String errorMessage = "Not sent to JMS: " + e.getMessage();
+            expSessionDao.setSessionInfo(tupleExpSession.left, SessionStatus.ERROR, errorMessage);
+            uplanDao.setStatus(StatusErp.ERROR, tupleErp.left, tupleErp.right, errorMessage);
             return null;
         }
     }
 
     public String sendPlanResult294Initialization(
-            final String requestId,
+            final String uuid,
             final String description,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
@@ -263,122 +239,122 @@ public class MessageService {
             final Plan plan,
             final BigInteger erpID,
             final int year,
-            final Map<PlanAct, List<PlanActViolation>> actMap,
-            final Map<Integer, BigInteger> erpIDByCorrelatedID
+            final Map<PlanAct, Set<PlanActViolation>> actMap,
+            final Map<Long, BigInteger> erpIDMap
     ) {
+        final DataKindEnum dataKind = DataKindEnum.PLAN_RESULT_294_INITIALIZATION;
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createPlanResult294Initialization(
-                requestId, mailer, addressee, year, actMap, erpID, erpIDByCorrelatedID
+                uuid, mailer, addressee, year, actMap, erpID, erpIDMap
         );
-        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
-        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, uuid);
+        logger.debug("{} : MESSAGE BODY:\n {}", uuid, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-
-        final ExpSession exportSession = createExportInfo(
-                requestId, description, MessageToERP294Type.PlanResult294Initialization.class.getSimpleName()
-        );
-
-        final PlanErp planErp = planDao.createPlanErp(plan, null, DataKindEnum.PLAN_RESULT_294_INITIALIZATION, exportSession, erpID);
-        logger.info("{} : Created PlanErp: {}", requestId, planErp);
-
-        final List<PlanRecErp> planRecErpList = new ArrayList<>(actMap.size());
-        for (PlanAct record : actMap.keySet()) {
-            final PlanRecErp planRecErp = planRecordDao.createPlanRecErp(
-                    planErp, record.getCorrelationID(), erpIDByCorrelatedID.get(record.getCorrelationID())
-            );
-            planRecErpList.add(planRecErp);
-            logger.info("{} : Created PlanRecErp: {}", requestId, planRecErp);
-        }
+        final Tuple<ExpSession, ExpSessionEvent> tupleExpSession = expSessionDao.createExportSessionInfo(uuid, description, dataKind.getCode());
+        final Tuple<PlanErp, Set<PlanRecErp>> tupleErp = planDao.createErp(plan, erpID, actMap, erpIDMap, null, dataKind, tupleExpSession.left);
+        logPlanTuples(uuid, tupleExpSession, tupleErp, logger);
         try {
             messageSender.send(result);
-            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            expSessionDao.setSessionStatus(tupleExpSession.left, SessionStatus.DONE);
             return result;
         } catch (final Exception e) {
-            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
-            planDao.setStatus(planErp, StatusErp.ERROR);
-            planRecordDao.setStatus(planRecErpList, StatusErp.ERROR);
+            logger.error("{} : Error while sending JMS message", uuid, e);
+            final String errorMessage = "Not sent to JMS: " + e.getMessage();
+            expSessionDao.setSessionInfo(tupleExpSession.left, SessionStatus.ERROR, errorMessage);
+            planDao.setStatus(StatusErp.ERROR, tupleErp.left, tupleErp.right, errorMessage);
             return null;
         }
     }
 
     public String sendUplanResult294Initialization(
-            final String requestId,
+            final String uuid,
             final String description,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final String KO_NAME,
             final BigInteger erpID,
             final int year,
-            final Map<UplanAct, List<UplanActViolation>> actMap
+            final Map<UplanAct, Set<UplanActViolation>> actMap
     ) {
+        final DataKindEnum dataKind = DataKindEnum.UPLAN_RESULT_294_INITIALIZATION;
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanResult294Initialization(
-                requestId, mailer, addressee, year, actMap, erpID
+                uuid, mailer, addressee, year, actMap, erpID
         );
-        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
-        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, uuid);
+        logger.debug("{} : MESSAGE BODY:\n {}", uuid, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-        final ExpSession exportSession = createExportInfo(
-                requestId, description, MessageToERP294Type.UplanResult294Initialization.class.getSimpleName()
-        );
+        final Tuple<ExpSession, ExpSessionEvent> tupleExpSession = expSessionDao.createExportSessionInfo(uuid, description, dataKind.getCode());
+        logTuple(uuid, tupleExpSession, logger);
         //TODO
         try {
             messageSender.send(result);
-            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            expSessionDao.setSessionStatus(tupleExpSession.left, SessionStatus.DONE);
             return result;
         } catch (final Exception e) {
-            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
+            expSessionDao.setSessionInfo(tupleExpSession.left, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
             return null;
         }
 
     }
 
-
     public String sendPlanResult294Correction(
-            final String requestId,
+            final String uuid,
             final String description,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final Plan plan,
             final BigInteger erpID,
             final int year,
-            final Map<PlanAct, List<PlanActViolation>> actMap,
-            final Map<Integer, BigInteger> erpIDByCorrelatedID
+            final Map<PlanAct, Set<PlanActViolation>> actMap,
+            final Map<Long, BigInteger> erpIDMap
     ) {
+        final DataKindEnum dataKind = DataKindEnum.PLAN_RESULT_294_CORRECTION;
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createPlanResult294Correction(
-                requestId, mailer, addressee, year, actMap, erpID, erpIDByCorrelatedID
+                uuid, mailer, addressee, year, actMap, erpID, erpIDMap
         );
-        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, requestId);
-        logger.debug("{} : MESSAGE BODY:\n {}", requestId, result);
+        final String result = JAXBMarshallerUtil.marshalAsString(requestMessage, uuid);
+        logger.debug("{} : MESSAGE BODY:\n {}", uuid, result);
         if (StringUtils.isEmpty(result)) {
             return null;
         }
-
-        final ExpSession exportSession = createExportInfo(requestId, description, MessageToERP294Type.PlanResult294Correction.class.getSimpleName());
-
-        final PlanErp planErp = planDao.createPlanErp(plan, null, DataKindEnum.PLAN_RESULT_294_CORRECTION, exportSession, erpID);
-        logger.info("{} : Created PlanErp: {}", requestId, planErp);
-
-
-        final List<PlanRecErp> planRecErpList = new ArrayList<>(actMap.size());
-        for (PlanAct record : actMap.keySet()) {
-            final PlanRecErp planRecErp = planRecordDao.createPlanRecErp(
-                    planErp, record.getCorrelationID(), erpIDByCorrelatedID.get(record.getCorrelationID())
-            );
-            planRecErpList.add(planRecErp);
-            logger.info("{} : Created PlanRecErp: {}", requestId, planRecErp);
-        }
+        final Tuple<ExpSession, ExpSessionEvent> tupleExpSession = expSessionDao.createExportSessionInfo(uuid, description, dataKind.getCode());
+        final Tuple<PlanErp, Set<PlanRecErp>> tupleErp = planDao.createErp(plan, erpID, actMap, erpIDMap, null, dataKind, tupleExpSession.left);
+        logPlanTuples(uuid, tupleExpSession, tupleErp, logger);
         try {
             messageSender.send(result);
-            exportSessionDao.setSessionStatus(exportSession, SessionStatus.DONE);
+            expSessionDao.setSessionStatus(tupleExpSession.left, SessionStatus.DONE);
             return result;
         } catch (final Exception e) {
-            exportSessionDao.setSessionInfo(exportSession, SessionStatus.ERROR, "Not sent to JMS: " + e.getMessage());
-            planDao.setStatus(planErp, StatusErp.ERROR);
-            planRecordDao.setStatus(planRecErpList, StatusErp.ERROR);
+            logger.error("{} : Error while sending JMS message", uuid, e);
+            final String errorMessage = "Not sent to JMS: " + e.getMessage();
+            expSessionDao.setSessionInfo(tupleExpSession.left, SessionStatus.ERROR, errorMessage);
+            planDao.setStatus(StatusErp.ERROR, tupleErp.left, tupleErp.right, errorMessage);
             return null;
         }
     }
+
+    private <A,B> void  logPlanTuples(
+            final String uuid,
+            final Tuple<ExpSession, ExpSessionEvent> tupleExpSession,
+            final Tuple<A, Set<B>> tupleErp,
+            final Logger logger
+    ) {
+        if(logger.isDebugEnabled()){
+            logger.debug("{} : Created ExportSession: {}", uuid, tupleExpSession.left);
+            logger.debug("{} : Created ExportEvent: {}", uuid, tupleExpSession.right);
+            logger.debug("{} : Created[main plan]: {}", uuid, tupleErp.left);
+            for (Object x : tupleErp.right) {
+                logger.debug("{} : Created[record]: {}", uuid, x);
+            }
+        }
+    }
+
+    private <A,B> void logTuple(final String uuid, final Tuple<A, B> tuple,  final Logger logger){
+        logger.debug("{} : Created[L]: {}", uuid, tuple.left);
+        logger.debug("{} : Created[R]: {}", uuid, tuple.right);
+    }
+
 }
