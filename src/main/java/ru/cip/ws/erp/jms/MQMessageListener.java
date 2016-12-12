@@ -117,11 +117,11 @@ public class MQMessageListener
                     } else if (m294.getPlanResult294Response() != null) {
                         messageProcessor.process(m294.getPlanResult294Response());
                     } else if (m294.getUplanResult294Notification() != null) {
-                        messageProcessor.process(m294.getUplanResult294Notification());
+                        messageProcessor.processUplanResult294Notification(requestId, m294.getUplanResult294Notification(), status);
                     } else if (m294.getUplanResult294Response() != null) {
                         messageProcessor.process(m294.getUplanResult294Response());
                     } else if (m294.getUplanUnregular294Notification() != null) {
-                        messageProcessor.process(m294.getUplanUnregular294Notification());
+                        messageProcessor.processUplanUnregular294Notification(requestId, m294.getUplanUnregular294Notification(), status);
                     } else if (m294.getUplanUnregular294Response() != null) {
                         messageProcessor.process(m294.getUplanUnregular294Response());
                     } else {

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.jpa.entity.PlanErp;
+import ru.cip.ws.erp.jpa.entity.PlanRecErp;
 import ru.cip.ws.erp.jpa.entity.UplanErp;
 import ru.cip.ws.erp.jpa.entity.UplanRecErp;
 import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
@@ -108,4 +109,14 @@ public class UplanErpDaoImpl {
     }
 
 
+    public void setErpId(final UplanErp planErp, final BigInteger erpId, final StatusErp status, final String totalValid) {
+        planErp.setErpId(erpId);
+        setStatus(status, planErp, totalValid);
+    }
+    public void setErpId(final UplanRecErp planRecErp, final BigInteger erpId, final StatusErp status, final String totalValid) {
+        planRecErp.setErpId(erpId);
+        planRecErp.setStatus(status);
+        planRecErp.setTotalValid(totalValid);
+        em.merge(planRecErp);
+    }
 }
