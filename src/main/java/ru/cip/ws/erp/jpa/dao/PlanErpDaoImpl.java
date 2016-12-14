@@ -30,7 +30,7 @@ import java.util.Set;
 
 @Repository
 @Transactional
-public class PlanErpDaoImpl {
+public class CheckErpDaoImpl {
 
     @PersistenceContext
     private EntityManager em;
