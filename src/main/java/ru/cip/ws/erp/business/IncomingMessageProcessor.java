@@ -4,19 +4,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.generated.erptypes.*;
-import ru.cip.ws.erp.jpa.dao.PlanErpDaoImpl;
-import ru.cip.ws.erp.jpa.dao.UplanErpDaoImpl;
-import ru.cip.ws.erp.jpa.entity.PlanErp;
-import ru.cip.ws.erp.jpa.entity.PlanRecErp;
-import ru.cip.ws.erp.jpa.entity.UplanErp;
-import ru.cip.ws.erp.jpa.entity.UplanRecErp;
-import ru.cip.ws.erp.jpa.entity.enums.StatusErp;
+import ru.cip.ws.erp.jpa.dao.CheckErpDaoImpl;
+import ru.cip.ws.erp.jpa.dao.EnumDaoImpl;
+import ru.cip.ws.erp.jpa.dao.Tuple;
+import ru.cip.ws.erp.jpa.entity.CheckErp;
+import ru.cip.ws.erp.jpa.entity.CheckHistory;
+import ru.cip.ws.erp.jpa.entity.CheckRecordErp;
+import ru.cip.ws.erp.jpa.entity.RsysEnum;
 
 import javax.xml.bind.JAXBElement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Author: Upatov Egor <br>
@@ -25,221 +24,352 @@ import java.util.Objects;
  * Description:
  */
 @Repository
+@Transactional
 public class IncomingMessageProcessor {
 
-    private final static Logger logger = LoggerFactory.getLogger(IncomingMessageProcessor.class);
-
+    @Autowired
+    private CheckErpDaoImpl checkErpDao;
 
     @Autowired
-    private PlanErpDaoImpl planErpDao;
+    private EnumDaoImpl enumDao;
 
-    @Autowired
-    private UplanErpDaoImpl uplanErpDao;
+    private final static Logger log = LoggerFactory.getLogger(IncomingMessageProcessor.class);
 
 
-    public void process(final String uuid, final FindInspectionResponseType findInspectionResponse, final StatusErp statusMessage) {
-        //TODO
-        return;
+    public void process(
+            final String uuid,
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final FindInspectionResponseType response
+    ) {
+        log.info("{} : Start processing as FindInspectionResponse", uuid);
+        log.info("{} : End. Not implemented", uuid);
     }
 
     public void process(
             final String uuid,
-            final ListOfProcsecutorsTerritorialJurisdictionResponseType listOfProcsecutorsTerritorialJurisdictionResponse,
-            final StatusErp statusMessage
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final ListOfProcsecutorsTerritorialJurisdictionResponseType response
     ) {
-        return;
+        log.info("{} : Start processing as ListOfProcsecutorsTerritorialJurisdictionResponse", uuid);
+        log.info("{} : End. Not implemented", uuid);
     }
 
-    public void process(final String uuid, final List<ERPResponseType> erpResponse, final StatusErp statusMessage) {
-
+    public void process(
+            final String uuid, final RsysEnum erpStatus, final Date responseDate, final String rawContent, final List<ERPResponseType> erpResponse
+    ) {
+        log.info("{} : Start processing as List<ERPResponse>", uuid);
+        log.info("{} : End. Not implemented", uuid);
     }
 
-    public void processPlanRegular294Notification(
-            final String uuid, final MessageFromERP294Type.PlanRegular294Notification response, final StatusErp status
+
+    public void process(
+            final String uuid,
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final MessageFromERP294Type.PlanRegular294Response response
     ) {
-        final PlanErp planErp = planErpDao.getByUUID(uuid);
-        if (planErp == null) {
-            logger.warn("{} : Skip. No PlankErp found", uuid);
+        log.info("{} : Start processing as PlanRegular294Response", uuid);
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = processCommonPart(uuid, erpStatus, responseDate, rawContent);
+        if(checkErpTuple == null){
+            log.info("{} : End.", uuid);
             return;
         }
-        logger.info("{} : is message for {}", uuid, planErp);
-        planErpDao.setErpId(planErp, response.getID(), status, getTotalValid(response.getRest()));
-        for (InspectionRegular294ResponseType responseRow : response.getInspectionRegular294Notification()) {
-            for (PlanRecErp localRow : planErp.getRecords()) {
-                if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
-                    logger.info(
-                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with PlanRecErp[{}]",
-                            uuid,
-                            responseRow.getOGRN(),
-                            localRow.getId()
-                    );
-                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
-                    break;
-                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(
-                        localRow.getCorrelationId(), responseRow.getCORRELATIONID()
-                )) {
-                    logger.info(
-                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with PlanRecErp[{}]",
-                            uuid,
-                            responseRow.getOGRN(),
-                            localRow.getId()
-                    );
-                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
-                    break;
-                }
-            }
-        }
-    }
-
-    public void processPlanRegular294Response(
-            final String uuid, final MessageFromERP294Type.PlanRegular294Response response, final StatusErp status
-    ) {
-        final PlanErp planErp = planErpDao.getByUUID(uuid);
-        if (planErp == null) {
-            logger.warn("{} : Skip. No PlanErp found", uuid);
-            return;
-        }
-        logger.info("{} : is message for {}", uuid, planErp);
-        planErpDao.setErpId(planErp, response.getID(), status, getTotalValid(response.getRest()));
+        checkErpDao.setErpCodeAndState(checkErpTuple.left, erpStatus, getTotalValid(response.getRest()), responseDate, response.getID(), enumDao.get("ERP_CHECK_STATE", "PARTIAL_ALLOCATION"));
         for (InspectionRegular294ResponseType responseRow : response.getInspectionRegular294Response()) {
-            for (PlanRecErp localRow : planErp.getRecords()) {
-                if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
-                    logger.info(
-                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with PlanRecErp[{}]",
-                            uuid,
-                            responseRow.getOGRN(),
-                            localRow.getId()
+            for (CheckRecordErp localRow : checkErpTuple.right) {
+                if (responseRow.getID() != null && Objects.equals(localRow.getErpCode(), responseRow.getID())) {
+                    log.info("{} : InspectionRegular294ResponseType[OGRN='{}'] correlated[BY ID] with CheckRecordErp[{}]",
+                             uuid,
+                             responseRow.getOGRN(),
+                             localRow.getId()
                     );
-                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
                     break;
-                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(
-                        localRow.getCorrelationId(), responseRow.getCORRELATIONID()
-                )) {
-                    logger.info(
-                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with PlanRecErp[{}]",
-                            uuid,
-                            responseRow.getOGRN(),
-                            localRow.getId()
+                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(localRow.getCorrelationId(), responseRow.getCORRELATIONID())) {
+                    log.info("{} : InspectionRegular294ResponseType[OGRN='{}'] correlated[BY correlationID] with CheckRecordErp[{}]",
+                             uuid,
+                             responseRow.getOGRN(),
+                             localRow.getId()
                     );
-                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                    checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
                     break;
                 }
             }
         }
+        log.info("{} : End processing PlanRegular294Response", uuid);
+    }
+
+    public void process(
+            final String uuid,
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final MessageFromERP294Type.UplanUnregular294Response response
+    ) {
+        log.info("{} : Start processing as UplanUnregular294Response", uuid);
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = processCommonPart(uuid, erpStatus, responseDate, rawContent);
+        if(checkErpTuple == null){
+            log.info("{} : End.", uuid);
+            return;
+        }
+        checkErpDao.setErpCodeAndState(checkErpTuple.left, erpStatus, getTotalValid(response.getRest()), responseDate, response.getID(), enumDao.get("ERP_CHECK_STATE", "PARTIAL_ALLOCATION"));
+        for (UinspectionUnregular294ResponseType responseRow : response.getUinspectionUnregular294Response()) {
+            for (CheckRecordErp localRow : checkErpTuple.right) {
+                if (responseRow.getID() != null && Objects.equals(localRow.getErpCode(), responseRow.getID())) {
+                    log.info("{} : UinspectionUnregular294Response[OGRN='{}'] correlated[BY ID] with CheckRecordErp[{}]",
+                             uuid,
+                             responseRow.getOGRN(),
+                             localRow.getId()
+                    );
+                    checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
+                    break;
+                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(localRow.getCorrelationId(), responseRow.getCORRELATIONID())) {
+                    log.info("{} : IUinspectionUnregular294Response[OGRN='{}'] correlated[BY correlationID] with CheckRecordErp[{}]",
+                             uuid,
+                             responseRow.getOGRN(),
+                             localRow.getId()
+                    );
+                    checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
+                    break;
+                }
+            }
+        }
+        log.info("{} : End processing UplanUnregular294Response", uuid);
+    }
+
+    public void process(
+            final String uuid,
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final MessageFromERP294Type.PlanRegular294Notification response
+    ) {
+        log.info("{} : Start processing as PlanRegular294Notification", uuid);
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = processCommonPart(uuid, erpStatus, responseDate, rawContent);
+        if(checkErpTuple == null){
+            log.info("{} : End.", uuid);
+            return;
+        }
+        checkErpDao.setErpCodeAndState(checkErpTuple.left, erpStatus, getTotalValid(response.getRest()), responseDate, response.getID(), enumDao.get("ERP_CHECK_STATE", "ALLOCATED"));
+        for (InspectionRegular294ResponseType responseRow : response.getInspectionRegular294Notification()) {
+            for (CheckRecordErp localRow : checkErpTuple.right) {
+                if (responseRow.getID() != null && Objects.equals(localRow.getErpCode(), responseRow.getID())) {
+                    log.info("{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with CheckRecordErp[{}]",
+                             uuid,
+                             responseRow.getOGRN(),
+                             localRow.getId()
+                    );
+                    checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
+                    break;
+                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(localRow.getCorrelationId().longValue(), responseRow.getCORRELATIONID())) {
+                    log.info("{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with CheckRecordErp[{}]",
+                             uuid,
+                             responseRow.getOGRN(),
+                             localRow.getId()
+                    );
+                    checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
+                    break;
+                }
+            }
+        }
+        log.info("{} : End processing PlanRegular294Notification", uuid);
+    }
+
+    public void process(
+            final String uuid,
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final MessageFromERP294Type.UplanUnregular294Notification response
+    ) {
+        log.info("{} : Start processing as UplanUnregular294Notification", uuid);
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = processCommonPart(uuid, erpStatus, responseDate, rawContent);
+        if(checkErpTuple == null){
+            log.info("{} : End.", uuid);
+            return;
+        }
+        checkErpDao.setErpCodeAndState(checkErpTuple.left, erpStatus, getTotalValid(response.getRest()), responseDate, response.getID(), enumDao.get("ERP_CHECK_STATE", "ALLOCATED"));
+        for (UinspectionUnregular294ResponseType responseRow : response.getUinspectionUnregular294Notification()) {
+            for (CheckRecordErp localRow : checkErpTuple.right) {
+                if (responseRow.getID() != null && Objects.equals(localRow.getErpCode(), responseRow.getID())) {
+                    log.info("{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with CheckRecordErp[{}]",
+                             uuid,
+                             responseRow.getOGRN(),
+                             localRow.getId()
+                    );
+                    checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
+                    break;
+                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(localRow.getCorrelationId().longValue(), responseRow.getCORRELATIONID())) {
+                    log.info("{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with CheckRecordErp[{}]",
+                             uuid,
+                             responseRow.getOGRN(),
+                             localRow.getId()
+                    );
+                    checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
+                    break;
+                }
+            }
+        }
+        log.info("{} : End processing PlanRegular294Notification", uuid);
     }
 
 
-    public void processPlanResult294Notification(
-            final String uuid, final MessageFromERP294Type.PlanResult294Notification response, final StatusErp status
+    public void process(
+            final String uuid,
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final MessageFromERP294Type.PlanResult294Response response
     ) {
-        final PlanErp planErp = planErpDao.getByUUID(uuid);
-        if (planErp == null) {
-            logger.warn("{} : Skip. No PlanErp found", uuid);
+        log.info("{} : Start processing as PlanResult294Response", uuid);
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = processCommonPart(uuid, erpStatus, responseDate, rawContent);
+        if(checkErpTuple == null){
+            log.info("{} : End.", uuid);
             return;
         }
-        logger.info("{} : is message for {}", uuid, planErp);
-        planErpDao.setErpId(planErp, response.getID(), status, null);
+        log.info("{} : End processing PlanResult294Response", uuid);
+    }
+
+    public void process(
+            final String uuid,
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final MessageFromERP294Type.UplanResult294Response response
+    ) {
+        log.info("{} : Start processing as UplanResult294Response", uuid);
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = processCommonPart(uuid, erpStatus, responseDate, rawContent);
+        if(checkErpTuple == null){
+            log.info("{} : End.", uuid);
+            return;
+        }
+        log.info("{} : End processing UplanResult294Response", uuid);
+    }
+
+
+
+
+
+    public void process(
+            final String uuid,
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final MessageFromERP294Type.PlanResult294Notification response
+    ) {
+        log.info("{} : Start processing as PlanResult294Notification", uuid);
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = processCommonPart(uuid, erpStatus, responseDate, rawContent);
+        if(checkErpTuple == null){
+            log.info("{} : End.", uuid);
+            return;
+        }
+        checkErpDao.setErpCodeAndState(checkErpTuple.left, erpStatus, "", responseDate, response.getID(), enumDao.get("ERP_CHECK_STATE", "RESULT_ALLOCATED"));
         for (MessageFromERP294Type.PlanResult294Notification.InspectionResult294Notification responseRow : response.getInspectionResult294Notification()) {
             if (responseRow.getID() != null) {
-                for (PlanRecErp x : planErp.getRecords()) {
-                    if (Objects.equals(x.getErpId(), responseRow.getID())) {
-                        logger.info(
+                for (CheckRecordErp x : checkErpTuple.right) {
+                    if (Objects.equals(x.getErpCode(), responseRow.getID())) {
+                        log.info(
                                 "{} : InspectionResult294Notification[LOCATION='{}'] correlated with PlanRecErp[{}]",
                                 uuid,
                                 responseRow.getLOCATION(),
                                 x.getId()
                         );
-                        planErpDao.setErpId(x, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                        checkErpDao.setRecordErpCode(x, responseRow.getID(), getTotalValid(responseRow.getRest()));
                         break;
                     }
                 }
             } else {
-                logger.warn("{} : InspectionRegular294Response[ID='{}'] has NULL as ID or NULL correlationId", uuid, responseRow.getID());
+                log.warn("{} : InspectionRegular294Response[ID='{}'] has NULL as ID or NULL correlationId", uuid, responseRow.getID());
             }
         }
+        log.info("{} : End processing as PlanResult294Notification", uuid);
     }
 
-    public void process(final MessageFromERP294Type.PlanResult294Response planResult294Response) {
-
-    }
-
-    public void processUplanResult294Notification(
+    public void process(
             final String uuid,
-            final MessageFromERP294Type.UplanResult294Notification response,
-            final StatusErp status
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent,
+            final MessageFromERP294Type.UplanResult294Notification response
     ) {
-        final UplanErp planErp = uplanErpDao.getByUUID(uuid);
-        if (planErp == null) {
-            logger.warn("{} : Skip. No PlanErp found", uuid);
+        log.info("{} : Start processing as UplanResult294Notification", uuid);
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = processCommonPart(uuid, erpStatus, responseDate, rawContent);
+        if(checkErpTuple == null){
+            log.info("{} : End.", uuid);
             return;
         }
-        logger.info("{} : is message for {}", uuid, planErp);
-        uplanErpDao.setErpId(planErp, response.getID(), status, null);
+        checkErpDao.setErpCodeAndState(checkErpTuple.left, erpStatus, "", responseDate, response.getID(), enumDao.get("ERP_CHECK_STATE", "RESULT_ALLOCATED"));
         for (MessageFromERP294Type.UplanResult294Notification.UinspectionResult294Notification responseRow : response.getUinspectionResult294Notification()) {
              if (responseRow.getID() != null) {
-                for (UplanRecErp x : planErp.getRecords()) {
-                    if (Objects.equals(x.getErpId(), responseRow.getID())) {
-                        logger.info(
+                for (CheckRecordErp x : checkErpTuple.right) {
+                    if (Objects.equals(x.getErpCode(), responseRow.getID())) {
+                        log.info(
                                 "{} : InspectionResult294Notification[LOCATION='{}'] correlated with PlanRecErp[{}]",
                                 uuid,
                                 responseRow.getLOCATION(),
                                 x.getId()
                         );
-                        uplanErpDao.setErpId(x, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
+                        checkErpDao.setRecordErpCode(x, responseRow.getID(), getTotalValid(responseRow.getRest()));
                         break;
                     }
                 }
             } else {
-                logger.warn("{} : InspectionRegular294Response[ID='{}'] has NULL as ID or NULL correlationId", uuid, responseRow.getID());
+                log.warn("{} : InspectionRegular294Response[ID='{}'] has NULL as ID or NULL correlationId", uuid, responseRow.getID());
             }
         }
+        log.info("{} : Start processing as UplanResult294Notification", uuid);
     }
 
-    public void process(final MessageFromERP294Type.UplanResult294Response uplanResult294Response) {
 
-    }
 
-    public void processUplanUnregular294Notification(
+    private Tuple<CheckErp, Set<CheckRecordErp>> processCommonPart(
             final String uuid,
-            final MessageFromERP294Type.UplanUnregular294Notification response,
-            final StatusErp status) {
-        final PlanErp planErp = planErpDao.getByUUID(uuid);
-        if (planErp == null) {
-            logger.warn("{} : Skip. No PlankErp found", uuid);
+            final RsysEnum erpStatus,
+            final Date responseDate,
+            final String rawContent) {
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = checkErpDao.getByCorrelationUUID(uuid);
+        if (checkErpTuple == null) {
+            log.warn("{} : Skip. No CheckErp found", uuid);
+            return null;
+        }
+        log.info("{} : is message for {}", uuid, checkErpTuple.left);
+        final CheckHistory history = checkErpDao.createHistory(checkErpTuple.left,
+                                                               "ETP",
+                                                               responseDate,
+                                                               erpStatus.getCode(),
+                                                               rawContent,
+                                                               uuid
+        );
+        log.debug("{} : Created {}", history);
+        return checkErpTuple;
+    }
+
+
+    public void processStatusMessage(
+            final String uuid, final RsysEnum erpStatus, final Date responseDate, final String statusMessage, final String rawContent
+    ) {
+        log.info("{} : Start processing as Status message", uuid);
+        final Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = checkErpDao.getByCorrelationUUID(uuid);
+        if (checkErpTuple == null) {
+            log.warn("{} : Skip. No CheckErp found", uuid);
             return;
         }
-        logger.info("{} : is message for {}", uuid, planErp);
-        planErpDao.setErpId(planErp, response.getID(), status, getTotalValid(response.getRest()));
-        //TODO new LISt
-        for (InspectionRegular294ResponseType responseRow : new ArrayList<InspectionRegular294ResponseType>()) {
-            for (PlanRecErp localRow : planErp.getRecords()) {
-                if (responseRow.getID() != null && Objects.equals(localRow.getErpId(), responseRow.getID())) {
-                    logger.info(
-                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY ID] with PlanRecErp[{}]",
-                            uuid,
-                            responseRow.getOGRN(),
-                            localRow.getId()
-                    );
-                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
-                    break;
-                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(
-                        localRow.getCorrelationId(), responseRow.getCORRELATIONID()
-                )) {
-                    logger.info(
-                            "{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with PlanRecErp[{}]",
-                            uuid,
-                            responseRow.getOGRN(),
-                            localRow.getId()
-                    );
-                    planErpDao.setErpId(localRow, responseRow.getID(), status, getTotalValid(responseRow.getRest()));
-                    break;
-                }
-            }
-        }
-    }
-
-    public void process(final MessageFromERP294Type.UplanUnregular294Response uplanUnregular294Response) {
-
+        log.info("{} : is message for {}", uuid, checkErpTuple.left);
+        final CheckHistory history = checkErpDao.createHistory(checkErpTuple.left,
+                                                               "ETP",
+                                                               responseDate,
+                                                               erpStatus.getCode() + " - " + statusMessage,
+                                                               rawContent,
+                                                               uuid
+        );
+        log.debug("{} : Created {}", history);
+        checkErpDao.setErpStatus(checkErpTuple.left, erpStatus, statusMessage, responseDate);
+        log.info("{} : End. Status changed", uuid);
     }
 
     private String getTotalValid(final List<JAXBElement<ERPResponseType>> rest) {
@@ -254,19 +384,5 @@ public class IncomingMessageProcessor {
     }
 
 
-    public void processStatusMessage(final String uuid, final ResponseMsg msg, final StatusErp status) {
-        final UplanErp uplanErp = uplanErpDao.getByUUID(uuid);
-        if (uplanErp != null) {
-            logger.info("{} : Founded UplanErp: {}", uuid, uplanErp);
-            uplanErpDao.setStatus(status, uplanErp, uplanErp.getRecords(), msg.getStatusMessage());
-            return;
-        }
-        final PlanErp planErp = planErpDao.getByUUID(uuid);
-        if (planErp != null) {
-            logger.info("{} : Founded PlanErp: {}", uuid, planErp);
-            planErpDao.setStatus(status, planErp, planErp.getRecords(), msg.getStatusMessage());
-            return;
-        }
-        logger.warn("{} : No sent to ERP data found!", uuid);
-    }
+
 }

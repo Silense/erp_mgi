@@ -2,12 +2,14 @@ package ru.cip.ws.erp.jpa.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.cip.ws.erp.factory.PropertiesHolder;
+import ru.cip.ws.erp.jpa.entity.enums.SessionStatus;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSessionEvent;
-import ru.cip.ws.erp.jpa.entity.enums.SessionStatus;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -26,40 +28,39 @@ public class ExportSessionDaoImpl {
 
     private static final Logger logger = LoggerFactory.getLogger(ExportSessionDaoImpl.class);
 
-    @Value("${app.id}")
-    private String appID;
+    @Autowired
+    private PropertiesHolder props;
 
 
     @PersistenceContext
     private EntityManager em;
 
 
-    public ExpSession createExportSession(final String description, final String message, final String uuid) {
-        final Date now = new Date();
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public ExpSession createExportSession(final Date date, final String description, final String message, final int count) {
         final ExpSession result = new ExpSession();
-        result.setSYSTEM_SERVICE_ID(appID);
-        result.setSTART_DATE(now);
-        result.setEND_DATE(now);
-        result.setENUM_EXP_SESSION_STATUS(SessionStatus.DONE);
+        result.setSYSTEM_SERVICE_ID(props.APP_ID);
+        result.setSTART_DATE(date);
+        result.setEND_DATE(null);
+        result.setENUM_EXP_SESSION_STATUS(SessionStatus.RUNNING);
         result.setSESSION_DESCRIPTION(description);
         result.setSESSION_MSG(message);
         result.setRV(1);
-        result.setEXT_PACKAGE_ID(uuid);
-        result.setEXT_PACKAGE_CNT(1);
-        result.setCREATE_DATE(now);
-        result.setUPDATE_DATE(now);
-        result.setCREATE_SYSTEM(appID);
-        result.setUPDATE_SYSTEM(appID);
+        result.setEXT_PACKAGE_ID(null);
+        result.setEXT_PACKAGE_CNT(count);
+        result.setCREATE_DATE(date);
+        result.setUPDATE_DATE(date);
+        result.setCREATE_SYSTEM(props.APP_ID);
+        result.setUPDATE_SYSTEM(props.APP_ID);
         em.persist(result);
         return result;
     }
 
-    public ExpSessionEvent createExportEvent(final String message, final ExpSession exp_session) {
-        final Date now = new Date();
+    public ExpSessionEvent createExportEvent(final Date date, final String message, final ExpSession exp_session) {
         final ExpSessionEvent result = new ExpSessionEvent();
-        result.setEventDateTime(now);
+        result.setEventDateTime(date);
         result.setEVENT_TEXT(message);
-        result.setEVENT_USER_ID(appID);
+        result.setEVENT_USER_ID(props.APP_ID);
         result.setExportSession(exp_session);
         em.persist(result);
         return result;
@@ -68,8 +69,7 @@ public class ExportSessionDaoImpl {
 
     public ExpSession getSessionByEXT_PACKAGE_ID(final String uuid) {
         final List<ExpSession> resultList = em.createQuery("SELECT a FROM ExpSession a WHERE a.EXT_PACKAGE_ID = :ext_package_id", ExpSession.class)
-                .setParameter("ext_package_id", uuid)
-                .getResultList();
+                .setParameter("ext_package_id", uuid).getResultList();
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
 
@@ -92,9 +92,9 @@ public class ExportSessionDaoImpl {
         return em.merge(expSession);
     }
 
-    public Tuple<ExpSession, ExpSessionEvent> createExportSessionInfo(final String uuid, final String description, final String messageType) {
-        final ExpSession session = createExportSession(description, messageType, uuid);
-        final ExpSessionEvent event = createExportEvent(messageType, session);
+    public Tuple<ExpSession, ExpSessionEvent> createExportSessionInfo(final Date date, final String description, final String messageType, final int count) {
+        final ExpSession session = createExportSession(date, description, messageType, count);
+        final ExpSessionEvent event = createExportEvent(date, messageType, session);
         return new Tuple<>(session, event);
     }
 }

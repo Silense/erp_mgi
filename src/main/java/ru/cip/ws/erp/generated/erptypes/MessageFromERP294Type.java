@@ -968,7 +968,15 @@ public class MessageFromERP294Type
     public static class UplanUnregular294Notification
         extends UplanUnregular294NotificationType
     {
+        @XmlElement(name = "UinspectionUnregular294Notification", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", required = false)
+        protected List<UinspectionUnregular294ResponseType> uinspectionUnregular294Notification;
 
+        public List<UinspectionUnregular294ResponseType> getUinspectionUnregular294Notification() {
+            if(this.uinspectionUnregular294Notification == null){
+                this.uinspectionUnregular294Notification = new ArrayList<>();
+            }
+            return this.uinspectionUnregular294Notification;
+        }
 
     }
 
@@ -997,6 +1005,15 @@ public class MessageFromERP294Type
     public static class UplanUnregular294Response
         extends UplanUnregular294ResponseType
     {
+        @XmlElement(name = "UinspectionUnregular294Response", namespace = "urn://ru.gov.proc.erp.communication/types/2.0.5", required = false)
+        protected List<UinspectionUnregular294ResponseType> uinspectionUnregular294Response;
+
+        public List<UinspectionUnregular294ResponseType> getUinspectionUnregular294Response() {
+            if(this.uinspectionUnregular294Response == null){
+                this.uinspectionUnregular294Response = new ArrayList<>();
+            }
+            return this.uinspectionUnregular294Response;
+        }
 
 
     }

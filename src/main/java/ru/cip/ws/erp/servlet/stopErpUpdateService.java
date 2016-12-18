@@ -4,21 +4,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.web.HttpRequestHandler;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import ru.cip.ws.erp.jpa.dao.CheckErpDaoImpl;
 import ru.cip.ws.erp.jpa.dao.PlanDaoImpl;
-import ru.cip.ws.erp.jpa.dao.PlanErpDaoImpl;
-import ru.cip.ws.erp.jpa.entity.PlanErp;
 import ru.cip.ws.erp.jpa.entity.views.Plan;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
-import static ru.cip.ws.erp.servlet.ParameterNames.*;
+import static ru.cip.ws.erp.servlet.ParameterNames.PARAM_DATA_KIND;
+import static ru.cip.ws.erp.servlet.ParameterNames.PARAM_PLAN_ID;
 
 /**
  * Author: Upatov Egor <br>
@@ -26,8 +25,8 @@ import static ru.cip.ws.erp.servlet.ParameterNames.*;
  * Company: Bars Group [ www.bars.open.ru ]
  * Description:
  */
-@Component
-public class stopErpUpdateService implements HttpRequestHandler {
+@Controller
+public class stopErpUpdateService {
 
     private static final Logger logger = LoggerFactory.getLogger(stopErpUpdateService.class);
 
@@ -35,9 +34,9 @@ public class stopErpUpdateService implements HttpRequestHandler {
     private PlanDaoImpl planViewDao;
 
     @Autowired
-    private PlanErpDaoImpl planDao;
+    private CheckErpDaoImpl checkErpDao;
 
-    @Override
+    @RequestMapping("/update/stop")
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final String requestId = UUID.randomUUID().toString();
         response.setContentType("text/html");
@@ -71,7 +70,8 @@ public class stopErpUpdateService implements HttpRequestHandler {
                 response.setStatus(500);
                 return;
             }
-            final List<PlanErp> activeByPlan = planDao.getActiveByPlan(plan, dataKind);
+            /*
+            final List<PlanErp> activeByPlan = checkErpDao.getActiveByPlan(plan, dataKind);
             if (activeByPlan.isEmpty()) {
                 logger.warn("{} : End. No active plan found ", requestId);
                 response.getWriter().print("Нет сессий, доступных для прерывания");
@@ -79,9 +79,10 @@ public class stopErpUpdateService implements HttpRequestHandler {
                 return;
             }
             for (PlanErp planErp : activeByPlan) {
-                planDao.cancel(planErp);
+                checkErpDao.cancel(planErp);
                 logger.info("{} : : Canceled {}", requestId, planErp);
             }
+            */
             response.getWriter().print("Сессия завершена по запросу пользователя");
             response.setStatus(200);
         } else {

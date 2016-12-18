@@ -84,11 +84,20 @@
     </logger>
 
     <!--Hibernate SQL LOGGER-->
-    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+    <logger name="org.hibernate" additivity="false" level="TRACE">
         <appender-ref ref="APPENDER_SQL"/>
     </logger>
 
-    <root level="${logs.level}">
+    <logger name="org.springframework.web" additivity="true" level="INFO"/>
+    <logger name="org.springframework.beans" additivity="true" level="INFO"/>
+    <logger name="org.springframework.orm" additivity="false" level="DEBUG">
+        <appender-ref ref="APPENDER_SQL"/>
+    </logger>
+    <logger name="org.springframework.jdbc" additivity="false" level="DEBUG">
+        <appender-ref ref="APPENDER_SQL"/>
+    </logger>
+
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

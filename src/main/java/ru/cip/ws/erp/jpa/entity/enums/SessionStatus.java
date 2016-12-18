@@ -8,5 +8,6 @@ package ru.cip.ws.erp.jpa.entity.enums;
  */
 public enum SessionStatus {
     DONE,
+    RUNNING,
     ERROR;
 }

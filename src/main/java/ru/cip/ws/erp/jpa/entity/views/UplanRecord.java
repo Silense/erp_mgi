@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -46,7 +47,7 @@ public class UplanRecord {
      **/
     @Id
     @Column(name = "CORRELATION_ID")
-    private Long CORRELATION_ID;
+    private BigInteger CORRELATION_ID;
 
     //TODO
     @javax.persistence.Transient
@@ -71,11 +72,11 @@ public class UplanRecord {
         this.ADR_SEC_II = ADR_SEC_II;
     }
 
-    public Long getCORRELATION_ID() {
+    public BigInteger getCORRELATION_ID() {
         return CORRELATION_ID;
     }
 
-    public void setCORRELATION_ID(final Long CORRELATION_ID) {
+    public void setCORRELATION_ID(final BigInteger CORRELATION_ID) {
         this.CORRELATION_ID = CORRELATION_ID;
     }
 

@@ -67,7 +67,7 @@ public class UinspectionUnregular294Type {
     @XmlAttribute(name = "LAST_VIOLATION_ID")
     protected XMLGregorianCalendar lastviolationid;
     @XmlAttribute(name = "CORRELATION_ID")
-    protected Long correlationid;
+    protected BigInteger correlationid;
 
     /**
      * Gets the value of the id property.
@@ -245,7 +245,7 @@ public class UinspectionUnregular294Type {
      *     {@link Long }
      *     
      */
-    public Long getCORRELATIONID() {
+    public BigInteger getCORRELATIONID() {
         return correlationid;
     }
 
@@ -257,7 +257,7 @@ public class UinspectionUnregular294Type {
      *     {@link Long }
      *     
      */
-    public void setCORRELATIONID(Long value) {
+    public void setCORRELATIONID(BigInteger value) {
         this.correlationid = value;
     }
 

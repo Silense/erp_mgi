@@ -22,11 +22,7 @@ public class JAXBMarshallerUtil {
     private final static Logger logger = LoggerFactory.getLogger(JAXBMarshallerUtil.class);
 
 
-    public static String marshalAsString(final Object item, final String requestId) {
-        if (item == null) {
-            logger.error("{} End. Error: Marshalling called with NULL as item", requestId);
-            return null;
-        }
+    public static String marshalAsString(final String logMark, final Object item) {
         final StringWriter sw = new StringWriter();
         try {
             final JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
@@ -35,12 +31,12 @@ public class JAXBMarshallerUtil {
             marshaller.marshal(item, sw);
             final String result = sw.toString();
             if (StringUtils.isEmpty(result)) {
-                logger.error("{} End. Error: After marshalling result message is null or empty", requestId);
+                logger.error("{} End. Error: After marshalling result message is null or empty", logMark);
                 return null;
             }
             return result;
         } catch (final JAXBException e) {
-            logger.error("{} End. Error: Marshalling failed with error", requestId, e);
+            logger.error("{} End. Error: Marshalling failed with error", logMark, e);
             return null;
         }
     }

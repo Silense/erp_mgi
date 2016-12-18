@@ -1,9 +1,12 @@
 package ru.cip.ws.erp.factory;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
+import java.util.Properties;
 
 /**
  * Author: Upatov Egor <br>
@@ -12,34 +15,39 @@ import java.math.BigInteger;
  * Description:
  */
 
-@Component
+@Component("propertiesHolder")
 public class PropertiesHolder {
 
+    @Autowired
+    public PropertiesHolder(@Qualifier("app.properties") Properties props) {
+        APP_ID = props.getProperty("app.id");
+        MGI_ORG_NAME = props.getProperty("mgi.org.name");
+        if (StringUtils.isNotEmpty(props.getProperty("messagetype.info_model"))) {
+            MESSAGETYPE_INFO_MODEL = new BigInteger(props.getProperty("messagetype.info_model"));
+        } else {
+            MESSAGETYPE_INFO_MODEL = null;
+        }
+        if (StringUtils.isNotEmpty(props.getProperty("messagetype.previous_info_model"))) {
+            MESSAGETYPE_PREVIOUS_INFO_MODEL = new BigInteger(props.getProperty("messagetype.previous_info_model"));
+        } else {
+            MESSAGETYPE_PREVIOUS_INFO_MODEL = null;
+        }
+        KO_NAME = props.getProperty("ko.name");
+        MGI_OGRN = props.getProperty("mgi.org.orgn");
+        MGI_FRGU_SERV_ID = Long.parseLong(props.getProperty("mgi.org.frgu_serv_id"));
+        MGI_FRGU_ORG_ID = Long.parseLong(props.getProperty("mgi.org.frgu_org_id"));
+        ADDRESSEE_CODE = props.getProperty("addresseetype.code");
+        ADDRESSEE_NAME = props.getProperty("addresseetype.name");
+    }
 
-    @Value("${mgi.org.name}")
-    public String MGI_ORG_NAME;
-
-    @Value("${messagetype.info_model}")
-    public BigInteger MESSAGETYPE_INFO_MODEL;
-
-    @Value("${messagetype.previous_info_model}")
-    public BigInteger MESSAGETYPE_PREVIOUS_INFO_MODEL;
-
-    @Value("${ko.name}")
-    public String KO_NAME;
-
-    @Value("${mgi.org.orgn}")
-    public String MGI_OGRN;
-
-    @Value("${mgi.org.frgu_serv_id}")
-    public long MGI_FRGU_SERV_ID;
-
-    @Value("${mgi.org.frgu_org_id}")
-    public long MGI_FRGU_ORG_ID;
-
-    @Value("${addresseetype.code}")
-    public String ADDRESSEE_CODE;
-
-    @Value("${addresseetype.name}")
-    public String ADDRESSEE_NAME;
+    public final String MGI_ORG_NAME;
+    public final BigInteger MESSAGETYPE_INFO_MODEL;
+    public final BigInteger MESSAGETYPE_PREVIOUS_INFO_MODEL;
+    public final String KO_NAME;
+    public final String MGI_OGRN;
+    public final long MGI_FRGU_SERV_ID;
+    public final long MGI_FRGU_ORG_ID;
+    public final String ADDRESSEE_CODE;
+    public final String ADDRESSEE_NAME;
+    public final String APP_ID;
 }

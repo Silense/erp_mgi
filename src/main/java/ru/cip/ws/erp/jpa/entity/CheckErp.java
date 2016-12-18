@@ -5,6 +5,7 @@ import javax.persistence.*;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
@@ -28,32 +29,32 @@ public class CheckErp {
      *  ИД Распоряжения (Внеплановые проверки - из [CIP_UNSCHEDL_CHECK_INSTR_V.INSTRUCTION_ID])
      */
     @Column(name = "INSTR_ID", nullable = false)
-    private Integer checkId;
+    private BigInteger checkId;
 
     /**
      * Тип распоряжения о проверке (плановый\внеплановый) [RSYS_ENUM_VALUE.CATALOG_ID = ERP_CHECK_TYPE]
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "CHECK_TYPE_ID", nullable = false)
     private RsysEnum checkType;
 
     /**
      * ИД прокуратуры к которой привязаны проверки
      */
-    @Column(name = "ID_PROSECUTORS")
+    @Column(name = "PROSECUTOR_ID")
     private Integer prosecutor;
 
     /**
      *  Статус интеграции распоряжения о проверке с ЕРП {RSYS_ENUM_VALUE.CATALOG_ID = ERP_CHECK_STATE}
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "STATE_ID", nullable = false)
     private RsysEnum state;
 
     /**
      *  Статус обмена сообщениями с ЕРП\ЕТП {RSYS_ENUM_VALUE.CATALOG_ID = ERP_CONVERSATION_STATUS}
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "STATUS_ERP_ID", nullable = false)
     private RsysEnum statusErp;
 
@@ -88,6 +89,13 @@ public class CheckErp {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastErpDate;
 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Кастомные маппинги
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "check")
+    private Set<CheckRecordErp> records;
+
+
     public CheckErp() {
     }
 
@@ -99,11 +107,11 @@ public class CheckErp {
         this.id = id;
     }
 
-    public Integer getCheckId() {
+    public BigInteger getCheckId() {
         return checkId;
     }
 
-    public void setCheckId(final Integer checkId) {
+    public void setCheckId(final BigInteger checkId) {
         this.checkId = checkId;
     }
 
@@ -179,6 +187,13 @@ public class CheckErp {
         this.lastErpDate = lastErpDate;
     }
 
+    public Set<CheckRecordErp> getRecords() {
+        return records;
+    }
+
+    public void setRecords(final Set<CheckRecordErp> records) {
+        this.records = records;
+    }
 
     @Override
     public java.lang.String toString() {

@@ -1,28 +1,12 @@
 package ru.cip.ws.erp.business;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import ru.cip.ws.erp.factory.MessageFactory;
 import ru.cip.ws.erp.factory.PropertiesHolder;
 import ru.cip.ws.erp.jpa.dao.PlanActDaoImpl;
 import ru.cip.ws.erp.jpa.dao.PlanDaoImpl;
-import ru.cip.ws.erp.jpa.dao.PlanErpDaoImpl;
-import ru.cip.ws.erp.jpa.entity.PlanErp;
-import ru.cip.ws.erp.jpa.entity.PlanRecErp;
-import ru.cip.ws.erp.jpa.entity.views.Plan;
-import ru.cip.ws.erp.jpa.entity.views.PlanAct;
-import ru.cip.ws.erp.jpa.entity.views.PlanActViolation;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
@@ -45,41 +29,14 @@ public class MessageProcessor {
     private PlanDaoImpl planViewDao;
 
     @Autowired
-    private PlanErpDaoImpl planDao;
-
-    @Autowired
     private PlanActDaoImpl actDao;
 
-    private static void wrapResponse(final HttpServletResponse response, final String result) {
-        if (StringUtils.isNotEmpty(result)) {
-            try {
-                response.setStatus(200);
-                response.setContentType("text/xml");
-                response.getWriter().println(result);
-            } catch (IOException e) {
-                logger.error("Error in wrapResponse", e);
-            }
-        } else {
-            wrapErrorResponse(response, "Ошибка");
-        }
-    }
 
-    private static void wrapErrorResponse(final HttpServletResponse response, final String message) {
-        try {
-            response.setStatus(500);
-            response.getWriter().println(message);
-        } catch (IOException e) {
-            logger.error("Error in wrapResponse", e);
-        }
-    }
 
-    public void processProsecutorAsk(final HttpServletResponse response, final String uuid) throws IOException {
-        final String result = messageService.sendProsecutorAck(
-                uuid, "4.1.1 Запрос на получение справочника территориальных юрисдикций прокуратур Российской Федерации"
-        );
-        wrapResponse(response, result);
-    }
 
+
+
+    /*
     public void processPlanRegular294Initialization(
             final String uuid, final HttpServletResponse response, final Integer planId, final Integer year, final String acceptedName
     ) {
@@ -277,5 +234,5 @@ public class MessageProcessor {
                         erpIDMap
                 )
         );
-    }
+    }  */
 }

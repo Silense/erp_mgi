@@ -23,7 +23,7 @@
         <sampe.jars>${basedir}/src/main/webapp/WEB-INF/lib</sampe.jars>
 
         <!-- Формат записи в лог -->
-        <log.format>%5p [%d][%thread][%logger{0}] %msg%n</log.format>
+        <log.format>%5p [%d][%thread][%logger] %msg%n</log.format>
         <!-- Уровень записи лога по умолчанию -->
         <logs.level>DEBUG</logs.level>
         <!--Уровень логов для разных типов документов-->
@@ -71,6 +71,13 @@
         </resources>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
             <!--TODO need manual fixes after run
              @see http://blog.bdoughan.com/2011/12/reusing-generated-jaxb-classes.html -->
            <!--<plugin>-->
@@ -110,9 +117,8 @@
         <!-- API Сервлетов -->
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.4</version>
-            <scope>provided</scope>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>LATEST</version>
         </dependency>
 
         <!-- Hibernate -->
