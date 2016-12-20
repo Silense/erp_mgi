@@ -340,12 +340,11 @@ public class IncomingMessageProcessor {
         log.info("{} : is message for {}", uuid, checkErpTuple.left);
         final CheckHistory history = checkErpDao.createHistory(checkErpTuple.left,
                                                                "ETP",
-                                                               responseDate,
                                                                erpStatus.getCode(),
                                                                rawContent,
                                                                uuid
         );
-        log.debug("{} : Created {}", history);
+        log.debug("{} : Created {}", uuid, history);
         return checkErpTuple;
     }
 
@@ -362,13 +361,21 @@ public class IncomingMessageProcessor {
         log.info("{} : is message for {}", uuid, checkErpTuple.left);
         final CheckHistory history = checkErpDao.createHistory(checkErpTuple.left,
                                                                "ETP",
-                                                               responseDate,
                                                                erpStatus.getCode() + " - " + statusMessage,
                                                                rawContent,
                                                                uuid
         );
-        log.debug("{} : Created {}", history);
+        log.debug("{} : Created {}", uuid, history);
         checkErpDao.setErpStatus(checkErpTuple.left, erpStatus, statusMessage, responseDate);
+        if("ERROR".equals(erpStatus.getCode()) || "FAULT".equals(erpStatus.getCode())){
+            if("WAIT_ALLOCATION".equals(checkErpTuple.left.getState().getCode())
+                    || "PARTIAL_ALLOCATION".equals(checkErpTuple.left.getState().getCode())) {
+                checkErpDao.setState(checkErpTuple.left, enumDao.get("ERP_CHECK_STATE", "ERROR_ALLOCATION"), responseDate);
+            } else if("WAIT_RESULT_ALLOCATION".equals(checkErpTuple.left.getState().getCode())
+                    || "PARTIAL_RESULT_ALLOCATION".equals(checkErpTuple.left.getState().getCode())) {
+                checkErpDao.setState(checkErpTuple.left, enumDao.get("ERP_CHECK_STATE", "ERROR_RESULT_ALLOCATION"), responseDate);
+            }
+        }
         log.info("{} : End. Status changed", uuid);
     }
 

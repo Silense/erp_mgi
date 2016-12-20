@@ -1,10 +1,11 @@
 package ru.cip.ws.erp.business;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import ru.cip.ws.erp.dto.AllocateUnregularParameter;
+import ru.cip.ws.erp.dto.AllocateUnregularResultParameter;
 import ru.cip.ws.erp.factory.MessageFactory;
 import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
 import ru.cip.ws.erp.jpa.entity.views.*;
@@ -28,7 +29,7 @@ public class TestMessageProcessor {
     private final static Logger logger = LoggerFactory.getLogger(TestMessageProcessor.class);
 
     @Autowired
-    private MessageService messageService;
+    private AllocationService allocationService;
 
     private static Date parseTestDate(final String dateAsString, final String format) {
         try {
@@ -43,20 +44,9 @@ public class TestMessageProcessor {
         return parseTestDate(dateAsString, "yyyy-MM-dd");
     }
 
-    private static void wrapResponse(final HttpServletResponse response, final String result) throws IOException {
-        if (StringUtils.isNotEmpty(result)) {
-            response.setContentType("text/xml");
-            response.getWriter().println(result);
-            response.setStatus(200);
-        } else {
-            response.getWriter().println("Ошибка");
-            response.setStatus(500);
-        }
-    }
-
     public String processProsecutorAsk(final long requestNumber) throws IOException {
-        return messageService.sendProsecutorAck(requestNumber,
-                                                "4.1.1 :: Эталонный :: Запрос на получение справочника территориальных юрисдикций прокуратур Российской Федерации"
+        return allocationService.processProsecutorAck(requestNumber,
+                "4.1.1 :: Эталонный :: Запрос на получение справочника территориальных юрисдикций прокуратур Российской Федерации"
         );
     }
 
@@ -132,9 +122,9 @@ public class TestMessageProcessor {
         planRecords.add(r_2);
         planRecords.add(r_3);
         final MessageToERPModelType.Mailer mailer = MessageFactory.createMailer("ФНС России",
-                                                                                "1047707030513",
-                                                                                Long.valueOf("10000001169"),
-                                                                                Long.valueOf("10000037754")
+                "1047707030513",
+                new BigInteger("10000001169"),
+                new BigInteger("10000037754")
         );
 
 //        return messageService.sendPlanRegular294Initialization(requestId,
@@ -249,7 +239,7 @@ public class TestMessageProcessor {
 //                planRecords,
 //                erpIDMap
 //        );
-        wrapResponse(response, "");//result);
+
     }
 
     public void processPlanResult294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
@@ -333,7 +323,6 @@ public class TestMessageProcessor {
 //                actMap,
 //                erpIDMap
 //        );
-        wrapResponse(response, "");//result);
     }
 
     public void processPlanResult294Correction(final String requestId, final HttpServletResponse response) throws IOException {
@@ -397,16 +386,15 @@ public class TestMessageProcessor {
 //                actMap,
 //                erpIDMap
 //        );
-        wrapResponse(response, "");//result);
     }
 
-    public Map<String, String> processUplanUnRegular294Initialization(final long logTag, final Integer fromId, final Integer toId)
-            throws IOException {
-        final MessageToERPModelType.Mailer mailer = MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10001696877"));
+    public Map<String, String> processUplanUnRegular294Initialization(final long logTag, final Integer fromId, final Integer toId) {
+        final MessageToERPModelType.Mailer mailer = MessageFactory.createMailer("ФНС России", "1047707030513", new BigInteger("10000001169"), new BigInteger("10001696877"));
         final MessageToERPModelType.Addressee addressee = MessageFactory.createAddressee("1020500000", "Прокуратура Московской области ");
-        final Map<Uplan, Set<UplanRecord>> checks = new LinkedHashMap<>();
+        final Set<AllocateUnregularParameter> parameters = new LinkedHashSet<>();
         int currentNumber = fromId;
         while (currentNumber <= toId) {
+            final AllocateUnregularParameter item = new AllocateUnregularParameter();
             final Uplan uplan = new Uplan();
             uplan.setCHECK_ID(new BigInteger(String.valueOf(currentNumber)));
 
@@ -430,7 +418,7 @@ public class TestMessageProcessor {
             uplan.setNOTICE_WAY("Почтой");
             uplan.setTYPE_OF_INSP("Заявление КО");
 
-            final Set<UplanRecord> addressList = new HashSet<>(2);
+            item.setCheck(uplan);
 
             final UplanRecord a1 = new UplanRecord();
             a1.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
@@ -440,7 +428,8 @@ public class TestMessageProcessor {
             a1.setADR_SEC_II("Адрес объекта проведения №1");
             a1.setLAST_VIOLATION_ID(parseTestDate("2014-10-10"));
             a1.setCORRELATION_ID(BigInteger.valueOf(10001));
-            addressList.add(a1);
+
+            item.getRecords().add(a1);
 
             final UplanRecord a2 = new UplanRecord();
             a2.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
@@ -450,160 +439,171 @@ public class TestMessageProcessor {
             a2.setADR_SEC_II("Фактический адрес места проведения №2");
             a2.setLAST_VIOLATION_ID(null);
             a2.setCORRELATION_ID(BigInteger.valueOf(10002));
-            addressList.add(a2);
 
-            checks.put(uplan, addressList);
+            item.getRecords().add(a2);
+
+            parameters.add(item);
             currentNumber++;  //increment and iterate
         }
-        return messageService.processUnregularAllocationBatch(
+        return allocationService.allocateUnregularBatch(
                 logTag,
                 "4.1.7 :: Эталонный :: Запрос на первичное размещение внеплановой проверки",
                 mailer,
                 addressee,
                 "Федеральная налоговая служба",
-                checks
+                parameters
         );
     }
 
-    public void processUplanUnRegular294Correction(final String requestId, final HttpServletResponse response) throws IOException {
-        final Uplan uplan = new Uplan();
-        uplan.setCHECK_ID(new BigInteger("999999"));
-        uplan.setREQUEST_NUM("Номер решения №");
-        uplan.setREQUEST_DATE(parseTestDate("2015-08-12"));
-        uplan.setSTART_DATE(parseTestDate("2015-08-13"));
-        uplan.setEND_DATE(parseTestDate("2015-08-20"));
-        uplan.setDECISION_DATE(parseTestDate("2015-08-13"));
-        uplan.setINSP_TARGET("Цель проверки");
-        uplan.setREASON_SEC_I("Основание проверки");
-        uplan.setKIND_OF_INSP("документарная");
-        uplan.setSIGNER_TITLE("Инспектор");
-        uplan.setSIGNER_NAME("Петров П.П.");
-        uplan.setKO_ADDRESS("");
-        uplan.setKO_RECIPIENT_TITLE("Инспектор");
-        uplan.setKO_RECIPIENT_NAME("Иванов И.И.");
-        uplan.setDECISION_PLACE("Место вынесения решения");
-        uplan.setYEAR(2015);
-        uplan.setFRGU_NUM("10001696877");
-        uplan.setNOTICE_DATE(parseTestDate("2015-08-05"));
-        uplan.setNOTICE_WAY("Почтой");
-        uplan.setTYPE_OF_INSP("Заявление КО");
-        uplan.setORDER_DATE(parseTestDate("2015-08-01"));
-        uplan.setORDER_NUM("Номер приказа о проведении");
+    public Map<String, String> processUplanUnRegular294Correction(final long logTag, final Integer fromId, final Integer toId) {
+        final MessageToERPModelType.Mailer mailer = MessageFactory.createMailer("ФНС России", "1047707030513", new BigInteger("10000001169"), new BigInteger("10001696877"));
+        final MessageToERPModelType.Addressee addressee = MessageFactory.createAddressee("1020500000", "Прокуратура Московской области ");
+        final Set<AllocateUnregularParameter> parameters = new LinkedHashSet<>();
+        int currentNumber = fromId;
+        while (currentNumber <= toId) {
+            final AllocateUnregularParameter item = new AllocateUnregularParameter();
+            final Uplan uplan = new Uplan();
+            uplan.setCHECK_ID(new BigInteger(String.valueOf(currentNumber)));
+            uplan.setREQUEST_NUM("Номер решения №");
+            uplan.setREQUEST_DATE(parseTestDate("2015-08-12"));
+            uplan.setSTART_DATE(parseTestDate("2015-08-13"));
+            uplan.setEND_DATE(parseTestDate("2015-08-20"));
+            uplan.setDECISION_DATE(parseTestDate("2015-08-13"));
+            uplan.setINSP_TARGET("Цель проверки");
+            uplan.setREASON_SEC_I("Основание проверки");
+            uplan.setKIND_OF_INSP("документарная");
+            uplan.setSIGNER_TITLE("Инспектор");
+            uplan.setSIGNER_NAME("Петров П.П.");
+            uplan.setKO_ADDRESS("");
+            uplan.setKO_RECIPIENT_TITLE("Инспектор");
+            uplan.setKO_RECIPIENT_NAME("Иванов И.И.");
+            uplan.setDECISION_PLACE("Место вынесения решения");
+            uplan.setYEAR(2015);
+            uplan.setFRGU_NUM("10001696877");
+            uplan.setNOTICE_DATE(parseTestDate("2015-08-05"));
+            uplan.setNOTICE_WAY("Почтой");
+            uplan.setTYPE_OF_INSP("Заявление КО");
+            uplan.setORDER_DATE(parseTestDate("2015-08-01"));
+            uplan.setORDER_NUM("Номер приказа о проведении");
 
-        final Set<UplanRecord> addressList = new HashSet<>(2);
+            item.setCheck(uplan);
 
-        final UplanRecord a1 = new UplanRecord();
-        a1.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
-        a1.setINN("7729138352");
-        a1.setOGRN("1034230001882");
-        a1.setADR_SEC_I("");
-        a1.setADR_SEC_II("Адрес объекта проведения №1");
-        a1.setLAST_VIOLATION_ID(null);
-        a1.setCORRELATION_ID(BigInteger.valueOf(10001));
-        addressList.add(a1);
+            final UplanRecord a1 = new UplanRecord();
+            a1.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
+            a1.setINN("7729138352");
+            a1.setOGRN("1034230001882");
+            a1.setADR_SEC_I("");
+            a1.setADR_SEC_II("Адрес объекта проведения №1");
+            a1.setLAST_VIOLATION_ID(null);
+            a1.setCORRELATION_ID(BigInteger.valueOf(10001));
 
-        final UplanRecord a2 = new UplanRecord();
-        a2.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
-        a2.setINN("7729138352");
-        a2.setOGRN("1034230001882");
-        a2.setADR_SEC_I("");
-        a2.setADR_SEC_II("Фактический адрес места проведения №2");
-        a2.setLAST_VIOLATION_ID(null);
-        a2.setCORRELATION_ID(BigInteger.valueOf(10002));
-        addressList.add(a2);
+            item.getRecords().add(a1);
 
-        final Map<BigInteger, BigInteger> erpIDMap = new HashMap<>(2);
-        erpIDMap.put(a1.getCORRELATION_ID(), new BigInteger("201600000859"));
-        erpIDMap.put(a2.getCORRELATION_ID(), new BigInteger("201600000860"));
+            final UplanRecord a2 = new UplanRecord();
+            a2.setORG_NAME("ООО ;КОМПАНИЯ ИЗ ЕГРЮЛ;");
+            a2.setINN("7729138352");
+            a2.setOGRN("1034230001882");
+            a2.setADR_SEC_I("");
+            a2.setADR_SEC_II("Фактический адрес места проведения №2");
+            a2.setLAST_VIOLATION_ID(null);
+            a2.setCORRELATION_ID(BigInteger.valueOf(10002));
 
+            item.getRecords().add(a2);
+            parameters.add(item);
 
-//        final String result = messageService.sendUplanUnregular294Correction(
-//                requestId,
-//                "4.1.8 :: Эталонный :: Запрос на корректировку результатов внеплановой проверки",
-//                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10001696877")),
-//                MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
-//                "Федеральная налоговая служба",
-//                uplan,
-//                new BigInteger("2016000119"),
-//                addressList,
-//                erpIDMap
-//        );
-        wrapResponse(response, ""); //result);
+            currentNumber++;  //increment and iterate
+        }
+        return allocationService.allocateUnregularBatch(
+                logTag,
+                "4.1.8 :: Эталонный :: Запрос на корректировку результатов внеплановой проверки",
+                mailer,
+                addressee,
+                "Федеральная налоговая служба",
+                parameters
+        );
     }
 
-    public void processUplanResult294Initialization(final String requestId, final HttpServletResponse response) throws IOException {
-        final Map<UplanAct, Set<UplanActViolation>> violations = new HashMap<>(1);
-        final UplanAct k1 = new UplanAct();
-        k1.setID(new BigInteger("201600000859"));
-        k1.setACT_DATE_CREATE(parseTestDate("2015-08-25"));
-        k1.setACT_TIME_CREATE(parseTestDate("13:00:00", "HH:mm:ss"));
-        k1.setACT_PLACE_CREATE("Место составления акта ( адрес)");
-        k1.setACT_WAS_READ(1);
-        k1.setWRONG_DATA_REASON_SEC_I("");
-        k1.setWRONG_DATA_ANOTHER("");
-        k1.setNAME_OF_OWNER("ФИО уполномоченных представителей проверяемого лица, присутствовавших при проведении проверки");
-        k1.setUNIMPOSSIBLE_REASON_I("Информация о причинах невозможности проведения проверки");
-        k1.setSTART_DATE(parseTestDate("2015-08-18T13:15:00.000000", "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"));
-        k1.setDURATION(1);
-        k1.setADR_INSPECTION("Адрес места проведения проверки");
-        k1.setINSPECTORS("ФИО и должности должностного лица или должностных лиц, проводивших проверку");
-        k1.setUNDOIG_SEC_I("");
+    public Map<String, String> processUplanResult294Initialization(final long logTag, final Integer fromId, final Integer toId) throws IOException {
+        final MessageToERPModelType.Mailer mailer = MessageFactory.createMailer("ФНС России", "1047707030513", new BigInteger("10000001169"), new BigInteger("10001696877"));
+        final MessageToERPModelType.Addressee addressee = MessageFactory.createAddressee("1020500000", "Прокуратура Московской области ");
+        final Set<AllocateUnregularResultParameter> parameterSet = new LinkedHashSet<>();
+        int currentNumber = fromId;
+        while (currentNumber <= toId) {
+            new BigInteger("2016000119");
+            final AllocateUnregularResultParameter item = new AllocateUnregularResultParameter();
+            final Uplan uplan = new Uplan();
+            uplan.setCHECK_ID(new BigInteger(String.valueOf(currentNumber)));
+            item.setCheck(uplan);
 
-        final Set<UplanActViolation> v1 = new HashSet<>(2);
-        final UplanActViolation v1_1 = new UplanActViolation();
-        v1_1.setVIOLATION_ID(1);
-        v1_1.setVIOLATION_NOTE("Нарушение такое-то, выявлено в № случаях на территории такой-то");
-        v1_1.setVIOLATION_ACT("Правовой акт №1");
-        v1_1.setVIOLATION_ACTORS_NAME("Смит Смит Смитович");
-        v1_1.setINJUNCTION_CODES("Предписание № 1");
-        v1_1.setINJUNCTION_NOTE("Устранить нарушение такое-то, выявленое в № случаях на территории такой-то");
-        v1_1.setINJUNCTION_DATE_CREATE(parseTestDate("2015-09-09"));
-        v1_1.setINJUNCTION_DEADLINE(parseTestDate("2015-10-01"));
-        v1_1.setINJUNCTION_EXECUTION("");
-        v1_1.setLAWSUIT_SEC_I("");
-        v1_1.setLAWSUIT_SEC_II("");
-        v1_1.setLAWSUIT_SEC_III("");
-        v1_1.setLAWSUIT_SEC_IV("");
-        v1_1.setLAWSUIT_SEC_V("");
-        v1_1.setLAWSUIT_SEC_VI("");
-        v1_1.setLAWSUIT_SEC_VII("");
-        v1.add(v1_1);
+            final UplanAct k1 = new UplanAct();
+            k1.setID(new BigInteger("201600000859"));
+            k1.setACT_DATE_CREATE(parseTestDate("2015-08-25"));
+            k1.setACT_TIME_CREATE(parseTestDate("13:00:00", "HH:mm:ss"));
+            k1.setACT_PLACE_CREATE("Место составления акта ( адрес)");
+            k1.setACT_WAS_READ(1);
+            k1.setWRONG_DATA_REASON_SEC_I("");
+            k1.setWRONG_DATA_ANOTHER("");
+            k1.setNAME_OF_OWNER("ФИО уполномоченных представителей проверяемого лица, присутствовавших при проведении проверки");
+            k1.setUNIMPOSSIBLE_REASON_I("Информация о причинах невозможности проведения проверки");
+            k1.setSTART_DATE(parseTestDate("2015-08-18T13:15:00.000000", "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"));
+            k1.setDURATION(1);
+            k1.setADR_INSPECTION("Адрес места проведения проверки");
+            k1.setINSPECTORS("ФИО и должности должностного лица или должностных лиц, проводивших проверку");
+            k1.setUNDOIG_SEC_I("");
 
-        final UplanActViolation v1_2 = new UplanActViolation();
-        v1_2.setVIOLATION_ID(2);
-        v1_2.setVIOLATION_NOTE("Нарушение такое-то, выявлено в № случаях на территории такой-то");
-        v1_2.setVIOLATION_ACT("Правовой акт №2");
-        v1_2.setVIOLATION_ACTORS_NAME("Смит Смит Смитович");
-        v1_2.setINJUNCTION_CODES("Предписание №2, №3, №4");
-        v1_2.setINJUNCTION_NOTE("");
-        v1_2.setINJUNCTION_DATE_CREATE(parseTestDate("2015-09-07"));
-        v1_2.setINJUNCTION_DEADLINE(parseTestDate("2015-10-10"));
-        v1_2.setINJUNCTION_EXECUTION("");
-        v1_2.setLAWSUIT_SEC_I("");
-        v1_2.setLAWSUIT_SEC_II("");
-        v1_2.setLAWSUIT_SEC_III("");
-        v1_2.setLAWSUIT_SEC_IV("");
-        v1_2.setLAWSUIT_SEC_V("");
-        v1_2.setLAWSUIT_SEC_VI("");
-        v1_2.setLAWSUIT_SEC_VII("");
-        v1.add(v1_2);
+            final Set<UplanActViolation> v1 = new HashSet<>(2);
+            final UplanActViolation v1_1 = new UplanActViolation();
+            v1_1.setVIOLATION_ID(1);
+            v1_1.setVIOLATION_NOTE("Нарушение такое-то, выявлено в № случаях на территории такой-то");
+            v1_1.setVIOLATION_ACT("Правовой акт №1");
+            v1_1.setVIOLATION_ACTORS_NAME("Смит Смит Смитович");
+            v1_1.setINJUNCTION_CODES("Предписание № 1");
+            v1_1.setINJUNCTION_NOTE("Устранить нарушение такое-то, выявленое в № случаях на территории такой-то");
+            v1_1.setINJUNCTION_DATE_CREATE(parseTestDate("2015-09-09"));
+            v1_1.setINJUNCTION_DEADLINE(parseTestDate("2015-10-01"));
+            v1_1.setINJUNCTION_EXECUTION("");
+            v1_1.setLAWSUIT_SEC_I("");
+            v1_1.setLAWSUIT_SEC_II("");
+            v1_1.setLAWSUIT_SEC_III("");
+            v1_1.setLAWSUIT_SEC_IV("");
+            v1_1.setLAWSUIT_SEC_V("");
+            v1_1.setLAWSUIT_SEC_VI("");
+            v1_1.setLAWSUIT_SEC_VII("");
+            v1.add(v1_1);
 
-        violations.put(k1, v1);
+            final UplanActViolation v1_2 = new UplanActViolation();
+            v1_2.setVIOLATION_ID(2);
+            v1_2.setVIOLATION_NOTE("Нарушение такое-то, выявлено в № случаях на территории такой-то");
+            v1_2.setVIOLATION_ACT("Правовой акт №2");
+            v1_2.setVIOLATION_ACTORS_NAME("Смит Смит Смитович");
+            v1_2.setINJUNCTION_CODES("Предписание №2, №3, №4");
+            v1_2.setINJUNCTION_NOTE("");
+            v1_2.setINJUNCTION_DATE_CREATE(parseTestDate("2015-09-07"));
+            v1_2.setINJUNCTION_DEADLINE(parseTestDate("2015-10-10"));
+            v1_2.setINJUNCTION_EXECUTION("");
+            v1_2.setLAWSUIT_SEC_I("");
+            v1_2.setLAWSUIT_SEC_II("");
+            v1_2.setLAWSUIT_SEC_III("");
+            v1_2.setLAWSUIT_SEC_IV("");
+            v1_2.setLAWSUIT_SEC_V("");
+            v1_2.setLAWSUIT_SEC_VI("");
+            v1_2.setLAWSUIT_SEC_VII("");
+            v1.add(v1_2);
 
-//        final String result = messageService.sendUplanResult294Initialization(
-//                requestId,
-//                "4.1.10 :: Эталонный :: Запрос на повторное первичное размещение результатов внеплановой проверки с корректными данными",
-//                MessageFactory.createMailer("ФНС России", "1047707030513", Long.valueOf("10000001169"), Long.valueOf("10001696877")),
-//                MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "),
-//                "Федеральная налоговая служба",
-//                new BigInteger("2016000119"),
-//                2015,
-//                violations
-//        );
-        wrapResponse(response, "");//result);
+            item.getViolations().put(k1, v1);
+            parameterSet.add(item);
+        }
+        return allocationService.allocateUnregularResultBatch(
+                logTag,
+                "4.1.10 :: Эталонный :: Запрос на повторное первичное размещение результатов внеплановой проверки с корректными данными",
+                mailer,
+                addressee,
+                "Федеральная налоговая служба",
+                parameterSet
+        );
     }
 
-    public void processUplanResult294Correction(final String requestId, final HttpServletResponse response) throws IOException {
+    public String processUplanResult294Correction(final String requestId, final HttpServletResponse response) throws IOException {
         throw new UnsupportedOperationException("Нет такой хрени даже в РП");
     }
 

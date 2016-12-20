@@ -125,6 +125,8 @@ public class ApplicationConfig {
         dataSource.setUrl(props.getProperty("jdbc.url"));
         dataSource.setUsername(props.getProperty("jdbc.username"));
         dataSource.setPassword(props.getProperty("jdbc.password"));
+        dataSource.setConnectionProperties(new Properties());
+        dataSource.getConnectionProperties().put("autoReconnect", "true");
         return dataSource;
 
     }

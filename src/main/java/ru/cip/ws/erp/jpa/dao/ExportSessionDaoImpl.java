@@ -37,7 +37,8 @@ public class ExportSessionDaoImpl {
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public ExpSession createExportSession(final Date date, final String description, final String message, final int count) {
+    public ExpSession createSession(final String description, final String message, final int count) {
+        final Date date = new Date();
         final ExpSession result = new ExpSession();
         result.setSYSTEM_SERVICE_ID(props.APP_ID);
         result.setSTART_DATE(date);
@@ -56,7 +57,8 @@ public class ExportSessionDaoImpl {
         return result;
     }
 
-    public ExpSessionEvent createExportEvent(final Date date, final String message, final ExpSession exp_session) {
+    public ExpSessionEvent createEvent(final String message, final ExpSession exp_session) {
+        final Date date = new Date();
         final ExpSessionEvent result = new ExpSessionEvent();
         result.setEventDateTime(date);
         result.setEVENT_TEXT(message);
@@ -92,9 +94,9 @@ public class ExportSessionDaoImpl {
         return em.merge(expSession);
     }
 
-    public Tuple<ExpSession, ExpSessionEvent> createExportSessionInfo(final Date date, final String description, final String messageType, final int count) {
-        final ExpSession session = createExportSession(date, description, messageType, count);
-        final ExpSessionEvent event = createExportEvent(date, messageType, session);
+    public Tuple<ExpSession, ExpSessionEvent> createSessionInfo(final String description, final String messageType, final int count) {
+        final ExpSession session = createSession(description, messageType, count);
+        final ExpSessionEvent event = createEvent(messageType, session);
         return new Tuple<>(session, event);
     }
 }

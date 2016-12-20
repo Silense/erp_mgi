@@ -109,7 +109,7 @@ public class MQMessageListener implements MessageListener {
         }
         final LetterFromERPType response = responseBody.getResponse();
         if(response == null){
-            log.error("{} : К такому жизнь меня не готовила", uuid);
+            messageProcessor.processStatusMessage(uuid, erpStatus, responseDate, statusMessage, rawContent);
             return;
         }
         final MessageFromERPCommonType mc = response.getMessageCommon();
@@ -146,7 +146,6 @@ public class MQMessageListener implements MessageListener {
                 log.warn("{} : Unknown messageType no processing", uuid);
             }
         }
-        log.debug("{} : End processing", uuid);
     }
 
 

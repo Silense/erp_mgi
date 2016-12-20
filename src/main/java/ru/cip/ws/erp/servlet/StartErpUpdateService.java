@@ -29,9 +29,9 @@ import static ru.cip.ws.erp.servlet.ParameterNames.*;
  */
 
 @RestController("/update/start")
-public class startErpUpdateService {
+public class StartErpUpdateService {
 
-    private static final Logger log = LoggerFactory.getLogger(startErpUpdateService.class);
+    private static final Logger log = LoggerFactory.getLogger(StartErpUpdateService.class);
 
     private static final AtomicLong counter = new AtomicLong(0);
 
@@ -68,11 +68,35 @@ public class startErpUpdateService {
         if (isTestMode) {
             result = testMessageProcessor.processUplanUnRegular294Initialization(requestNumber, fromId, toId);
         } else {
+            //TODO
             result = new LinkedHashMap<>();
         }
         log.info("#{} : END. Result = '{}' [in {} ms]", requestNumber, result, System.currentTimeMillis()-startTime);
         return result.toString();
     }
+
+    @RequestMapping(params = {"DATA_KIND=UPLAN_UNREGULAR_294_CORRECTION"})
+    @ResponseBody
+    public String processUplanUnRegular294Correction(
+            @RequestParam(value = PARAM_TEST, required = false) String paramTest,
+            @RequestParam(value = "SEVERAL_CHECKS_FROM") Integer fromId,
+            @RequestParam(value = "SEVERAL_CHECKS_TO") Integer toId
+    ) throws IOException {
+        final long requestNumber = counter.incrementAndGet();
+        log.info("#{} : START processing UPLAN_UNREGULAR_294_CORRECTION request", requestNumber);
+        long startTime = System.currentTimeMillis();
+        final boolean isTestMode = BooleanUtils.toBoolean(BooleanUtils.toBooleanObject(paramTest));
+        final Map<String, String> result;
+        if (isTestMode) {
+            result = testMessageProcessor.processUplanUnRegular294Correction(requestNumber, fromId, toId);
+        } else {
+            //TODO
+            result = new LinkedHashMap<>();
+        }
+        log.info("#{} : END. Result = '{}' [in {} ms]", requestNumber, result, System.currentTimeMillis()-startTime);
+        return result.toString();
+    }
+
 
 
 
@@ -184,26 +208,6 @@ public class startErpUpdateService {
 //        }
 //        log.info("{} : End.", uuid);
 //    }
-
-    private void processUplanResult294Correction(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
-            throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    private void processUplanResult294Initialization(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
-            throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    private void processUplanUnRegular294Correction(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
-            throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    private void processUplanUnRegular294Initialization(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
-            throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
 
     private void processPlanResult294Correction(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
             throws IOException {

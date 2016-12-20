@@ -37,8 +37,8 @@ public class LocalFileStorage {
     }
 
 
-    public String createFile(final BigInteger checkId, final String uuid, final Date date, final String messageContent) {
-        final StringBuilder sb = new StringBuilder("/").append(checkId).append('/').append(uuid).append('/').append(date.getTime()).append(".xml");
+    public String createFile(final BigInteger checkId, final String uuid, final String messageContent) {
+        final StringBuilder sb = new StringBuilder("/").append(checkId).append('/').append(uuid).append('/').append(new Date().getTime()).append(".xml");
         final Path file = Paths.get(basePath, sb.toString());
         try {
             file.getParent().toFile().mkdirs();

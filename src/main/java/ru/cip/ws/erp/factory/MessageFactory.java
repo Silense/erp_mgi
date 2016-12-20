@@ -36,12 +36,17 @@ public class MessageFactory {
         return result;
     }
 
-    public static MessageToERPModelType.Mailer createMailer(final String name, final String OGRN, long FRGUORGID, long FRGUSERVID) {
+    public static MessageToERPModelType.Mailer createMailer(
+            final String name,
+            final String OGRN,
+            final BigInteger FRGUORGID,
+            final BigInteger FRGUSERVID
+    ) {
         final MessageToERPModelType.Mailer result = of.createMessageToERPModelTypeMailer();
         result.setName(name);
         result.setOGRN(OGRN);
-        result.setFRGUORGID(BigInteger.valueOf(FRGUORGID));
-        result.setFRGUSERVID(BigInteger.valueOf(FRGUSERVID));
+        result.setFRGUORGID(FRGUORGID);
+        result.setFRGUSERVID(FRGUSERVID);
         return result;
     }
 
@@ -197,7 +202,7 @@ public class MessageFactory {
             final Uplan uplan,
             final BigInteger id,
             final Set<UplanRecord> records,
-            final Map<Long, BigInteger> erpIDMap
+            final Map<BigInteger, BigInteger> erpIDMap
     ) {
         final MessageToERP294Type messageToERP294Type = createMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.UplanUnregular294Correction message = of.createMessageToERP294TypeUplanUnregular294Correction();
@@ -271,14 +276,14 @@ public class MessageFactory {
             final MessageToERPModelType.Addressee addressee,
             final int year,
             final Map<UplanAct, Set<UplanActViolation>> actMap,
-            final BigInteger planId
+            final BigInteger erpID
     ) {
         final MessageToERP294Type messageToERP294Type = createMessageToERP294Type(mailer, addressee);
         final MessageToERP294Type.UplanResult294Initialization message = of.createMessageToERP294TypeUplanResult294Initialization();
         messageToERP294Type.setUplanResult294Initialization(message);
-
         message.setYEAR(year);
-        message.setID(planId);
+        message.setID(erpID);
+
         for (Map.Entry<UplanAct, Set<UplanActViolation>> entry : actMap.entrySet()) {
             message.getUinspectionResult294Initialization().add(cteateUinspectionResult294Initialization(entry.getKey(), entry.getValue()));
         }
@@ -563,7 +568,7 @@ public class MessageFactory {
     // Util methods
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    public static JAXBElement<RequestMsg> extendMessage(final String uuid, final MessageToERP294Type messageToERP294Type) {
+    private static JAXBElement<RequestMsg> extendMessage(final String uuid, final MessageToERP294Type messageToERP294Type) {
         final RequestMsg result = of.createRequestMsg();
         result.setRequestId(uuid);
         result.setRequestDate(wrapDateTime(new Date()));

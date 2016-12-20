@@ -2,6 +2,7 @@ package ru.cip.ws.erp.jpa.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.business.LocalFileStorage;
 import ru.cip.ws.erp.jpa.entity.CheckErp;
@@ -101,7 +102,7 @@ public class CheckErpDaoImpl {
         return new Tuple<>(checkErp, checkRecords);
     }
 
-    private CheckRecordErp createCheckRecordErp(final CheckErp checkErp, final UplanRecord record) {
+    public CheckRecordErp createCheckRecordErp(final CheckErp checkErp, final UplanRecord record) {
         final CheckRecordErp result = new CheckRecordErp();
         result.setCheck(checkErp);
         result.setCorrelationId(record.getCORRELATION_ID());
@@ -115,16 +116,15 @@ public class CheckErpDaoImpl {
     public CheckHistory createHistory(
             final CheckErp checkErp,
             final String messageSource,
-            final Date date,
             final String note,
             final String messageContent,
             final String correlationUUID) {
         final CheckHistory result = new CheckHistory();
         result.setCheck(checkErp);
         result.setMessageSource(enumDao.get("ERP_MESSAGE_SOURCE", messageSource));
-        result.setEventDatetime(date);
+        result.setEventDatetime(new Date());
         result.setNote(note);
-        result.setRawMessage(fileStorage.createFile(checkErp.getCheckId(), correlationUUID, date, messageContent));
+        result.setRawMessage(fileStorage.createFile(checkErp.getCheckId(), correlationUUID, messageContent));
         result.setCorrelationUUID(correlationUUID);
         em.persist(result);
         return result;
@@ -160,5 +160,20 @@ public class CheckErpDaoImpl {
     ) {
         checkErp.setState(state);
         setErpCode(checkErp, erpStatus, note, responseDate, erpId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void assignUUID(final CheckErp checkErp, final String uuid) {
+        checkErp.setAttempts(checkErp.getAttempts() + 1);
+        checkErp.setState(enumDao.get("ERP_CHECK_STATE", "WAIT_ALLOCATION"));
+        checkErp.setStatusErp(enumDao.get("ERP_CONVERSATION_STATUS", "WAIT"));
+        checkErp.setCorrelationUUID(uuid);
+        em.merge(checkErp);
+    }
+
+    public void setState(final CheckErp checkErp, final RsysEnum state,final Date responseDate) {
+        checkErp.setState(state);
+        checkErp.setLastErpDate(responseDate);
+        em.merge(checkErp);
     }
 }

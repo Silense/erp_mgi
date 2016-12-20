@@ -26,9 +26,9 @@ import static ru.cip.ws.erp.servlet.ParameterNames.PARAM_PLAN_ID;
  * Description:
  */
 @Controller
-public class stopErpUpdateService {
+public class StopErpUpdateService {
 
-    private static final Logger logger = LoggerFactory.getLogger(stopErpUpdateService.class);
+    private static final Logger logger = LoggerFactory.getLogger(StopErpUpdateService.class);
 
     @Autowired
     private PlanDaoImpl planViewDao;
