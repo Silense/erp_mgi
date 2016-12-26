@@ -25,7 +25,7 @@ public class CheckViolationErp {
     /**
      * ИД соответствующей записи журнала состояния передачи объектов проверок в ЕРП
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RECORD_ID", nullable = false)
     private CheckRecordErp record;
 

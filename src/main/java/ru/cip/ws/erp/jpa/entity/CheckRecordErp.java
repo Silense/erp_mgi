@@ -2,6 +2,7 @@ package ru.cip.ws.erp.jpa.entity;
 
 import javax.persistence.*;
 import java.math.BigInteger;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
@@ -46,6 +47,11 @@ public class CheckRecordErp {
     @Column(name = "NOTE")
     private String note;
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Кастомные маппинги
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "record")
+    private Set<CheckViolationErp> violations;
+
     public CheckRecordErp() {
     }
 
@@ -87,6 +93,14 @@ public class CheckRecordErp {
 
     public void setNote(final String note) {
         this.note = note;
+    }
+
+    public Set<CheckViolationErp> getViolations() {
+        return violations;
+    }
+
+    public void setViolations(Set<CheckViolationErp> violations) {
+        this.violations = violations;
     }
 
     @Override

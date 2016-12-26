@@ -98,6 +98,29 @@ public class StartErpUpdateService {
     }
 
 
+    @RequestMapping(params = {"DATA_KIND=UPLAN_RESULT_294_INITIALIZATION"})
+    @ResponseBody
+    public String processUplanResult294Initialization(
+            @RequestParam(value = PARAM_TEST, required = false) String paramTest,
+            @RequestParam(value = "SEVERAL_CHECKS_FROM") Integer fromId,
+            @RequestParam(value = "SEVERAL_CHECKS_TO") Integer toId
+    ) throws IOException {
+        final long requestNumber = counter.incrementAndGet();
+        log.info("#{} : START processing UPLAN_RESULT_294_INITIALIZATION request", requestNumber);
+        long startTime = System.currentTimeMillis();
+        final boolean isTestMode = BooleanUtils.toBoolean(BooleanUtils.toBooleanObject(paramTest));
+        final Map<String, String> result;
+        if (isTestMode) {
+            result = testMessageProcessor.processUplanResult294Initialization(requestNumber, fromId, toId);
+        } else {
+            //TODO
+            result = new LinkedHashMap<>();
+        }
+        log.info("#{} : END. Result = '{}' [in {} ms]", requestNumber, result, System.currentTimeMillis()-startTime);
+        return result.toString();
+    }
+
+
 
 
     @RequestMapping(params = {"DATA_KIND=PLAN_REGULAR_294_INITIALIZATION"}, produces = {MimeTypeUtils.TEXT_PLAIN_VALUE})

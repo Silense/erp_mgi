@@ -31,6 +31,9 @@ public class UplanAct {
     @Column(name = "ID")
     private BigInteger ID;
 
+    @Column(name="ADDR_CORRELATION_ID")
+    private BigInteger recordId;
+
     /**
      * Дата составления акта проведения проверки
      */
@@ -109,6 +112,18 @@ public class UplanAct {
      **/
     @Column(name = "UNDOIG_SEC_I")
     private String UNDOIG_SEC_I;
+
+    public BigInteger getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(BigInteger recordId) {
+        this.recordId = recordId;
+    }
+
+    public void setACT_WAS_READ(int ACT_WAS_READ) {
+        this.ACT_WAS_READ = ACT_WAS_READ;
+    }
 
     public BigInteger getID() {
         return ID;

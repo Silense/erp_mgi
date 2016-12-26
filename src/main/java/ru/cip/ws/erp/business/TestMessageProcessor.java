@@ -395,6 +395,8 @@ public class TestMessageProcessor {
         int currentNumber = fromId;
         while (currentNumber <= toId) {
             final AllocateUnregularParameter item = new AllocateUnregularParameter();
+            item.setKO_NAME("Федеральная налоговая служба");
+
             final Uplan uplan = new Uplan();
             uplan.setCHECK_ID(new BigInteger(String.valueOf(currentNumber)));
 
@@ -450,7 +452,6 @@ public class TestMessageProcessor {
                 "4.1.7 :: Эталонный :: Запрос на первичное размещение внеплановой проверки",
                 mailer,
                 addressee,
-                "Федеральная налоговая служба",
                 parameters
         );
     }
@@ -462,6 +463,7 @@ public class TestMessageProcessor {
         int currentNumber = fromId;
         while (currentNumber <= toId) {
             final AllocateUnregularParameter item = new AllocateUnregularParameter();
+            item.setKO_NAME("Федеральная налоговая служба");
             final Uplan uplan = new Uplan();
             uplan.setCHECK_ID(new BigInteger(String.valueOf(currentNumber)));
             uplan.setREQUEST_NUM("Номер решения №");
@@ -518,7 +520,6 @@ public class TestMessageProcessor {
                 "4.1.8 :: Эталонный :: Запрос на корректировку результатов внеплановой проверки",
                 mailer,
                 addressee,
-                "Федеральная налоговая служба",
                 parameters
         );
     }
@@ -529,8 +530,8 @@ public class TestMessageProcessor {
         final Set<AllocateUnregularResultParameter> parameterSet = new LinkedHashSet<>();
         int currentNumber = fromId;
         while (currentNumber <= toId) {
-            new BigInteger("2016000119");
             final AllocateUnregularResultParameter item = new AllocateUnregularResultParameter();
+            item.setYear(2015);
             final Uplan uplan = new Uplan();
             uplan.setCHECK_ID(new BigInteger(String.valueOf(currentNumber)));
             item.setCheck(uplan);
@@ -592,13 +593,13 @@ public class TestMessageProcessor {
 
             item.getViolations().put(k1, v1);
             parameterSet.add(item);
+            currentNumber++;
         }
         return allocationService.allocateUnregularResultBatch(
                 logTag,
                 "4.1.10 :: Эталонный :: Запрос на повторное первичное размещение результатов внеплановой проверки с корректными данными",
                 mailer,
                 addressee,
-                "Федеральная налоговая служба",
                 parameterSet
         );
     }

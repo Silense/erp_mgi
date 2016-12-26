@@ -16,6 +16,7 @@ import java.util.Set;
 public class AllocateUnregularResultParameter {
     private Uplan check;
     private Map<UplanAct, Set<UplanActViolation>> violations = new LinkedHashMap<>();
+    private int year;
 
     public Uplan getCheck() {
         return check;
@@ -39,5 +40,13 @@ public class AllocateUnregularResultParameter {
      */
     public String getCheckId() {
         return String.valueOf(check.getCHECK_ID());
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
     }
 }

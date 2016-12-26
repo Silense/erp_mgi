@@ -5,20 +5,15 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.business.LocalFileStorage;
-import ru.cip.ws.erp.jpa.entity.CheckErp;
-import ru.cip.ws.erp.jpa.entity.CheckHistory;
-import ru.cip.ws.erp.jpa.entity.CheckRecordErp;
-import ru.cip.ws.erp.jpa.entity.RsysEnum;
+import ru.cip.ws.erp.jpa.entity.*;
 import ru.cip.ws.erp.jpa.entity.views.Uplan;
+import ru.cip.ws.erp.jpa.entity.views.UplanActViolation;
 import ru.cip.ws.erp.jpa.entity.views.UplanRecord;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigInteger;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Author: Upatov Egor <br>
@@ -44,7 +39,7 @@ public class CheckErpDaoImpl {
         final List<CheckErp> resultList = em.createQuery(
                 "SELECT a " +
                         "FROM CheckErp a " +
-                        "JOIN FETCH a.records r " +
+                        "LEFT JOIN FETCH a.records r " +
                         "WHERE a.checkId = :checkId " +
                         "AND a.checkType.code = :erpCheckTypeCode ", CheckErp.class
         )
@@ -52,8 +47,34 @@ public class CheckErpDaoImpl {
                 .setParameter("erpCheckTypeCode", erpCheckTypeCode)
                 .getResultList();
         if(!resultList.isEmpty()){
-            CheckErp item = resultList.get(0);
+            final CheckErp item = resultList.get(0);
             return new Tuple<>(item, item.getRecords());
+        } else {
+            return null;
+        }
+    }
+
+    public Tuple<CheckErp, Map<CheckRecordErp, Set<CheckViolationErp>>> getCheckErpWithViolations(
+            final BigInteger checkId,
+            final String erpCheckTypeCode) {
+        final List<CheckErp> resultList = em.createQuery(
+                "SELECT a " +
+                        "FROM CheckErp a " +
+                        "LEFT JOIN FETCH a.records r " +
+                        "LEFT JOIN FETCH r.violations v " +
+                        "WHERE a.checkId = :checkId " +
+                        "AND a.checkType.code = :erpCheckTypeCode ", CheckErp.class
+        )
+                .setParameter("checkId", checkId)
+                .setParameter("erpCheckTypeCode", erpCheckTypeCode)
+                .getResultList();
+        if(!resultList.isEmpty()){
+            final CheckErp item = resultList.get(0);
+            final Map<CheckRecordErp, Set<CheckViolationErp>> map = new HashMap<>(item.getRecords().size());
+            for (CheckRecordErp recordErp : item.getRecords()) {
+                map.put(recordErp, recordErp.getViolations());
+            }
+            return new Tuple<>(item, map);
         } else {
             return null;
         }
@@ -112,6 +133,15 @@ public class CheckErpDaoImpl {
         return result;
     }
 
+    public CheckViolationErp createCheckViolationErp(CheckRecordErp checkRecordErp, UplanActViolation record) {
+        final CheckViolationErp result = new CheckViolationErp();
+        result.setRecord(checkRecordErp);
+        result.setCorrelationId(BigInteger.valueOf(record.getVIOLATION_ID()));
+        result.setNote(record.getVIOLATION_NOTE());
+        em.persist(result);
+        return result;
+    }
+
 
     public CheckHistory createHistory(
             final CheckErp checkErp,
@@ -163,9 +193,9 @@ public class CheckErpDaoImpl {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void assignUUID(final CheckErp checkErp, final String uuid) {
+    public void assignUUID(final CheckErp checkErp, final String uuid, final String state) {
         checkErp.setAttempts(checkErp.getAttempts() + 1);
-        checkErp.setState(enumDao.get("ERP_CHECK_STATE", "WAIT_ALLOCATION"));
+        checkErp.setState(enumDao.get("ERP_CHECK_STATE", state));
         checkErp.setStatusErp(enumDao.get("ERP_CONVERSATION_STATUS", "WAIT"));
         checkErp.setCorrelationUUID(uuid);
         em.merge(checkErp);
@@ -176,4 +206,7 @@ public class CheckErpDaoImpl {
         checkErp.setLastErpDate(responseDate);
         em.merge(checkErp);
     }
+
+
+
 }

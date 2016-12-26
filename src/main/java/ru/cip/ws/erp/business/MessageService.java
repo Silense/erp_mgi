@@ -146,7 +146,6 @@ public class MessageService {
             final Map<UplanAct, Set<UplanActViolation>> actMap
     ) {
         final String messageType = "UPLAN_RESULT_294_INITIALIZATION";
-        checkErpDao.assignUUID(checkErp, uuid);
         final ExpSessionEvent exportEvent = expSessionDao.createEvent(check.getCHECK_ID() + ":" + messageType, session);
         log.info("{} : Created {}", requestNumber, exportEvent);
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanResult294Initialization(

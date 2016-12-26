@@ -15,6 +15,7 @@ import java.util.Set;
 public class AllocateUnregularParameter {
     private Uplan check;
     private Set<UplanRecord> records = new LinkedHashSet<>();
+    private String KO_NAME;
 
     public Uplan getCheck() {
         return check;
@@ -38,5 +39,13 @@ public class AllocateUnregularParameter {
      */
     public String getCheckId() {
         return String.valueOf(check.getCHECK_ID());
+    }
+
+    public String getKO_NAME() {
+        return KO_NAME;
+    }
+
+    public void setKO_NAME(String KO_NAME) {
+        this.KO_NAME = KO_NAME;
     }
 }

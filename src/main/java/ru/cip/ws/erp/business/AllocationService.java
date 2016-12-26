@@ -12,8 +12,11 @@ import ru.cip.ws.erp.jpa.dao.ExportSessionDaoImpl;
 import ru.cip.ws.erp.jpa.dao.Tuple;
 import ru.cip.ws.erp.jpa.entity.CheckErp;
 import ru.cip.ws.erp.jpa.entity.CheckRecordErp;
+import ru.cip.ws.erp.jpa.entity.CheckViolationErp;
 import ru.cip.ws.erp.jpa.entity.enums.SessionStatus;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
+import ru.cip.ws.erp.jpa.entity.views.UplanAct;
+import ru.cip.ws.erp.jpa.entity.views.UplanActViolation;
 import ru.cip.ws.erp.jpa.entity.views.UplanRecord;
 
 import java.util.*;
@@ -53,12 +56,11 @@ public class AllocationService {
     /**
      * Массовое размещение Внеплановых проверок в ЕРП
      *
-     * @param logTag      префикс-номер для логиирования
-     * @param desc Общее пояснение к размещению проверок (для EXP_SESSION)
-     * @param mailer      от имени какой структуры будем размещать
-     * @param addressee   на имя какой структуры будем размещать
-     * @param KO_NAME
-     * @param parameters  Списко структур для отправки в ЕРП
+     * @param logTag     префикс-номер для логиирования
+     * @param desc       Общее пояснение к размещению проверок (для EXP_SESSION)
+     * @param mailer     от имени какой структуры будем размещать
+     * @param addressee  на имя какой структуры будем размещать
+     * @param parameters Списко структур для отправки в ЕРП
      * @return карта результатов размещения <Идентификатор проверки, Результат размещения>,
      * где результат размещения- номер requestId для ЕРП в случае успешной отправки
      * или текстовое пояснение почему проверка не была размещена
@@ -68,7 +70,6 @@ public class AllocationService {
             final String desc,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
-            final String KO_NAME,
             final Set<AllocateUnregularParameter> parameters
     ) {
         final String actionName = "UNREGULAR_ALLOCATION_BATCH";
@@ -81,7 +82,7 @@ public class AllocationService {
         log.info("#{} : Created {}", logTag, session);
         final Map<String, String> result = new LinkedHashMap<>(parameters.size());
         for (AllocateUnregularParameter param : parameters) {
-            result.put(param.getCheckId(), allocateUnregular(logTag, mailer, addressee, KO_NAME, session, param));
+            result.put(param.getCheckId(), allocateUnregular(logTag, mailer, addressee, session, param));
         }
         expSessionDao.setSessionStatus(session, SessionStatus.DONE);
         log.info("#{} : End {}. Result: {}", logTag, actionName, result);
@@ -94,7 +95,6 @@ public class AllocationService {
      * @param requestNumber префикс для логгирования
      * @param mailer        от имени какой структуры будем размещать
      * @param addressee     на имя какой структуры будем размещать
-     * @param KO_NAME
      * @param session       сессия экспорта в рамках которой происходит размещение
      * @param parameter     Структура с данными для размещения внеплановой проверки
      * @return
@@ -103,7 +103,6 @@ public class AllocationService {
             final long requestNumber,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
-            final String KO_NAME,
             final ExpSession session,
             final AllocateUnregularParameter parameter
     ) {
@@ -111,7 +110,7 @@ public class AllocationService {
         final String actionName = "UNREGULAR_ALLOCATION";
         log.info("{} : start {}", logTag, actionName);
         Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = checkErpDao.getCheckErp(parameter.getCheck().getCHECK_ID(), "UNREGULAR");
-        boolean needInitialization = true;
+        final boolean needInitialization;
         final String uuid = UUID.randomUUID().toString();
         if (checkErpTuple == null) {
             log.debug("{} : UUID assign [{}]. Not allocated before", logTag, uuid);
@@ -125,13 +124,13 @@ public class AllocationService {
             final String stateCode = checkErpTuple.left.getState().getCode();
             if ("ERROR_ALLOCATION".equalsIgnoreCase(stateCode)) {
                 log.debug("{} : UUID assign [{}]. ERROR_ALLOCATION", logTag, uuid);
-                syncRecords(logTag,checkErpTuple.left, checkErpTuple.right, parameter.getRecords());
-                checkErpDao.assignUUID(checkErpTuple.left, uuid);
+                syncRecords(logTag, checkErpTuple.left, checkErpTuple.right, parameter.getRecords());
+                checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_ALLOCATION");
                 needInitialization = true;
             } else if ("PARTIAL_ALLOCATION".equalsIgnoreCase(stateCode)) {
                 log.debug("{} : UUID assign [{}]. PARTIAL_ALLOCATION", logTag, uuid);
                 syncRecords(logTag, checkErpTuple.left, checkErpTuple.right, parameter.getRecords());
-                checkErpDao.assignUUID(checkErpTuple.left, uuid);
+                checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_ALLOCATION");
                 needInitialization = false;
             } else {
                 final String result = "Check is not in available for allocation state [" + stateCode + "]";
@@ -147,7 +146,7 @@ public class AllocationService {
                     uuid,
                     mailer,
                     addressee,
-                    KO_NAME,
+                    parameter.getKO_NAME(),
                     parameter.getCheck(),
                     parameter.getRecords(),
                     checkErpTuple.left
@@ -159,7 +158,7 @@ public class AllocationService {
                     uuid,
                     mailer,
                     addressee,
-                    KO_NAME,
+                    parameter.getKO_NAME(),
                     parameter.getCheck(),
                     checkErpTuple.left,
                     parameter.getRecords(),
@@ -170,29 +169,11 @@ public class AllocationService {
         return result;
     }
 
-    private void syncRecords(final String logTag, CheckErp checkErp, Set<CheckRecordErp> erpRecords, Set<UplanRecord> records) {
-        for (UplanRecord record : records) {
-            boolean found = false;
-            for (CheckRecordErp erpRecord : erpRecords) {
-                if(Objects.equals(erpRecord.getCorrelationId(), record.getCORRELATION_ID())){
-                    found = true;
-                    break;
-                }
-            }
-            if(!found){
-                final CheckRecordErp erpRecord = checkErpDao.createCheckRecordErp(checkErp, record);
-                log.error("{} : MISMATCH IN RECORDS. FOR {} CREATED {} ", logTag, record, erpRecord);
-            }
-        }
-    }
-
-
     public Map<String, String> allocateUnregularResultBatch(
             final long logTag,
             final String desc,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
-            final String KO_NAME,
             final Set<AllocateUnregularResultParameter> parameters
     ) {
         final String actionType = "UNREGULAR_RESULT_ALLOCATION_BATCH";
@@ -205,7 +186,7 @@ public class AllocationService {
         log.info("#{} : Created {}", logTag, session);
         final Map<String, String> result = new LinkedHashMap<>(parameters.size());
         for (AllocateUnregularResultParameter param : parameters) {
-            result.put(param.getCheckId(), allocateUnregularResult(logTag, mailer, addressee, KO_NAME, session, param));
+            result.put(param.getCheckId(), allocateUnregularResult(logTag, mailer, addressee, session, param));
         }
         expSessionDao.setSessionStatus(session, SessionStatus.DONE);
         log.info("#{} : End {}. Result: {}", logTag, actionType, result);
@@ -216,15 +197,104 @@ public class AllocationService {
             final long requestNumber,
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
-            final String ko_name,
             final ExpSession session,
             final AllocateUnregularResultParameter parameter) {
         final String logTag = "#" + requestNumber + "-" + parameter.getCheckId();
-        log.info("{} : start allocate UnregularCheckResult for CHECK[{}]", logTag, parameter.getCheckId());
+        final String actionName = "UNREGULAR_RESULT_ALLOCATION";
+        log.info("{} : start {}", logTag, actionName);
+        final Tuple<CheckErp, Map<CheckRecordErp, Set<CheckViolationErp>>> checkErpTuple =
+                checkErpDao.getCheckErpWithViolations(parameter.getCheck().getCHECK_ID(), "UNREGULAR");
+        final String uuid = UUID.randomUUID().toString();
+        if (checkErpTuple == null) {
+            final String result = "Check is not in available for result allocation. Cause have not CheckErp ";
+            log.warn("{} : end {}. Skipped cause '{}'", logTag, actionName, result);
+            return result;
+        } else {
+            final String stateCode = checkErpTuple.left.getState().getCode();
+            if ("ALLOCATED".equalsIgnoreCase(stateCode)) {
+                log.debug("{} : UUID assign [{}]. Start ALLOCATED -> WAIT_RESULT_ALLOCATION", logTag, uuid);
+                syncViolations(logTag, checkErpTuple.right, parameter.getViolations());
+                checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_RESULT_ALLOCATION");
+            } else if ("ERROR_RESULT_ALLOCATION".equalsIgnoreCase(stateCode)) {
+                log.debug("{} : UUID assign [{}]. Start ERROR_RESULT_ALLOCATION -> WAIT_RESULT_ALLOCATION", logTag, uuid);
+                syncViolations(logTag, checkErpTuple.right, parameter.getViolations());
+                checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_RESULT_ALLOCATION");
+            } else {
+                final String result = "Check is not in available for result allocation state [" + stateCode + "]";
+                log.warn("{} : end {}. Skipped cause '{}'", logTag, actionName, result);
+                return result;
+            }
+        }
+        final String result = messageService.sendUplanResult294Initialization(
+                logTag,
+                session,
+                uuid,
+                mailer,
+                addressee,
+                parameter.getYear(),
+                parameter.getCheck(),
+                checkErpTuple.left,
+                parameter.getViolations()
+        );
+        log.info("{} : end. Result = '{}'", requestNumber, result);
+        return result;
 
-       //TODO messageService.sendUplanUnre
-        return null;
+    }
 
+    private void syncViolations(
+            final String logTag,
+            final Map<CheckRecordErp, Set<CheckViolationErp>> violationsErp,
+            final Map<UplanAct, Set<UplanActViolation>> violations
+    ) {
+        for (Map.Entry<UplanAct, Set<UplanActViolation>> entry : violations.entrySet()) {
+            for (Map.Entry<CheckRecordErp, Set<CheckViolationErp>> erpEntry : violationsErp.entrySet()) {
+               if(Objects.equals(entry.getKey().getRecordId(), erpEntry.getKey().getCorrelationId())){
+                   syncViolations(logTag, erpEntry.getKey(), erpEntry.getValue(), entry.getValue());
+               }
+            }
+        }
+    }
+
+    private void syncViolations(
+            final String logTag,
+            final CheckRecordErp checkRecordErp,
+            final Set<CheckViolationErp> erpViolations,
+            final Set<UplanActViolation> violations) {
+        for (UplanActViolation record : violations) {
+            boolean found = false;
+            for (CheckViolationErp erpRecord : erpViolations) {
+                if (Objects.equals(erpRecord.getCorrelationId().intValue(), record.getVIOLATION_ID())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                final CheckViolationErp erpRecord = checkErpDao.createCheckViolationErp(checkRecordErp, record);
+                log.error("{} : MISMATCH IN RECORDS. FOR {} CREATED {} ", logTag, record, erpRecord);
+            }
+        }
+    }
+
+
+    private void syncRecords(
+            final String logTag,
+            final CheckErp checkErp,
+            final Set<CheckRecordErp> erpRecords,
+            final Set<UplanRecord> records
+    ) {
+        for (UplanRecord record : records) {
+            boolean found = false;
+            for (CheckRecordErp erpRecord : erpRecords) {
+                if (Objects.equals(erpRecord.getCorrelationId(), record.getCORRELATION_ID())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                final CheckRecordErp erpRecord = checkErpDao.createCheckRecordErp(checkErp, record);
+                log.error("{} : MISMATCH IN RECORDS. FOR {} CREATED {} ", logTag, record, erpRecord);
+            }
+        }
     }
 
 
