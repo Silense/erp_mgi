@@ -4,10 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
+import ru.cip.ws.erp.ConfigurationHolder;
 import ru.cip.ws.erp.factory.JAXBMarshallerUtil;
 import ru.cip.ws.erp.generated.erptypes.RequestMsg;
 
@@ -16,8 +16,9 @@ import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.bind.JAXBElement;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_QUEUE_REQUEST;
 
 
 /**
@@ -34,8 +35,8 @@ public class MQMessageSender {
     private final String destinationQueue;
 
     @Autowired
-    public MQMessageSender(@Qualifier("wmq.properties") final Properties props, final JmsTemplate jmsTemplate) {
-        this.destinationQueue = props.getProperty("wmq.queue.request");
+    public MQMessageSender(final ConfigurationHolder cfg, final JmsTemplate jmsTemplate) {
+        this.destinationQueue = cfg.get(CFG_KEY_QUEUE_REQUEST);
         this.jmsTemplate = jmsTemplate;
     }
 

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import ru.cip.ws.erp.factory.PropertiesHolder;
+import ru.cip.ws.erp.ConfigurationHolder;
 import ru.cip.ws.erp.jpa.dao.PlanActDaoImpl;
 import ru.cip.ws.erp.jpa.dao.PlanDaoImpl;
 
@@ -23,7 +23,7 @@ public class MessageProcessor {
     private MessageService messageService;
 
     @Autowired
-    private PropertiesHolder prop;
+    private ConfigurationHolder cfg;
 
     @Autowired
     private PlanDaoImpl planViewDao;

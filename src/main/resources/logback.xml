@@ -66,6 +66,17 @@
         </rollingPolicy>
     </appender>
 
+    <!-- Для отладки конфигурации-->
+    <appender name="APPENDER_CONFIG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${log.format}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logs.directory}/cfg/cfg.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+        </rollingPolicy>
+    </appender>
+
     <!--LOGGERS-->
 
     <!-- Для сервлетов-->
@@ -83,8 +94,13 @@
         <appender-ref ref="APPENDER_JMS"/>
     </logger>
 
+    <!-- Для конфигов-->
+    <logger name="CONFIG" level="DEBUG" additivity="true">
+        <appender-ref ref="APPENDER_CONFIG"/>
+    </logger>
+
     <!--Hibernate SQL LOGGER-->
-    <logger name="org.hibernate" additivity="false" level="TRACE">
+    <logger name="org.hibernate" additivity="false" level="INFO">
         <appender-ref ref="APPENDER_SQL"/>
     </logger>
 

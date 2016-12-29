@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.cip.ws.erp.factory.PropertiesHolder;
+
+import ru.cip.ws.erp.ConfigurationHolder;
 import ru.cip.ws.erp.jpa.entity.enums.SessionStatus;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSession;
 import ru.cip.ws.erp.jpa.entity.sessions.ExpSessionEvent;
@@ -15,6 +16,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Date;
 import java.util.List;
+
+import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_APP_ID;
 
 /**
  * Author: Upatov Egor <br>
@@ -29,7 +32,7 @@ public class ExportSessionDaoImpl {
     private static final Logger logger = LoggerFactory.getLogger(ExportSessionDaoImpl.class);
 
     @Autowired
-    private PropertiesHolder props;
+    private ConfigurationHolder cfg;
 
 
     @PersistenceContext
@@ -40,7 +43,7 @@ public class ExportSessionDaoImpl {
     public ExpSession createSession(final String description, final String message, final int count) {
         final Date date = new Date();
         final ExpSession result = new ExpSession();
-        result.setSYSTEM_SERVICE_ID(props.APP_ID);
+        result.setSYSTEM_SERVICE_ID(cfg.get(CFG_KEY_APP_ID));
         result.setSTART_DATE(date);
         result.setEND_DATE(null);
         result.setENUM_EXP_SESSION_STATUS(SessionStatus.RUNNING);
@@ -51,8 +54,8 @@ public class ExportSessionDaoImpl {
         result.setEXT_PACKAGE_CNT(count);
         result.setCREATE_DATE(date);
         result.setUPDATE_DATE(date);
-        result.setCREATE_SYSTEM(props.APP_ID);
-        result.setUPDATE_SYSTEM(props.APP_ID);
+        result.setCREATE_SYSTEM(cfg.get(CFG_KEY_APP_ID));
+        result.setUPDATE_SYSTEM(cfg.get(CFG_KEY_APP_ID));
         em.persist(result);
         return result;
     }
@@ -62,7 +65,7 @@ public class ExportSessionDaoImpl {
         final ExpSessionEvent result = new ExpSessionEvent();
         result.setEventDateTime(date);
         result.setEVENT_TEXT(message);
-        result.setEVENT_USER_ID(props.APP_ID);
+        result.setEVENT_USER_ID(cfg.get(CFG_KEY_APP_ID));
         result.setExportSession(exp_session);
         em.persist(result);
         return result;
