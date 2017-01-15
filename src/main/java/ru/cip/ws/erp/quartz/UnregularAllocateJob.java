@@ -16,7 +16,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_UNREGULAR_SCHEDULE_LAST_FIRE_DATE;
+import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE;
 
 /**
  * Author: Upatov Egor <br>
@@ -26,7 +26,7 @@ import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_UNREGULAR_SCHEDULE_LAST_
  */
 @Component
 @DisallowConcurrentExecution
-public class UnregularAllocationJob extends QuartzJobBean {
+public class UnregularAllocateJob extends QuartzJobBean {
     private static final Logger log = LoggerFactory.getLogger("JOB");
     private static final AtomicLong counter = new AtomicLong(0);
 
@@ -39,7 +39,7 @@ public class UnregularAllocationJob extends QuartzJobBean {
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         final long logTag = counter.incrementAndGet();
-        final Date previousFireDate = cfg.getDate(CFG_KEY_UNREGULAR_SCHEDULE_LAST_FIRE_DATE);
+        final Date previousFireDate = cfg.getDate(CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE);
         final Date scheduledFireTime = jobExecutionContext.getScheduledFireTime();
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         log.debug("#{} Start Job[{}] by Trigger[{}]: Allocate Unregular Checks from [{}] to [{}]",
@@ -49,7 +49,7 @@ public class UnregularAllocationJob extends QuartzJobBean {
                 sdf.format(previousFireDate),
                 sdf.format(scheduledFireTime)
         );
-        cfg.set(CFG_KEY_UNREGULAR_SCHEDULE_LAST_FIRE_DATE, scheduledFireTime);
+        cfg.set(CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE, scheduledFireTime);
         final Map<String, String> result = messageProcessor.unregularAllocate(logTag, previousFireDate, scheduledFireTime);
         log.info("#{} Finished Job[{}]: Result = {}", logTag, jobExecutionContext.getJobDetail().getKey(), result);
     }

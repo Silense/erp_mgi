@@ -8,16 +8,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.cip.ws.erp.jpa.dao.CheckErpDaoImpl;
 import ru.cip.ws.erp.jpa.dao.PlanDaoImpl;
-import ru.cip.ws.erp.jpa.entity.views.Plan;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
-
-import static ru.cip.ws.erp.servlet.ParameterNames.PARAM_DATA_KIND;
-import static ru.cip.ws.erp.servlet.ParameterNames.PARAM_PLAN_ID;
 
 /**
  * Author: Upatov Egor <br>
@@ -39,18 +35,18 @@ public class StopErpUpdateService {
     @RequestMapping("/update/stop")
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         final String requestId = UUID.randomUUID().toString();
-        response.setContentType("text/html");
-        response.setCharacterEncoding("UTF-8");
-        final String param_data_kind = getStringParameter(request, PARAM_DATA_KIND);
-        logger.info("{} : Start handleRequest({}=\'{}\')", requestId, PARAM_DATA_KIND, param_data_kind);
-        final DataKindEnum data_kind = DataKindEnum.getEnum(param_data_kind);
-        if (data_kind == null) {
-            logger.error("{} : End. Unknown {} = \'{}\' parameter value. Skip processing", requestId, PARAM_DATA_KIND, param_data_kind);
-            response.setStatus(500);
-            response.getWriter().println(String.format("Параметер %s имеет неизвестное значение \'%s\'", PARAM_DATA_KIND, param_data_kind));
-            return;
-        }
-        processPlanCheckCancel(requestId, data_kind, request, response);
+//        response.setContentType("text/html");
+//        response.setCharacterEncoding("UTF-8");
+//        final String param_data_kind = getStringParameter(request, PARAM_DATA_KIND);
+//        logger.info("{} : Start handleRequest({}=\'{}\')", requestId, PARAM_DATA_KIND, param_data_kind);
+//        final DataKindEnum data_kind = DataKindEnum.getEnum(param_data_kind);
+//        if (data_kind == null) {
+//            logger.error("{} : End. Unknown {} = \'{}\' parameter value. Skip processing", requestId, PARAM_DATA_KIND, param_data_kind);
+//            response.setStatus(500);
+//            response.getWriter().println(String.format("Параметер %s имеет неизвестное значение \'%s\'", PARAM_DATA_KIND, param_data_kind));
+//            return;
+//        }
+//        processPlanCheckCancel(requestId, data_kind, request, response);
         logger.info("{} : End.", requestId);
     }
 
@@ -60,7 +56,7 @@ public class StopErpUpdateService {
             final HttpServletRequest request,
             final HttpServletResponse response
     ) throws IOException {
-        final Integer param_plan_id = getIntegerParameter(request, PARAM_PLAN_ID);
+        /* final Integer param_plan_id = getIntegerParameter(request, PARAM_PLAN_ID);
         logger.info("{} : is processPlanCheckCancel param ({}={})", requestId, PARAM_PLAN_ID, param_plan_id);
         if (param_plan_id != null) {
             final Plan plan = planViewDao.getById(param_plan_id);
@@ -70,7 +66,7 @@ public class StopErpUpdateService {
                 response.setStatus(500);
                 return;
             }
-            /*
+
             final List<PlanErp> activeByPlan = checkErpDao.getActiveByPlan(plan, dataKind);
             if (activeByPlan.isEmpty()) {
                 logger.warn("{} : End. No active plan found ", requestId);
@@ -82,7 +78,7 @@ public class StopErpUpdateService {
                 checkErpDao.cancel(planErp);
                 logger.info("{} : : Canceled {}", requestId, planErp);
             }
-            */
+
             response.getWriter().print("Сессия завершена по запросу пользователя");
             response.setStatus(200);
         } else {
@@ -90,6 +86,7 @@ public class StopErpUpdateService {
             response.getWriter().print("Не указан идентифкатор плана проверки для отмены первичной выгрузки");
             response.setStatus(500);
         }
+        */
     }
 
     private String getStringParameter(final HttpServletRequest request, final String parameterName) {

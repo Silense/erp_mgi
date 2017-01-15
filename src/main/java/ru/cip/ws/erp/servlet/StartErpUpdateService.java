@@ -1,7 +1,6 @@
 package ru.cip.ws.erp.servlet;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.cip.ws.erp.business.MessageProcessor;
 import ru.cip.ws.erp.business.TestMessageProcessor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static ru.cip.ws.erp.servlet.ParameterNames.*;
 
 /**
  * Author: Upatov Egor <br>
@@ -56,7 +51,7 @@ public class StartErpUpdateService {
     @RequestMapping(params = {"DATA_KIND=UPLAN_UNREGULAR_294_INITIALIZATION"})
     @ResponseBody
     public String processUplanUnRegular294Initialization(
-            @RequestParam(value = PARAM_TEST, required = false) String paramTest,
+            @RequestParam(value = "TEST", required = false) String paramTest,
             @RequestParam(value = "SEVERAL_CHECKS_FROM") Integer fromId,
             @RequestParam(value = "SEVERAL_CHECKS_TO") Integer toId
     ) throws IOException {
@@ -78,7 +73,7 @@ public class StartErpUpdateService {
     @RequestMapping(params = {"DATA_KIND=UPLAN_UNREGULAR_294_CORRECTION"})
     @ResponseBody
     public String processUplanUnRegular294Correction(
-            @RequestParam(value = PARAM_TEST, required = false) String paramTest,
+            @RequestParam(value = "TEST", required = false) String paramTest,
             @RequestParam(value = "SEVERAL_CHECKS_FROM") Integer fromId,
             @RequestParam(value = "SEVERAL_CHECKS_TO") Integer toId
     ) throws IOException {
@@ -101,7 +96,7 @@ public class StartErpUpdateService {
     @RequestMapping(params = {"DATA_KIND=UPLAN_RESULT_294_INITIALIZATION"})
     @ResponseBody
     public String processUplanResult294Initialization(
-            @RequestParam(value = PARAM_TEST, required = false) String paramTest,
+            @RequestParam(value = "TEST", required = false) String paramTest,
             @RequestParam(value = "SEVERAL_CHECKS_FROM") Integer fromId,
             @RequestParam(value = "SEVERAL_CHECKS_TO") Integer toId
     ) throws IOException {
@@ -126,8 +121,8 @@ public class StartErpUpdateService {
     @RequestMapping(params = {"DATA_KIND=PLAN_REGULAR_294_INITIALIZATION"}, produces = {MimeTypeUtils.TEXT_PLAIN_VALUE})
     @ResponseBody
     public String processPlanRegular294Initialization(
-            @RequestParam(value = PARAM_TEST, required = false) String paramTest,
-            @RequestParam(value = PARAM_PLAN_ID, required = false) Integer paramPlanId
+            @RequestParam(value = "TEST", required = false) String paramTest,
+            @RequestParam(value = "PLAN_ID", required = false) Integer paramPlanId
 
     ) throws IOException {
         final long requestNumber = counter.incrementAndGet();
@@ -232,80 +227,80 @@ public class StartErpUpdateService {
 //        log.info("{} : End.", uuid);
 //    }
 
-    private void processPlanResult294Correction(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
-            throws IOException {
-        final Integer planId = getIntegerParameter(request, PARAM_PLAN_ID);
-        final Integer year = getIntegerParameter(request, PARAM_YEAR);
-        log.info("{} : params ({}='{}', {}='{}', {}='{}')", uuid, PARAM_PLAN_ID, planId, PARAM_YEAR, year);
-        if (planId == null) {
-            log.warn("{} : End. Not '{}' set", uuid, PARAM_PLAN_ID);
-            response.getWriter().print("Не указан идентифкатор плана проверки");
-            response.setStatus(500);
-            return;
-        }
-       // messageProcessor.processPlanResult294Correction(uuid, response, planId, year);
-    }
-
-    private void processPlanResult294Initialization(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
-            throws IOException {
-        final Integer planId = getIntegerParameter(request, PARAM_PLAN_ID);
-        final Integer year = getIntegerParameter(request, PARAM_YEAR);
-        log.info("{} : params ({}='{}', {}='{}', {}='{}')", uuid, PARAM_PLAN_ID, planId, PARAM_YEAR, year);
-        if (planId == null) {
-            log.warn("{} : End. Not '{}' set", uuid, PARAM_PLAN_ID);
-            response.getWriter().print("Не указан идентифкатор плана проверки");
-            response.setStatus(500);
-            return;
-        }
-        //messageProcessor.processPlanResult294Initialization(uuid, response, planId, year);
-    }
-
-    private void processPlanRegular294Correction(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
-            throws IOException {
-        final Integer planId = getIntegerParameter(request, PARAM_PLAN_ID);
-        final Integer year = getIntegerParameter(request, PARAM_YEAR);
-        final String acceptedName = getStringParameter(request, PARAM_ACCEPTED_NAME);
-        log.info("{} : params ({}='{}', {}='{}', {}='{}')", uuid, PARAM_PLAN_ID, planId, PARAM_YEAR, year, PARAM_ACCEPTED_NAME, acceptedName);
-        if (planId == null) {
-            log.warn("{} : End. Not '{}' set", uuid, PARAM_PLAN_ID);
-            response.getWriter().print("Не указан идентифкатор плана проверки");
-            response.setStatus(500);
-            return;
-        }
-       // messageProcessor.processPlanRegular294Correction(uuid, response, planId, year, acceptedName);
-    }
-
-
-    private void processPlanRegular294Initialization(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
-            throws IOException {
-        final Integer planId = getIntegerParameter(request, PARAM_PLAN_ID);
-        final Integer year = getIntegerParameter(request, PARAM_YEAR);
-        final String acceptedName = getStringParameter(request, PARAM_ACCEPTED_NAME);
-        log.info("{} : params ({}='{}', {}='{}', {}='{}')", uuid, PARAM_PLAN_ID, planId, PARAM_YEAR, year, PARAM_ACCEPTED_NAME, acceptedName);
-        if (planId == null) {
-            log.warn("{} : End. Not '{}' set", uuid, PARAM_PLAN_ID);
-            response.getWriter().print("Не указан идентифкатор плана проверки");
-            response.setStatus(500);
-            return;
-        }
-        //messageProcessor.processPlanRegular294Initialization(uuid, response, planId, year, acceptedName);
-    }
-
-
-    private String getStringParameter(final HttpServletRequest request, final String parameterName) {
-        return request.getParameter(parameterName);
-    }
-
-    private Integer getIntegerParameter(final HttpServletRequest request, final String parameterName) {
-        final String parameterValueStr = request.getParameter(parameterName);
-        if (StringUtils.isNotEmpty(parameterValueStr)) {
-            try {
-                return Integer.valueOf(parameterValueStr);
-            } catch (NumberFormatException e) {
-                log.warn("Cannot cast parameter \'{}\' with value \'{}\' to integer", parameterName, parameterValueStr);
-            }
-        }
-        return null;
-    }
+//    private void processPlanResult294Correction(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
+//            throws IOException {
+//        final Integer planId = getIntegerParameter(request, PARAM_PLAN_ID);
+//        final Integer year = getIntegerParameter(request, PARAM_YEAR);
+//        log.info("{} : params ({}='{}', {}='{}', {}='{}')", uuid, PARAM_PLAN_ID, planId, PARAM_YEAR, year);
+//        if (planId == null) {
+//            log.warn("{} : End. Not '{}' set", uuid, PARAM_PLAN_ID);
+//            response.getWriter().print("Не указан идентифкатор плана проверки");
+//            response.setStatus(500);
+//            return;
+//        }
+//       // messageProcessor.processPlanResult294Correction(uuid, response, planId, year);
+//    }
+//
+//    private void processPlanResult294Initialization(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
+//            throws IOException {
+//        final Integer planId = getIntegerParameter(request, PARAM_PLAN_ID);
+//        final Integer year = getIntegerParameter(request, PARAM_YEAR);
+//        log.info("{} : params ({}='{}', {}='{}', {}='{}')", uuid, PARAM_PLAN_ID, planId, PARAM_YEAR, year);
+//        if (planId == null) {
+//            log.warn("{} : End. Not '{}' set", uuid, PARAM_PLAN_ID);
+//            response.getWriter().print("Не указан идентифкатор плана проверки");
+//            response.setStatus(500);
+//            return;
+//        }
+//        //messageProcessor.processPlanResult294Initialization(uuid, response, planId, year);
+//    }
+//
+//    private void processPlanRegular294Correction(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
+//            throws IOException {
+//        final Integer planId = getIntegerParameter(request, PARAM_PLAN_ID);
+//        final Integer year = getIntegerParameter(request, PARAM_YEAR);
+//        final String acceptedName = getStringParameter(request, PARAM_ACCEPTED_NAME);
+//        log.info("{} : params ({}='{}', {}='{}', {}='{}')", uuid, PARAM_PLAN_ID, planId, PARAM_YEAR, year, PARAM_ACCEPTED_NAME, acceptedName);
+//        if (planId == null) {
+//            log.warn("{} : End. Not '{}' set", uuid, PARAM_PLAN_ID);
+//            response.getWriter().print("Не указан идентифкатор плана проверки");
+//            response.setStatus(500);
+//            return;
+//        }
+//       // messageProcessor.processPlanRegular294Correction(uuid, response, planId, year, acceptedName);
+//    }
+//
+//
+//    private void processPlanRegular294Initialization(final HttpServletRequest request, final HttpServletResponse response, final String uuid)
+//            throws IOException {
+//        final Integer planId = getIntegerParameter(request, PARAM_PLAN_ID);
+//        final Integer year = getIntegerParameter(request, PARAM_YEAR);
+//        final String acceptedName = getStringParameter(request, PARAM_ACCEPTED_NAME);
+//        log.info("{} : params ({}='{}', {}='{}', {}='{}')", uuid, PARAM_PLAN_ID, planId, PARAM_YEAR, year, PARAM_ACCEPTED_NAME, acceptedName);
+//        if (planId == null) {
+//            log.warn("{} : End. Not '{}' set", uuid, PARAM_PLAN_ID);
+//            response.getWriter().print("Не указан идентифкатор плана проверки");
+//            response.setStatus(500);
+//            return;
+//        }
+//        //messageProcessor.processPlanRegular294Initialization(uuid, response, planId, year, acceptedName);
+//    }
+//
+//
+//    private String getStringParameter(final HttpServletRequest request, final String parameterName) {
+//        return request.getParameter(parameterName);
+//    }
+//
+//    private Integer getIntegerParameter(final HttpServletRequest request, final String parameterName) {
+//        final String parameterValueStr = request.getParameter(parameterName);
+//        if (StringUtils.isNotEmpty(parameterValueStr)) {
+//            try {
+//                return Integer.valueOf(parameterValueStr);
+//            } catch (NumberFormatException e) {
+//                log.warn("Cannot cast parameter \'{}\' with value \'{}\' to integer", parameterName, parameterValueStr);
+//            }
+//        }
+//        return null;
+//    }
 
 }

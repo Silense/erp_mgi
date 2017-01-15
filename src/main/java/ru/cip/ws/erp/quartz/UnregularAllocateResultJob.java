@@ -17,7 +17,7 @@ import ru.cip.ws.erp.business.AllocationService;
  * Description:
  */
 @Component
-public class UnregularAllocationResultJob extends QuartzJobBean{
+public class UnregularAllocateResultJob extends QuartzJobBean{
     private static final Logger log = LoggerFactory.getLogger("JOB");
 
     @Autowired

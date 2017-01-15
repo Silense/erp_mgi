@@ -39,10 +39,10 @@ public class ConfigurationHolder {
     /**
      * Настройки расписаний выгрузки внеплановых проверок
      */
-    public static final String CFG_KEY_UNREGULAR_SCHEDULE = "unregular.schedule";
-    public static final String CFG_KEY_UNREGULAR_SCHEDULE_LAST_FIRE_DATE = "unregular.schedule.lastFireDate";
-    public static final String CFG_KEY_UNREGULAR_RESULT_SCHEDULE = "unregularResult.schedule";
-    public static final String CFG_KEY_UNREGULAR_RESULT_SCHEDULE_LAST_FIRE_DATE = "unregularResult.schedule.lastFireDate";
+    public static final String CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE = "schedule.unregular.allocate";
+    public static final String CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE = "schedule.unregular.allocate.lastFireDate";
+    public static final String CFG_KEY_SCHEDULE_UNREGULAR_REALLOCATE = "shedule.unregular.reAllocate";
+    public static final String CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATERESULT = "shedule.unregular.allocateResult";
 
     /**
      * Мейлер

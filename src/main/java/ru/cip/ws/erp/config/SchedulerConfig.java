@@ -17,11 +17,14 @@ import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import ru.cip.ws.erp.ConfigurationHolder;
 import ru.cip.ws.erp.quartz.AutowiringSpringBeanJobFactory;
-import ru.cip.ws.erp.quartz.UnregularAllocationJob;
-import ru.cip.ws.erp.quartz.UnregularAllocationResultJob;
+import ru.cip.ws.erp.quartz.UnregularAllocateJob;
+import ru.cip.ws.erp.quartz.UnregularAllocateResultJob;
+import ru.cip.ws.erp.quartz.UnregularReAllocateJob;
 
 import java.text.ParseException;
 import java.util.Properties;
+
+import static ru.cip.ws.erp.ConfigurationHolder.*;
 
 /**
  * Author: Upatov Egor <br>
@@ -33,70 +36,85 @@ import java.util.Properties;
 public class SchedulerConfig {
     private static final Logger log = LoggerFactory.getLogger("CONFIG");
 
-
-
-    @Bean(name="unregularAllocationJobDetail")
-    public JobDetail unregularAllocationJob(){
+    @Bean(name="unregularAllocateJobDetail")
+    public JobDetail unregularAllocateJob(){
         final JobDetailImpl result = new JobDetailImpl();
-        result.setJobClass(UnregularAllocationJob.class);
-        result.setKey(JobKey.jobKey("allocationJob", "unregular"));
+        result.setJobClass(UnregularAllocateJob.class);
+        result.setKey(JobKey.jobKey("allocate", "unregular"));
         log.info("Create JobDetail[{}]", result.getKey());
         return result;
     }
 
-    @Bean(name="unregularAllocationResultJobDetail")
-    public JobDetail unregularAllocationResultJob(){
+    @Bean(name="unregularReAllocateJobDetail")
+    public JobDetail unregularReAllocateJob(){
         final JobDetailImpl result = new JobDetailImpl();
-        result.setJobClass(UnregularAllocationResultJob.class);
-        result.setKey(JobKey.jobKey("allocationResultJob", "unregular"));
+        result.setJobClass(UnregularReAllocateJob.class);
+        result.setKey(JobKey.jobKey("reAllocate", "unregular"));
+        log.info("Create JobDetail[{}]", result.getKey());
+        return result;
+    }
+
+    @Bean(name="unregularAllocateResultJobDetail")
+    public JobDetail unregularAllocateResultJob(){
+        final JobDetailImpl result = new JobDetailImpl();
+        result.setJobClass(UnregularAllocateResultJob.class);
+        result.setKey(JobKey.jobKey("allocateResult", "unregular"));
         log.info("Create JobDetail[{}]", result.getKey());
         return result;
     }
 
 
-    @Bean(name="unregularAllocationResultTrigger")
-    public CronTriggerFactoryBean unregularAllocationResultTrigger(
+    @Bean(name="unregularAllocateResultTrigger")
+    public CronTriggerFactoryBean unregularAllocateResultTrigger(
             final ConfigurationHolder cfg,
-            @Qualifier("unregularAllocationResultJobDetail") final JobDetail jobDetail
+            @Qualifier("unregularAllocateResultJobDetail") final JobDetail jobDetail
     ) throws ParseException {
-        final TriggerKey triggerKey = TriggerKey.triggerKey("allocationResultTrigger", "unregular");
+        final TriggerKey triggerKey = TriggerKey.triggerKey(jobDetail.getKey().getName(), jobDetail.getKey().getGroup());
+        final String cronString = cfg.get(CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATERESULT);
         final CronTriggerFactoryBean result = new CronTriggerFactoryBean();
         result.setJobDetail(jobDetail);
         result.setName(triggerKey.getName());
         result.setGroup(triggerKey.getGroup());
-        result.setCronExpression(cfg.get(ConfigurationHolder.CFG_KEY_UNREGULAR_RESULT_SCHEDULE));
-        log.info("Create Trigger[{}] with cron='{}' for Job[{}]",
-                triggerKey,
-                cfg.get(ConfigurationHolder.CFG_KEY_UNREGULAR_RESULT_SCHEDULE),
-                jobDetail.getKey()
-        );
+        result.setCronExpression(cronString);
+        log.info("Create Trigger[{}] with cron='{}' for Job[{}]", triggerKey, cronString, jobDetail.getKey());
         return result;
     }
 
-
-
-    @Bean(name="unregularAllocationTrigger")
-    public CronTriggerFactoryBean unregularAllocationTrigger(
+    @Bean(name="unregularAllocateTrigger")
+    public CronTriggerFactoryBean unregularAllocateTrigger(
             final ConfigurationHolder cfg,
-            @Qualifier("unregularAllocationJobDetail") final JobDetail jobDetail
+            @Qualifier("unregularAllocateJobDetail") final JobDetail jobDetail
     ) throws ParseException {
-        final TriggerKey triggerKey = TriggerKey.triggerKey("allocationTrigger", "unregular");
+        final TriggerKey triggerKey = TriggerKey.triggerKey(jobDetail.getKey().getName(), jobDetail.getKey().getGroup());
+        final String cronString = cfg.get(CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE);
         final CronTriggerFactoryBean result = new CronTriggerFactoryBean();
         result.setJobDetail(jobDetail);
         result.setName(triggerKey.getName());
         result.setGroup(triggerKey.getGroup());
-        result.setCronExpression(cfg.get(ConfigurationHolder.CFG_KEY_UNREGULAR_SCHEDULE));
-        log.info("Create Trigger[{}] with cron='{}' for Job[{}]",
-                triggerKey,
-                cfg.get(ConfigurationHolder.CFG_KEY_UNREGULAR_SCHEDULE),
-                jobDetail.getKey()
-        );
+        result.setCronExpression(cronString);
+        log.info("Create Trigger[{}] with cron='{}' for Job[{}]", triggerKey, cronString, jobDetail.getKey());
+        return result;
+    }
+
+    @Bean(name="unregularReAllocateTrigger")
+    public CronTriggerFactoryBean unregularReAllocateTrigger(
+            final ConfigurationHolder cfg,
+            @Qualifier("unregularReAllocateJobDetail") final JobDetail jobDetail
+    ) throws ParseException {
+        final TriggerKey triggerKey = TriggerKey.triggerKey(jobDetail.getKey().getName(), jobDetail.getKey().getGroup());
+        final String cronString = cfg.get(CFG_KEY_SCHEDULE_UNREGULAR_REALLOCATE);
+        final CronTriggerFactoryBean result = new CronTriggerFactoryBean();
+        result.setJobDetail(jobDetail);
+        result.setName(triggerKey.getName());
+        result.setGroup(triggerKey.getGroup());
+        result.setCronExpression(cronString);
+        log.info("Create Trigger[{}] with cron='{}' for Job[{}]", triggerKey, cronString, jobDetail.getKey());
         return result;
     }
 
     @Bean(name="autowiringJobFactory")
     public JobFactory autowiringSpringBeanJobFactory(final ApplicationContext context){
-        AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
+        final AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
         jobFactory.setApplicationContext(context);
         return jobFactory;
     }
@@ -104,8 +122,7 @@ public class SchedulerConfig {
 
     @Bean
     public SchedulerFactoryBean schedulerFactoryBean(
-            @Qualifier("unregularAllocationTrigger") final Trigger unregularAllocationTrigger,
-            @Qualifier("unregularAllocationResultTrigger") final Trigger unregularResultAllocationTrigger,
+            final Trigger[] triggers,
             final JobFactory jobFactory
     ) {
         final SchedulerFactoryBean result = new SchedulerFactoryBean();
@@ -113,8 +130,8 @@ public class SchedulerConfig {
         final Properties props  =  new Properties();
         props.setProperty(StdSchedulerFactory.PROP_SCHED_SKIP_UPDATE_CHECK,"true");
         result.setQuartzProperties(props);
-        result.setTriggers(unregularAllocationTrigger, unregularResultAllocationTrigger);
-        log.info("Create ScheduleFactory[@{}]", Integer.toHexString(result.hashCode()));
+        result.setTriggers(triggers);
+        log.info("Create ScheduleFactory[@{}] with Triggers: {}", Integer.toHexString(result.hashCode()), triggers);
         return result;
     }
 

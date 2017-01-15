@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
-import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_UNREGULAR_SCHEDULE;
+import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATERESULT;
 
 /**
  * Author: Upatov Egor <br>
@@ -25,8 +25,8 @@ import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_UNREGULAR_SCHEDULE;
  * Description: Сервис для настройки выгрузок внеплановых проверок по расписанию
  */
 @RestController
-@RequestMapping("/scheduleUnregular")
-public class ScheduleUnregular {
+@RequestMapping("/schedule/unregular.allocateResult")
+public class ScheduleUnregularAllocateResultRest {
     private static final Logger log = LoggerFactory.getLogger("SCHEDULE");
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -34,11 +34,11 @@ public class ScheduleUnregular {
     private Scheduler scheduler;
 
     @Autowired
-    @Qualifier("unregularAllocationTrigger")
+    @Qualifier("unregularAllocateResultTrigger")
     private Trigger trigger;
 
     @Autowired
-    @Qualifier("unregularAllocationJobDetail")
+    @Qualifier("unregularAllocateResultJobDetail")
     private JobDetail job;
 
     @Autowired
@@ -54,7 +54,8 @@ public class ScheduleUnregular {
             @RequestParam(value = "month", required = false) final String month,
             @RequestParam(value = "year", required = false) final String year
     ) {
-        log.info("Start update UnregularSchedule with [year='{}' month='{}' day='{}' hour='{}' minute='{}' second='{}']",
+        log.info("Start update [{}] with [year='{}' month='{}' day='{}' hour='{}' minute='{}' second='{}']",
+                job.getKey(),
                 year,
                 month,
                 day,
@@ -95,7 +96,7 @@ public class ScheduleUnregular {
             cronExpression.append("*");
         }
         final String result = setScheduleExpression(cronExpression.toString());
-        log.info("End update UnregularSchedule. Result={} ", result);
+        log.info("End update [{}]. Result={} ", job.getKey(), result);
         return ResponseEntity.ok(result);
     }
 
@@ -103,9 +104,9 @@ public class ScheduleUnregular {
     public ResponseEntity<String> updateSchedule(
             @RequestParam("cron") final String cronExpression
     ) {
-        log.info("Start update UnregularSchedule with ['{}']", cronExpression);
+        log.info("Start update [{}] with cron='{}'", job.getKey(), cronExpression);
         final String result = setScheduleExpression(cronExpression);
-        log.info("End update UnregularSchedule. Result={} ", result);
+        log.info("End update [{}]. Result={} ", job.getKey(), result);
         return ResponseEntity.ok(result);
     }
 
@@ -129,18 +130,18 @@ public class ScheduleUnregular {
                 scheduler.start();
             }
             scheduler.rescheduleJob(triggerKey, newTrigger);
-            cfg.set(CFG_KEY_UNREGULAR_SCHEDULE, cronExpression);
+            cfg.set(CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATERESULT, cronExpression);
 
             return "Настройки расписания отправки внеплановых проверок изменены на '" + cronExpression + "'";
         } catch (SchedulerException e) {
-            log.error("Exception while rescheduling Trigger for {}", triggerKey, e);
+            log.error("Exception while rescheduling Trigger[{}]", triggerKey, e);
             return String.format("Ошибка при замене расписания для %s: %s", triggerKey.toString(), e.getMessage());
         }
     }
 
     @RequestMapping(value = "/status", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> status() throws SchedulerException {
-        log.info("Start status of UnregularSchedule");
+        log.info("Start status [{}]", job.getKey());
         final StringBuilder result = new StringBuilder();
         if (scheduler.isStarted()) {
             result.append("Планировщик запущен <br/>");
@@ -152,51 +153,49 @@ public class ScheduleUnregular {
         }
         final JobDetail jobDetail = scheduler.getJobDetail(job.getKey());
         if (jobDetail != null) {
-            result.append("Искомое задание найдено JobDetail[").append(job.getKey()).append("]<br/>");
+            result.append("Искомое задание найдено JobDetail[").append(job.getKey())
+                    .append("]<br/>");
             final List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(job.getKey());
             result.append("Задание имеет ").append(triggersOfJob.size()).append(" триггер(а/ов) для запуска<br/>");
             for (Trigger item : triggersOfJob) {
                 final Trigger.TriggerState itemState = scheduler.getTriggerState(item.getKey());
                 result.append(item.getClass().getSimpleName())
                         .append("[").append(item.getKey()).append("]: состояние=").append(itemState)
-                        .append(", предыдущий запуск='").append(item.getPreviousFireTime() == null ? "НЕТ ДАТЫ ПРЕДЫДУЩЕГО ЗАПУСКА" : sdf.format(item.getPreviousFireTime()))
-                        .append("', следующий запуск='").append(item.getNextFireTime() == null ? "НЕТ ДАТЫ СЛЕДУЮЩЕГО ЗАПУСКА" : sdf.format(item.getNextFireTime()))
+                        .append(", предыдущий запуск='").append(item.getPreviousFireTime() == null ? "НЕТ" : sdf.format(item.getPreviousFireTime()))
+                        .append("', следующий запуск='").append(item.getNextFireTime() == null ? "НЕТ" : sdf.format(item.getNextFireTime()))
                         .append("'<br/>");
             }
 
         } else {
             result.append("Искомое задание НЕ найдено JobDetail[").append(job.getKey()).append("]<br/>");
         }
-        log.info("End status UnregularSchedule. Result={} ", result);
+        log.info("End status [{}]. Result={} ", job.getKey(), result);
         return ResponseEntity.ok(result.toString());
     }
 
     @RequestMapping(value = "/suspend", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> suspend() throws SchedulerException {
-        log.info("Start suspend of UnregularSchedule");
+        log.info("Start suspend [{}]", job.getKey());
         scheduler.pauseJob(job.getKey());
         final Trigger.TriggerState triggerState = scheduler.getTriggerState(trigger.getKey());
-        log.info("End suspend UnregularSchedule. Result={} ", triggerState);
+        log.info("End suspend [{}]. Result={} ", job.getKey(), triggerState);
         return ResponseEntity.ok(triggerState.toString());
     }
 
     @RequestMapping(value = "/resume", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> resume() throws SchedulerException {
-        log.info("Start resume of UnregularSchedule");
+        log.info("Start resume [{}]", job.getKey());
         scheduler.resumeJob(job.getKey());
         final Trigger.TriggerState triggerState = scheduler.getTriggerState(trigger.getKey());
-        log.info("End resume UnregularSchedule. Result={} ", triggerState);
+        log.info("End resume [{}]. Result={} ", job.getKey(), triggerState);
         return ResponseEntity.ok(triggerState.toString());
     }
 
-
     @RequestMapping(value = "/fire", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> fire() throws SchedulerException {
-        log.info("Start fire of UnregularSchedule");
+        log.info("Start fire [{}]", job.getKey());
         scheduler.triggerJob(job.getKey());
-        log.info("End fire UnregularSchedule. Result={} ", "OK");
+        log.info("End fire [{}]. Result={} ", job.getKey(), "OK");
         return ResponseEntity.ok("OK");
     }
-
-
 }
