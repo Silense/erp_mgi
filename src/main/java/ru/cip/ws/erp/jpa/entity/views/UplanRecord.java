@@ -1,9 +1,6 @@
 package ru.cip.ws.erp.jpa.entity.views;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -42,6 +39,7 @@ public class UplanRecord {
      **/
     @Column(name = "ADR_SEC_II")
     private String ADR_SEC_II;
+
     /**
      * Идентификатор поставщика данных
      **/
@@ -49,9 +47,29 @@ public class UplanRecord {
     @Column(name = "CORRELATION_ID")
     private BigInteger CORRELATION_ID;
 
+    /**
+     * Внеплановая проверка к которой привязан адрес
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "CHECK_ID")
+    private Uplan plan;
+
+    /**
+     * ID адреса проведения проверки TODO
+     **/
+    @Column(name = "CHECK_ADDRESS_ID")
+    private BigInteger CHECK_ADDRESS_ID;
+
+    /**
+     * ID распоряжения TODO
+     **/
+    @Column(name = "INSTRUCTION_ID")
+    private BigInteger INSTRUCTION_ID;
+
     //TODO
-    @javax.persistence.Transient
+    @Transient
     private Date LAST_VIOLATION_ID;
+
 
     public UplanRecord() {
     }
@@ -104,25 +122,50 @@ public class UplanRecord {
         this.ORG_NAME = ORG_NAME;
     }
 
-    public Date getLAST_VIOLATION_ID() {
-        return LAST_VIOLATION_ID;
+    public Uplan getPlan() {
+        return plan;
     }
 
-    public void setLAST_VIOLATION_ID(final Date LAST_VIOLATION_ID) {
-        this.LAST_VIOLATION_ID = LAST_VIOLATION_ID;
+    public void setPlan(Uplan plan) {
+        this.plan = plan;
+    }
+
+    public BigInteger getCHECK_ADDRESS_ID() {
+        return CHECK_ADDRESS_ID;
+    }
+
+    public void setCHECK_ADDRESS_ID(BigInteger CHECK_ADDRESS_ID) {
+        this.CHECK_ADDRESS_ID = CHECK_ADDRESS_ID;
+    }
+
+    public BigInteger getINSTRUCTION_ID() {
+        return INSTRUCTION_ID;
+    }
+
+    public void setINSTRUCTION_ID(BigInteger INSTRUCTION_ID) {
+        this.INSTRUCTION_ID = INSTRUCTION_ID;
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UplanAddress{");
-        sb.append("ADR_SEC_I='").append(ADR_SEC_I).append('\'');
+        final StringBuilder sb = new StringBuilder("UplanAddress[").append(CORRELATION_ID);
+        sb.append("]{ CHECK_ID=").append(plan != null ? plan.getCHECK_ID() : null);
+        sb.append(", ADR_SEC_I='").append(ADR_SEC_I).append('\'');
         sb.append(", ORG_NAME='").append(ORG_NAME).append('\'');
         sb.append(", INN='").append(INN).append('\'');
         sb.append(", OGRN='").append(OGRN).append('\'');
         sb.append(", ADR_SEC_II='").append(ADR_SEC_II).append('\'');
-        sb.append(", CORRELATION_ID=").append(CORRELATION_ID);
-        sb.append(", LAST_VIOLATION_ID=").append(LAST_VIOLATION_ID);
+        sb.append(", CHECK_ADDRESS_ID=").append(CHECK_ADDRESS_ID);
+        sb.append(", INSTRUCTION_ID=").append(INSTRUCTION_ID);
         sb.append('}');
         return sb.toString();
+    }
+
+    public Date getLAST_VIOLATION_ID() {
+        return LAST_VIOLATION_ID;
+    }
+
+    public void setLAST_VIOLATION_ID(Date LAST_VIOLATION_ID) {
+        this.LAST_VIOLATION_ID = LAST_VIOLATION_ID;
     }
 }

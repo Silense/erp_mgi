@@ -1,11 +1,9 @@
 package ru.cip.ws.erp.jpa.entity.views;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * Author: Upatov Egor <br>
@@ -169,6 +167,10 @@ public class Uplan {
     @Id
     @Column(name = "CHECK_ID")
     private BigInteger CHECK_ID;
+
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "plan")
+    private Set<UplanRecord> records;
 
 
     public Uplan() {
@@ -412,6 +414,14 @@ public class Uplan {
 
     public void setYEAR(final Integer YEAR) {
         this.YEAR = YEAR;
+    }
+
+    public Set<UplanRecord> getRecords() {
+        return records;
+    }
+
+    public void setRecords(Set<UplanRecord> records) {
+        this.records = records;
     }
 
     @Override

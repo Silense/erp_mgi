@@ -106,67 +106,73 @@ public class AllocationService {
             final ExpSession session,
             final AllocateUnregularParameter parameter
     ) {
+
         final String logTag = "#" + requestNumber + "-" + parameter.getCheckId();
         final String actionName = "UNREGULAR_ALLOCATION";
         log.info("{} : start {}", logTag, actionName);
         Tuple<CheckErp, Set<CheckRecordErp>> checkErpTuple = checkErpDao.getCheckErp(parameter.getCheck().getCHECK_ID(), "UNREGULAR");
         final boolean needInitialization;
         final String uuid = UUID.randomUUID().toString();
-        if (checkErpTuple == null) {
-            log.debug("{} : UUID assign [{}]. Not allocated before", logTag, uuid);
-            checkErpTuple = checkErpDao.createErp(parameter.getCheck(), parameter.getRecords(), uuid);
-            log.debug("{} : Created {}", logTag, checkErpTuple.left);
-            for (CheckRecordErp recordErp : checkErpTuple.right) {
-                log.debug("{} : Created {}", logTag, recordErp);
-            }
-            needInitialization = true;
-        } else {
-            final String stateCode = checkErpTuple.left.getState().getCode();
-            if ("ERROR_ALLOCATION".equalsIgnoreCase(stateCode)) {
-                log.debug("{} : UUID assign [{}]. ERROR_ALLOCATION", logTag, uuid);
-                syncRecords(logTag, checkErpTuple.left, checkErpTuple.right, parameter.getRecords());
-                checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_ALLOCATION");
+        try {
+            if (checkErpTuple == null) {
+                log.debug("{} : UUID assign [{}]. Not allocated before", logTag, uuid);
+                checkErpTuple = checkErpDao.createErp(parameter.getCheck(), parameter.getRecords(), uuid);
+                log.debug("{} : Created {}", logTag, checkErpTuple.left);
+                for (CheckRecordErp recordErp : checkErpTuple.right) {
+                    log.debug("{} : Created {}", logTag, recordErp);
+                }
                 needInitialization = true;
-            } else if ("PARTIAL_ALLOCATION".equalsIgnoreCase(stateCode)) {
-                log.debug("{} : UUID assign [{}]. PARTIAL_ALLOCATION", logTag, uuid);
-                syncRecords(logTag, checkErpTuple.left, checkErpTuple.right, parameter.getRecords());
-                checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_ALLOCATION");
-                needInitialization = false;
             } else {
-                final String result = "Check is not in available for allocation state [" + stateCode + "]";
-                log.warn("{} : end {}. Skipped cause '{}'", logTag, actionName, result);
-                return result;
+                final String stateCode = checkErpTuple.left.getState().getCode();
+                if ("ERROR_ALLOCATION".equalsIgnoreCase(stateCode)) {
+                    log.debug("{} : UUID assign [{}]. ERROR_ALLOCATION", logTag, uuid);
+                    syncRecords(logTag, checkErpTuple.left, checkErpTuple.right, parameter.getRecords());
+                    checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_ALLOCATION");
+                    needInitialization = true;
+                } else if ("PARTIAL_ALLOCATION".equalsIgnoreCase(stateCode)) {
+                    log.debug("{} : UUID assign [{}]. PARTIAL_ALLOCATION", logTag, uuid);
+                    syncRecords(logTag, checkErpTuple.left, checkErpTuple.right, parameter.getRecords());
+                    checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_ALLOCATION");
+                    needInitialization = false;
+                } else {
+                    final String result = "Check is not in available for allocation state [" + stateCode + "]";
+                    log.warn("{} : end {}. Skipped cause '{}'", logTag, actionName, result);
+                    return result;
+                }
             }
+            final String result;
+            if (needInitialization) {
+                result = messageService.sendUplanUnregular294Initialization(
+                        logTag,
+                        session,
+                        uuid,
+                        mailer,
+                        addressee,
+                        parameter.getKO_NAME(),
+                        parameter.getCheck(),
+                        parameter.getRecords(),
+                        checkErpTuple.left
+                );
+            } else {
+                result = messageService.sendUplanUnregular294Correction(
+                        logTag,
+                        session,
+                        uuid,
+                        mailer,
+                        addressee,
+                        parameter.getKO_NAME(),
+                        parameter.getCheck(),
+                        checkErpTuple.left,
+                        parameter.getRecords(),
+                        checkErpTuple.right
+                );
+            }
+            log.info("{} : end. Result = '{}'", requestNumber, result);
+            return result;
+        } catch (Exception e) {
+            log.error("{} : end with ERROR. Result = '{}'", requestNumber, e);
+            return "ERROR:" + e.getMessage();
         }
-        final String result;
-        if (needInitialization) {
-            result = messageService.sendUplanUnregular294Initialization(
-                    logTag,
-                    session,
-                    uuid,
-                    mailer,
-                    addressee,
-                    parameter.getKO_NAME(),
-                    parameter.getCheck(),
-                    parameter.getRecords(),
-                    checkErpTuple.left
-            );
-        } else {
-            result = messageService.sendUplanUnregular294Correction(
-                    logTag,
-                    session,
-                    uuid,
-                    mailer,
-                    addressee,
-                    parameter.getKO_NAME(),
-                    parameter.getCheck(),
-                    checkErpTuple.left,
-                    parameter.getRecords(),
-                    checkErpTuple.right
-            );
-        }
-        log.info("{} : end. Result = '{}'", requestNumber, result);
-        return result;
     }
 
     public Map<String, String> allocateUnregularResultBatch(
@@ -248,9 +254,9 @@ public class AllocationService {
     ) {
         for (Map.Entry<UplanAct, Set<UplanActViolation>> entry : violations.entrySet()) {
             for (Map.Entry<CheckRecordErp, Set<CheckViolationErp>> erpEntry : violationsErp.entrySet()) {
-               if(Objects.equals(entry.getKey().getRecordId(), erpEntry.getKey().getCorrelationId())){
-                   syncViolations(logTag, erpEntry.getKey(), erpEntry.getValue(), entry.getValue());
-               }
+                if (Objects.equals(entry.getKey().getRecordId(), erpEntry.getKey().getCorrelationId())) {
+                    syncViolations(logTag, erpEntry.getKey(), erpEntry.getValue(), entry.getValue());
+                }
             }
         }
     }

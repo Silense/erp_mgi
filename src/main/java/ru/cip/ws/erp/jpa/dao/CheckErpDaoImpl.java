@@ -35,6 +35,10 @@ public class CheckErpDaoImpl {
     @Autowired
     private LocalFileStorage fileStorage;
 
+    public boolean notExistsForCheck(Uplan uplan) {
+        return getCheckErp(uplan.getCHECK_ID(), "UNREGULAR") == null;
+    }
+
     public Tuple<CheckErp, Set<CheckRecordErp>> getCheckErp(final BigInteger checkId, final String erpCheckTypeCode) {
         final List<CheckErp> resultList = em.createQuery(
                 "SELECT a " +

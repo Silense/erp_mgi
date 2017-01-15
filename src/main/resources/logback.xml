@@ -77,6 +77,19 @@
         </rollingPolicy>
     </appender>
 
+    <!--Для QUARTZ-->
+    <appender name="APPENDER_QUARTZ" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${log.format}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logs.directory}/quartz/quartz.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>${logs.maxHistory}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+
     <!--LOGGERS-->
 
     <!-- Для сервлетов-->
@@ -84,19 +97,28 @@
         <appender-ref ref="APPENDER_SERVLET"/>
     </logger>
 
-    <!--Для DAO-->
+    <!-- Для DAO -->
     <logger name="ru.cip.ws.erp.jpa.dao" level="DEBUG" additivity="true">
         <appender-ref ref="APPENDER_DAO"/>
     </logger>
 
-    <!-- Для JMS-->
+    <!-- Для JMS -->
     <logger name="ru.cip.ws.erp.jms" level="DEBUG" additivity="true">
         <appender-ref ref="APPENDER_JMS"/>
     </logger>
 
-    <!-- Для конфигов-->
+    <logger name="org.springframework.jms.listener.DefaultMessageListenerContainer" level="INFO" additivity="false">
+        <appender-ref ref="APPENDER_JMS"/>
+    </logger>
+
+    <!-- Для конфигов -->
     <logger name="CONFIG" level="DEBUG" additivity="true">
         <appender-ref ref="APPENDER_CONFIG"/>
+    </logger>
+
+    <!-- Для расписаний -->
+    <logger name="org.quartz.core" level="DEBUG" additivity="false">
+        <appender-ref ref="APPENDER_QUARTZ"/>
     </logger>
 
     <!--Hibernate SQL LOGGER-->

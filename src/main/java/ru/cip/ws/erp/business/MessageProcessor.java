@@ -5,8 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.ConfigurationHolder;
+import ru.cip.ws.erp.dto.AllocateUnregularParameter;
+import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
 import ru.cip.ws.erp.jpa.dao.PlanActDaoImpl;
-import ru.cip.ws.erp.jpa.dao.PlanDaoImpl;
+import ru.cip.ws.erp.jpa.dao.UplanDaoImpl;
+import ru.cip.ws.erp.jpa.entity.views.Uplan;
+import ru.cip.ws.erp.jpa.entity.views.UplanRecord;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Author: Upatov Egor <br>
@@ -17,19 +24,50 @@ import ru.cip.ws.erp.jpa.dao.PlanDaoImpl;
 @Repository
 public class MessageProcessor {
 
-    private final static Logger logger = LoggerFactory.getLogger(MessageProcessor.class);
+    private final static Logger log = LoggerFactory.getLogger(MessageProcessor.class);
+    private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
-    private MessageService messageService;
+    private AllocationService allocationService;
 
     @Autowired
     private ConfigurationHolder cfg;
 
     @Autowired
-    private PlanDaoImpl planViewDao;
+    private UplanDaoImpl uplanDao;
 
     @Autowired
     private PlanActDaoImpl actDao;
+
+    public Map<String, String> unregularAllocate(final long logTag, final Date begDate, final Date endDate) {
+        final String dateInterval = "[" + sdf.format(begDate) + "]-[" + sdf.format(endDate) + "]";
+        log.info("#{} Start unregularAllocate by date interval: {}", logTag, dateInterval);
+        final Map<Uplan, Set<UplanRecord>> checks = uplanDao.getUnallocatedChecksByInterval(begDate, endDate);
+        if(checks.isEmpty()){
+            log.info("#{} Finish unregularAllocate. No checks found for allocation", logTag);
+            return Collections.emptyMap();
+        }
+        log.info("#{} Found {} checks for unregularAllocation", logTag, checks.size());
+        final MessageToERPModelType.Mailer mailer = cfg.getMailer();
+        final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
+        final Set<AllocateUnregularParameter> parameters = new HashSet<>(checks.size());
+        for (Map.Entry<Uplan, Set<UplanRecord>> entry : checks.entrySet()) {
+            log.debug("#{}: {}", logTag, entry.getKey());
+            final AllocateUnregularParameter allocationParameter = new AllocateUnregularParameter();
+            allocationParameter.setCheck(entry.getKey());
+            allocationParameter.setRecords(entry.getValue());
+            parameters.add(allocationParameter);
+        }
+        final Map<String, String> result = allocationService.allocateUnregularBatch(
+                logTag,
+                "Автоматическиое размещение внеплановых проверок за промежуток "+dateInterval,
+                mailer,
+                addressee,
+                parameters
+        );
+        log.info("#{} Finish unregularAllocate. Result = {}", logTag, result);
+        return result;
+    }
 
 
 

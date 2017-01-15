@@ -55,7 +55,7 @@ public enum TypeOfInspection {
 
     public static TypeOfInspection fromValue(String v) {
         for (TypeOfInspection c: TypeOfInspection.values()) {
-            if (c.value.equals(v)) {
+            if (c.value.equalsIgnoreCase(v)) {
                 return c;
             }
         }
