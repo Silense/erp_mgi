@@ -15,6 +15,7 @@ import ru.cip.ws.erp.ConfigurationHolder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Objects;
 
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE;
@@ -168,13 +169,25 @@ public class ScheduleUnregularAllocateRest {
                         .append("', следующий запуск='").append(item.getNextFireTime() == null ? "НЕТ" : sdf.format(item.getNextFireTime()))
                         .append("'<br/>");
             }
-
         } else {
             result.append("Искомое задание НЕ найдено JobDetail[").append(job.getKey()).append("]<br/>");
         }
         log.info("End status [{}]. Result={} ", job.getKey(), result);
-        return ResponseEntity.ok(result.toString());
+        return ResponseEntity.ok().header("loading", String.valueOf(isJobRunning(job.getKey()))).body(result.toString());
     }
+
+    private boolean isJobRunning(JobKey key) throws SchedulerException {
+        final List<JobExecutionContext> currentJobs = scheduler.getCurrentlyExecutingJobs();
+
+        for (JobExecutionContext jobCtx : currentJobs) {
+            if(Objects.equals(jobCtx.getJobDetail().getKey(), key)){
+              return true;
+            }
+        }
+        return false;
+    }
+
+
 
     @RequestMapping(value = "/suspend", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> suspend() throws SchedulerException {
