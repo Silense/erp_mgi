@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
-import ru.cip.ws.erp.ConfigurationHolder;
 import ru.cip.ws.erp.business.MessageProcessor;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -28,22 +28,15 @@ public class UnregularReAllocateJob extends QuartzJobBean {
     @Autowired
     private MessageProcessor messageProcessor;
 
-    @Autowired
-    private ConfigurationHolder cfg;
-
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         final long logTag = counter.incrementAndGet();
-//        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        log.debug("#{} Start Job[{}] by Trigger[{}]: Allocate Unregular Checks from [{}] to [{}]",
-//                logTag,
-//                jobExecutionContext.getJobDetail().getKey(),
-//                jobExecutionContext.getTrigger().getKey(),
-//                sdf.format(previousFireDate),
-//                sdf.format(scheduledFireTime)
-//        );
-//        cfg.set(CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE, scheduledFireTime);
-//        final Map<String, String> result = messageProcessor.unregularAllocate(logTag, previousFireDate, scheduledFireTime);
-        log.info("#{} Finished Job[{}]: Result = {}", logTag, jobExecutionContext.getJobDetail().getKey(), "");
+        log.info("#{} Start Job[{}] by Trigger[{}]: ReAllocate unregular checks",
+                logTag,
+                jobExecutionContext.getJobDetail().getKey(),
+                jobExecutionContext.getTrigger().getKey());
+        final Map<String, String> result = messageProcessor.unregularReAllocate(logTag, "Автоматическое доразмещение частично размещенных внеплановых проверок");
+        log.info("#{} Finished Job[{}]: Result = {}", logTag, jobExecutionContext.getJobDetail().getKey(), result);
+        jobExecutionContext.setResult(result);
     }
 }

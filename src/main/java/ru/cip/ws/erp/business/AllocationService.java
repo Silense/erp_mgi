@@ -254,7 +254,9 @@ public class AllocationService {
     ) {
         for (Map.Entry<UplanAct, Set<UplanActViolation>> entry : violations.entrySet()) {
             for (Map.Entry<CheckRecordErp, Set<CheckViolationErp>> erpEntry : violationsErp.entrySet()) {
-                if (Objects.equals(entry.getKey().getRecordId(), erpEntry.getKey().getCorrelationId())) {
+                //TODO
+                entry.getKey().setERP_ID(erpEntry.getKey().getErpCode());
+                if (Objects.equals(entry.getKey().getRecord().getCORRELATION_ID(), erpEntry.getKey().getCorrelationId())) {
                     syncViolations(logTag, erpEntry.getKey(), erpEntry.getValue(), entry.getValue());
                 }
             }
@@ -269,7 +271,7 @@ public class AllocationService {
         for (UplanActViolation record : violations) {
             boolean found = false;
             for (CheckViolationErp erpRecord : erpViolations) {
-                if (Objects.equals(erpRecord.getCorrelationId().intValue(), record.getVIOLATION_ID())) {
+                if (Objects.equals(erpRecord.getCorrelationId().intValue(), record.getACT_VIOLATION_ID())) {
                     found = true;
                     break;
                 }

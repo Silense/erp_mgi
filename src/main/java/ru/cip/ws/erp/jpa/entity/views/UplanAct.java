@@ -1,9 +1,6 @@
 package ru.cip.ws.erp.jpa.entity.views;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.math.BigInteger;
 import java.util.Date;
 
@@ -28,13 +25,18 @@ public class UplanAct {
      * Идентификатор проверки (присваивается при первичном размещении)
      */
     @Id
-    @Column(name = "ID")
-    private BigInteger ID;
+    @Column(name = "INSTRUCTION_ID")
+    private BigInteger INSTRUCTION_ID;
 
-    @Column(name="ADDR_CORRELATION_ID")
-    private BigInteger recordId;
+    @ManyToOne
+    @JoinColumn(name="CHECK_ID")
+    private Uplan check;
 
-    /**
+    @ManyToOne
+    @JoinColumn(name="CHECK_ADDRESS_ID")
+    private UplanRecord record;
+
+       /**
      * Дата составления акта проведения проверки
      */
     @Column(name = "ACT_DATE_CREATE")
@@ -57,7 +59,7 @@ public class UplanAct {
      * Отметка об отказе в ознакомлении с актом проверки (заполнять в случае отказа)
      */
     @Column(name = "ACT_WAS_READ", nullable = true)
-    private int ACT_WAS_READ;
+    private Integer ACT_WAS_READ;
 
     /**
      * Несоответствие поданных сведений о начале осущ. предп.-льской деятельности (список положений  правовых актов)
@@ -113,31 +115,31 @@ public class UplanAct {
     @Column(name = "UNDOIG_SEC_I")
     private String UNDOIG_SEC_I;
 
-    public BigInteger getRecordId() {
-        return recordId;
+    @Transient
+    private BigInteger ERP_ID;
+
+
+    public BigInteger getINSTRUCTION_ID() {
+        return INSTRUCTION_ID;
     }
 
-    public void setRecordId(BigInteger recordId) {
-        this.recordId = recordId;
+    public void setINSTRUCTION_ID(BigInteger INSTRUCTION_ID) {
+        this.INSTRUCTION_ID = INSTRUCTION_ID;
     }
 
-    public void setACT_WAS_READ(int ACT_WAS_READ) {
-        this.ACT_WAS_READ = ACT_WAS_READ;
+    public Uplan getCheck() {
+        return check;
     }
 
-    public BigInteger getID() {
-        return ID;
-    }
-
-    public void setID(final BigInteger ID) {
-        this.ID = ID;
+    public void setCheck(Uplan check) {
+        this.check = check;
     }
 
     public Date getACT_DATE_CREATE() {
         return ACT_DATE_CREATE;
     }
 
-    public void setACT_DATE_CREATE(final Date ACT_DATE_CREATE) {
+    public void setACT_DATE_CREATE(Date ACT_DATE_CREATE) {
         this.ACT_DATE_CREATE = ACT_DATE_CREATE;
     }
 
@@ -145,7 +147,7 @@ public class UplanAct {
         return ACT_TIME_CREATE;
     }
 
-    public void setACT_TIME_CREATE(final Date ACT_TIME_CREATE) {
+    public void setACT_TIME_CREATE(Date ACT_TIME_CREATE) {
         this.ACT_TIME_CREATE = ACT_TIME_CREATE;
     }
 
@@ -153,87 +155,103 @@ public class UplanAct {
         return ACT_PLACE_CREATE;
     }
 
-    public void setACT_PLACE_CREATE(final String ACT_PLACE_CREATE) {
+    public void setACT_PLACE_CREATE(String ACT_PLACE_CREATE) {
         this.ACT_PLACE_CREATE = ACT_PLACE_CREATE;
     }
 
-    public Integer getACT_WAS_READ() {
+    public int getACT_WAS_READ() {
         return ACT_WAS_READ;
     }
 
-    public void setACT_WAS_READ(final Integer ACT_WAS_READ) {
+    public void setACT_WAS_READ(int ACT_WAS_READ) {
         this.ACT_WAS_READ = ACT_WAS_READ;
-    }
-
-    public String getADR_INSPECTION() {
-        return ADR_INSPECTION;
-    }
-
-    public void setADR_INSPECTION(final String ADR_INSPECTION) {
-        this.ADR_INSPECTION = ADR_INSPECTION;
-    }
-
-    public Integer getDURATION() {
-        return DURATION;
-    }
-
-    public void setDURATION(final Integer DURATION) {
-        this.DURATION = DURATION;
-    }
-
-    public String getINSPECTORS() {
-        return INSPECTORS;
-    }
-
-    public void setINSPECTORS(final String INSPECTORS) {
-        this.INSPECTORS = INSPECTORS;
-    }
-
-    public String getNAME_OF_OWNER() {
-        return NAME_OF_OWNER;
-    }
-
-    public void setNAME_OF_OWNER(final String NAME_OF_OWNER) {
-        this.NAME_OF_OWNER = NAME_OF_OWNER;
-    }
-
-    public Date getSTART_DATE() {
-        return START_DATE;
-    }
-
-    public void setSTART_DATE(final Date START_DATE) {
-        this.START_DATE = START_DATE;
-    }
-
-    public String getUNDOIG_SEC_I() {
-        return UNDOIG_SEC_I;
-    }
-
-    public void setUNDOIG_SEC_I(final String UNDOIG_SEC_I) {
-        this.UNDOIG_SEC_I = UNDOIG_SEC_I;
-    }
-
-    public String getUNIMPOSSIBLE_REASON_I() {
-        return UNIMPOSSIBLE_REASON_I;
-    }
-
-    public void setUNIMPOSSIBLE_REASON_I(final String UNIMPOSSIBLE_REASON_I) {
-        this.UNIMPOSSIBLE_REASON_I = UNIMPOSSIBLE_REASON_I;
-    }
-
-    public String getWRONG_DATA_ANOTHER() {
-        return WRONG_DATA_ANOTHER;
-    }
-
-    public void setWRONG_DATA_ANOTHER(final String WRONG_DATA_ANOTHER) {
-        this.WRONG_DATA_ANOTHER = WRONG_DATA_ANOTHER;
     }
 
     public String getWRONG_DATA_REASON_SEC_I() {
         return WRONG_DATA_REASON_SEC_I;
     }
 
-    public void setWRONG_DATA_REASON_SEC_I(final String WRONG_DATA_REASON_SEC_I) {
+    public void setWRONG_DATA_REASON_SEC_I(String WRONG_DATA_REASON_SEC_I) {
         this.WRONG_DATA_REASON_SEC_I = WRONG_DATA_REASON_SEC_I;
+    }
+
+    public String getWRONG_DATA_ANOTHER() {
+        return WRONG_DATA_ANOTHER;
+    }
+
+    public void setWRONG_DATA_ANOTHER(String WRONG_DATA_ANOTHER) {
+        this.WRONG_DATA_ANOTHER = WRONG_DATA_ANOTHER;
+    }
+
+    public String getNAME_OF_OWNER() {
+        return NAME_OF_OWNER;
+    }
+
+    public void setNAME_OF_OWNER(String NAME_OF_OWNER) {
+        this.NAME_OF_OWNER = NAME_OF_OWNER;
+    }
+
+    public String getUNIMPOSSIBLE_REASON_I() {
+        return UNIMPOSSIBLE_REASON_I;
+    }
+
+    public void setUNIMPOSSIBLE_REASON_I(String UNIMPOSSIBLE_REASON_I) {
+        this.UNIMPOSSIBLE_REASON_I = UNIMPOSSIBLE_REASON_I;
+    }
+
+    public Date getSTART_DATE() {
+        return START_DATE;
+    }
+
+    public void setSTART_DATE(Date START_DATE) {
+        this.START_DATE = START_DATE;
+    }
+
+    public Integer getDURATION() {
+        return DURATION;
+    }
+
+    public void setDURATION(Integer DURATION) {
+        this.DURATION = DURATION;
+    }
+
+    public String getADR_INSPECTION() {
+        return ADR_INSPECTION;
+    }
+
+    public void setADR_INSPECTION(String ADR_INSPECTION) {
+        this.ADR_INSPECTION = ADR_INSPECTION;
+    }
+
+    public String getINSPECTORS() {
+        return INSPECTORS;
+    }
+
+    public void setINSPECTORS(String INSPECTORS) {
+        this.INSPECTORS = INSPECTORS;
+    }
+
+    public String getUNDOIG_SEC_I() {
+        return UNDOIG_SEC_I;
+    }
+
+    public void setUNDOIG_SEC_I(String UNDOIG_SEC_I) {
+        this.UNDOIG_SEC_I = UNDOIG_SEC_I;
+    }
+
+    public UplanRecord getRecord() {
+        return record;
+    }
+
+    public void setRecord(UplanRecord record) {
+        this.record = record;
+    }
+
+    public void setERP_ID(BigInteger ERP_ID) {
+        this.ERP_ID = ERP_ID;
+    }
+
+    public BigInteger getERP_ID() {
+        return ERP_ID;
     }
 }

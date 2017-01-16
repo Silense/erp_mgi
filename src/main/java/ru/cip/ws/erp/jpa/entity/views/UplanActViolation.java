@@ -16,17 +16,12 @@ public class UplanActViolation {
      * Идентификатор нарушения в рамках результатов по проверке
      */
     @Id
-    @Column(name = "VIOLATION_ID")
-    private Integer VIOLATION_ID;
+    @Column(name = "ACT_VIOLATION_ID")
+    private Integer ACT_VIOLATION_ID;
 
-    /**
-     * Ссылка на акт, в рамках которого было найдено нарушение
-     * TODO  @ManyToOne(fetch = FetchType.EAGER)
-     * TODO  @JoinColumn(name = "ACT_ID")
-     * TODO  private UplanAct act;
-     */
-    @Column(name = "ACT_ID")
-    private Integer ACT_ID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CHECK_ID")
+    private Uplan check;
 
     /**
      * Характер  выявленного нарушения
@@ -245,27 +240,27 @@ public class UplanActViolation {
         this.VIOLATION_ACTORS_NAME = VIOLATION_ACTORS_NAME;
     }
 
-    public Integer getVIOLATION_ID() {
-        return VIOLATION_ID;
+    public Integer getACT_VIOLATION_ID() {
+        return ACT_VIOLATION_ID;
     }
 
-    public void setVIOLATION_ID(final Integer VIOLATION_ID) {
-        this.VIOLATION_ID = VIOLATION_ID;
+    public void setACT_VIOLATION_ID(Integer ACT_VIOLATION_ID) {
+        this.ACT_VIOLATION_ID = ACT_VIOLATION_ID;
+    }
+
+    public Uplan getCheck() {
+        return check;
+    }
+
+    public void setCheck(Uplan check) {
+        this.check = check;
     }
 
     public String getVIOLATION_NOTE() {
         return VIOLATION_NOTE;
     }
 
-    public void setVIOLATION_NOTE(final String VIOLATION_NOTE) {
+    public void setVIOLATION_NOTE(String VIOLATION_NOTE) {
         this.VIOLATION_NOTE = VIOLATION_NOTE;
-    }
-
-    public Integer getACT_ID() {
-        return ACT_ID;
-    }
-
-    public void setACT_ID(final Integer ACT_ID) {
-        this.ACT_ID = ACT_ID;
     }
 }

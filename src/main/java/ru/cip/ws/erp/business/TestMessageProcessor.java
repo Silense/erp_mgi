@@ -537,7 +537,7 @@ public class TestMessageProcessor {
             item.setCheck(uplan);
 
             final UplanAct k1 = new UplanAct();
-            k1.setID(new BigInteger("201600000859"));
+            k1.setERP_ID(new BigInteger("201600000859"));
             k1.setACT_DATE_CREATE(parseTestDate("2015-08-25"));
             k1.setACT_TIME_CREATE(parseTestDate("13:00:00", "HH:mm:ss"));
             k1.setACT_PLACE_CREATE("Место составления акта ( адрес)");
@@ -554,7 +554,7 @@ public class TestMessageProcessor {
 
             final Set<UplanActViolation> v1 = new HashSet<>(2);
             final UplanActViolation v1_1 = new UplanActViolation();
-            v1_1.setVIOLATION_ID(1);
+            v1_1.setACT_VIOLATION_ID(1);
             v1_1.setVIOLATION_NOTE("Нарушение такое-то, выявлено в № случаях на территории такой-то");
             v1_1.setVIOLATION_ACT("Правовой акт №1");
             v1_1.setVIOLATION_ACTORS_NAME("Смит Смит Смитович");
@@ -573,7 +573,7 @@ public class TestMessageProcessor {
             v1.add(v1_1);
 
             final UplanActViolation v1_2 = new UplanActViolation();
-            v1_2.setVIOLATION_ID(2);
+            v1_2.setACT_VIOLATION_ID(2);
             v1_2.setVIOLATION_NOTE("Нарушение такое-то, выявлено в № случаях на территории такой-то");
             v1_2.setVIOLATION_ACT("Правовой акт №2");
             v1_2.setVIOLATION_ACTORS_NAME("Смит Смит Смитович");

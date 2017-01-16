@@ -95,7 +95,6 @@ public class CheckErp {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "check")
     private Set<CheckRecordErp> records;
 
-
     public CheckErp() {
     }
 

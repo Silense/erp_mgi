@@ -140,7 +140,7 @@ public class CheckErpDaoImpl {
     public CheckViolationErp createCheckViolationErp(CheckRecordErp checkRecordErp, UplanActViolation record) {
         final CheckViolationErp result = new CheckViolationErp();
         result.setRecord(checkRecordErp);
-        result.setCorrelationId(BigInteger.valueOf(record.getVIOLATION_ID()));
+        result.setCorrelationId(BigInteger.valueOf(record.getACT_VIOLATION_ID()));
         result.setNote(record.getVIOLATION_NOTE());
         em.persist(result);
         return result;

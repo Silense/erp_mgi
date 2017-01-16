@@ -43,7 +43,7 @@ public class AllocateUnregularResultParameter {
     }
 
     public int getYear() {
-        return year;
+        return this.year != 0 ? this.year : check.getYEAR();
     }
 
     public void setYear(int year) {

@@ -42,7 +42,7 @@ public class UnregularAllocateJob extends QuartzJobBean {
         final Date previousFireDate = cfg.getDate(CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE);
         final Date scheduledFireTime = jobExecutionContext.getScheduledFireTime();
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        log.debug("#{} Start Job[{}] by Trigger[{}]: Allocate Unregular Checks from [{}] to [{}]",
+        log.info("#{} Start Job[{}] by Trigger[{}]: Allocate Unregular Checks from [{}] to [{}]",
                 logTag,
                 jobExecutionContext.getJobDetail().getKey(),
                 jobExecutionContext.getTrigger().getKey(),
@@ -52,5 +52,6 @@ public class UnregularAllocateJob extends QuartzJobBean {
         cfg.set(CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE, scheduledFireTime);
         final Map<String, String> result = messageProcessor.unregularAllocate(logTag, previousFireDate, scheduledFireTime);
         log.info("#{} Finished Job[{}]: Result = {}", logTag, jobExecutionContext.getJobDetail().getKey(), result);
+        jobExecutionContext.setResult(result);
     }
 }

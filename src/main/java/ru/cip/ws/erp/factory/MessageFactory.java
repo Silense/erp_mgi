@@ -376,7 +376,7 @@ public class MessageFactory {
     ) {
         final MessageToERP294Type.UplanResult294Initialization.UinspectionResult294Initialization result = of
                 .createMessageToERP294TypeUplanResult294InitializationUinspectionResult294Initialization();
-        result.setID(act.getID());
+        result.setID(act.getERP_ID());
         result.setACTDATECREATE(wrapDate(act.getACT_DATE_CREATE()));
         result.setACTTIMECREATE(wrapTime(act.getACT_TIME_CREATE()));
         result.setACTPLACECREATE(StringUtils.defaultString(act.getACT_PLACE_CREATE()));
@@ -398,7 +398,7 @@ public class MessageFactory {
 
     private static InspectionViolation294InitializationType createUinspectionViolation294Initialization(final UplanActViolation source) {
         final InspectionViolation294InitializationType result = of.createInspectionViolation294InitializationType();
-        result.setVIOLATIONID(source.getVIOLATION_ID());
+        result.setVIOLATIONID(source.getACT_VIOLATION_ID());
         result.setVIOLATIONNOTE(source.getVIOLATION_NOTE());
         result.setVIOLATIONACT(source.getVIOLATION_ACT());
         result.setVIOLATIONACTORSNAME(source.getVIOLATION_ACTORS_NAME());
