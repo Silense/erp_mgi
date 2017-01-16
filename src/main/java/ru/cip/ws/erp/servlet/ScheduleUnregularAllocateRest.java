@@ -177,9 +177,7 @@ public class ScheduleUnregularAllocateRest {
     }
 
     private boolean isJobRunning(JobKey key) throws SchedulerException {
-        final List<JobExecutionContext> currentJobs = scheduler.getCurrentlyExecutingJobs();
-
-        for (JobExecutionContext jobCtx : currentJobs) {
+        for (JobExecutionContext jobCtx : scheduler.getCurrentlyExecutingJobs()) {
             if(Objects.equals(jobCtx.getJobDetail().getKey(), key)){
               return true;
             }
@@ -211,6 +209,7 @@ public class ScheduleUnregularAllocateRest {
     public ResponseEntity<String> fire() throws SchedulerException {
         log.info("Start fire [{}]", job.getKey());
         scheduler.triggerJob(job.getKey());
+        scheduler.resumeJob(job.getKey());
         log.info("End fire [{}]. Result={} ", job.getKey(), "OK");
         return ResponseEntity.ok("OK");
     }
