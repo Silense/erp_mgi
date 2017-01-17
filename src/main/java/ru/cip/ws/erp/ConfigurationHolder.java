@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
+
 /**
  * Author: Upatov Egor <br>
  * Date: 29.12.2016, 15:21 <br>
@@ -27,6 +29,11 @@ import java.util.Properties;
 @Component("configurationHolder")
 public class ConfigurationHolder {
     private static final Logger log = LoggerFactory.getLogger("CONFIG");
+
+    /**
+     * Отдаваемый всеми REST - сервисами Content-Type
+     */
+    public static final String TEXT_PLAIN_UTF8 = TEXT_PLAIN_VALUE + "; charset=UTF-8";
 
 
 

@@ -17,9 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Objects;
 
-import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
-import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE;
-import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE;
+import static ru.cip.ws.erp.ConfigurationHolder.*;
 
 /**
  * Author: Upatov Egor <br>
@@ -47,7 +45,7 @@ public class ScheduleUnregularAllocateRest {
     private ConfigurationHolder cfg;
 
 
-    @RequestMapping(value = "/update", produces = TEXT_PLAIN_VALUE)
+    @RequestMapping(value = "/update", produces = TEXT_PLAIN_UTF8)
     public ResponseEntity<String> updateSchedule(
             @RequestParam(value = "second", required = false) final String second,
             @RequestParam(value = "minute", required = false) final String minute,
@@ -102,7 +100,7 @@ public class ScheduleUnregularAllocateRest {
         return ResponseEntity.ok(result);
     }
 
-    @RequestMapping(value = "/update", produces = TEXT_PLAIN_VALUE, params = {"cron"})
+    @RequestMapping(value = "/update", produces = TEXT_PLAIN_UTF8, params = {"cron"})
     public ResponseEntity<String> updateSchedule(
             @RequestParam("cron") final String cronExpression
     ) {
@@ -141,7 +139,7 @@ public class ScheduleUnregularAllocateRest {
         }
     }
 
-    @RequestMapping(value = "/status", produces = TEXT_PLAIN_VALUE)
+    @RequestMapping(value = "/status", produces = TEXT_PLAIN_UTF8)
     public ResponseEntity<String> status() throws SchedulerException {
         log.info("Start status [{}]", job.getKey());
         final StringBuilder result = new StringBuilder();
@@ -187,7 +185,7 @@ public class ScheduleUnregularAllocateRest {
 
 
 
-    @RequestMapping(value = "/suspend", produces = TEXT_PLAIN_VALUE)
+    @RequestMapping(value = "/suspend", produces = TEXT_PLAIN_UTF8)
     public ResponseEntity<String> suspend() throws SchedulerException {
         log.info("Start suspend [{}]", job.getKey());
         scheduler.pauseJob(job.getKey());
@@ -196,7 +194,7 @@ public class ScheduleUnregularAllocateRest {
         return ResponseEntity.ok(triggerState.toString());
     }
 
-    @RequestMapping(value = "/resume", produces = TEXT_PLAIN_VALUE)
+    @RequestMapping(value = "/resume", produces = TEXT_PLAIN_UTF8)
     public ResponseEntity<String> resume() throws SchedulerException {
         log.info("Start resume [{}]", job.getKey());
         scheduler.resumeJob(job.getKey());
@@ -205,7 +203,7 @@ public class ScheduleUnregularAllocateRest {
         return ResponseEntity.ok(triggerState.toString());
     }
 
-    @RequestMapping(value = "/fire", produces = TEXT_PLAIN_VALUE)
+    @RequestMapping(value = "/fire", produces = TEXT_PLAIN_UTF8)
     public ResponseEntity<String> fire() throws SchedulerException {
         log.info("Start fire [{}]", job.getKey());
         scheduler.triggerJob(job.getKey());
