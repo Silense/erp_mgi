@@ -43,10 +43,6 @@ public class ExpSession {
     @Temporal(TemporalType.TIMESTAMP)
     private Date UPDATE_DATE;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "IMP_SESSION_ID")
-    private ImpSession importSession;
-
     @Column(name = "SYSTEM_SERVICE_ID")
     private String SYSTEM_SERVICE_ID;
 
@@ -91,7 +87,6 @@ public class ExpSession {
         sb.append(", RV=").append(RV);
         sb.append(", CREATE_DATE=").append(CREATE_DATE);
         sb.append(", UPDATE_DATE=").append(UPDATE_DATE);
-        sb.append(", importSession=").append(importSession != null ? importSession.getId() : null);
         sb.append(", SYSTEM_SERVICE_ID='").append(SYSTEM_SERVICE_ID).append('\'');
         sb.append(", ENUM_EXP_SESSION_STATUS='").append(ENUM_EXP_SESSION_STATUS).append('\'');
         sb.append(", SESSION_DESCRIPTION='").append(SESSION_DESCRIPTION).append('\'');
@@ -160,14 +155,6 @@ public class ExpSession {
 
     public void setUPDATE_DATE(final Date UPDATE_DATE) {
         this.UPDATE_DATE = UPDATE_DATE;
-    }
-
-    public ImpSession getImportSession() {
-        return importSession;
-    }
-
-    public void setImportSession(final ImpSession importSession) {
-        this.importSession = importSession;
     }
 
     public String getSYSTEM_SERVICE_ID() {
