@@ -28,6 +28,7 @@ public class JobWrapper {
         jobDetail.setJobClass(jobClazz);
         jobDetail.setKey(JobKey.jobKey(name, group));
         jobDetail.setDurability(true);
+        jobDetail.getJobDataMap().put("CFG_KEY", cfgKey);
         this.jobDetail = jobDetail;
         if(StringUtils.isNotEmpty(cron)){
            createNewCronTrigger(cron);

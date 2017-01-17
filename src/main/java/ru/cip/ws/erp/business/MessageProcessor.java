@@ -39,11 +39,21 @@ public class MessageProcessor {
     @Autowired
     private PlanActDaoImpl actDao;
 
-    public Map<String, String> unregularAllocate(final long logTag, final Date begDate, final Date endDate) {
-        final String dateInterval = "[" + sdf.format(begDate) + "]-[" + sdf.format(endDate) + "]";
-        log.info("#{} Start unregularAllocate by date interval: {}", logTag, dateInterval);
+    public Map<String, String> unregularAllocate(
+            final long logTag,
+            final String description,
+            final Date begDate,
+            final Date endDate
+    ) {
+        log.info(
+                "#{} Start unregularAllocate from [{}] to [{}]: {}",
+                logTag,
+                sdf.format(begDate),
+                sdf.format(endDate),
+                description
+        );
         final List<Uplan> checks = uplanDao.getChecksByInterval(begDate, endDate);
-        if(checks.isEmpty()){
+        if (checks.isEmpty()) {
             log.info("#{} Finish unregularAllocate. No checks found for allocation", logTag);
             return Collections.emptyMap();
         }
@@ -60,7 +70,33 @@ public class MessageProcessor {
         }
         final Map<String, String> result = allocationService.allocateUnregularBatch(
                 logTag,
-                "Автоматическиое размещение внеплановых проверок за промежуток "+dateInterval,
+                description,
+                mailer,
+                addressee,
+                parameters
+        );
+        log.info("#{} Finish unregularAllocate. Result = {}", logTag, result);
+        return result;
+    }
+
+    public Map<String, String> unregularAllocate(long logTag, String description, String orderNum) {
+        log.info("#{} Start unregularAllocate with ORDER_NUM: '{}'. Desc = {}", logTag, orderNum, description);
+        final Uplan check = uplanDao.getByOrderNum(orderNum);
+        if (check == null) {
+            log.info("#{} Finish unregularAllocate. No check found for allocation", logTag);
+            return Collections.emptyMap();
+        }
+        final MessageToERPModelType.Mailer mailer = cfg.getMailer();
+        final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
+        final Set<AllocateUnregularParameter> parameters = new HashSet<>(1);
+        log.debug("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
+        final AllocateUnregularParameter allocationParameter = new AllocateUnregularParameter();
+        allocationParameter.setCheck(check);
+        allocationParameter.setRecords(check.getRecords());
+        parameters.add(allocationParameter);
+        final Map<String, String> result = allocationService.allocateUnregularBatch(
+                logTag,
+                description,
                 mailer,
                 addressee,
                 parameters
@@ -72,7 +108,7 @@ public class MessageProcessor {
     public Map<String, String> unregularReAllocate(long logTag, String description) {
         log.info("#{} Start unregularReAllocate", logTag);
         final List<Uplan> checks = uplanDao.getPartialAllocated();
-        if(checks.isEmpty()){
+        if (checks.isEmpty()) {
             log.info("#{} Finish unregularAllocate. No checks found for ReAllocation", logTag);
             return Collections.emptyMap();
         }
@@ -101,7 +137,7 @@ public class MessageProcessor {
     public Map<String, String> unregularResultAllocate(long logTag, String description) {
         log.info("#{} Start unregularAllocateResult", logTag);
         final List<Uplan> checks = uplanDao.getAllocated();
-        if(checks.isEmpty()){
+        if (checks.isEmpty()) {
             log.info("#{} Finish unregularAllocateResult. No checks found for ReAllocation", logTag);
             return Collections.emptyMap();
         }
@@ -126,6 +162,8 @@ public class MessageProcessor {
         log.info("#{} Finish unregularAllocateResult. Result = {}", logTag, result);
         return result;
     }
+
+
 
 
 

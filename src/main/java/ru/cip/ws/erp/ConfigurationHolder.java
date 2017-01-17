@@ -37,6 +37,7 @@ public class ConfigurationHolder {
 
 
 
+
     @Autowired
     private SystemSettingsDaoImpl settingsDao;
 
@@ -46,8 +47,9 @@ public class ConfigurationHolder {
     /**
      * Настройки расписаний выгрузки внеплановых проверок
      */
-    public static final String CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE = "schedule.unregular.allocate";
     public static final String CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE = "schedule.unregular.allocate.lastFireDate";
+    public static final String CFG_KEY_ALLOCATE_BY_ORDER_NUM = "schedule.unregular.allocate.order_num";
+
     public static final String CFG_KEY_SCHEDULE_UNREGULAR_REALLOCATE = "shedule.unregular.reAllocate";
     public static final String CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATERESULT = "shedule.unregular.allocateResult";
 
@@ -76,13 +78,14 @@ public class ConfigurationHolder {
 
 
     private static final Map<String, Object> properties = new HashMap<>();
-
+    private final String APP_ID;
 
     @Autowired
     public ConfigurationHolder( @Qualifier("app.properties") final Properties props) {
         for (Map.Entry<Object, Object> entry : props.entrySet()) {
             properties.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
         }
+        APP_ID = properties.get(CFG_KEY_APP_ID).toString();
     }
 
     @PostConstruct
@@ -111,14 +114,6 @@ public class ConfigurationHolder {
         } catch (ParseException e) {
             return null;
         }
-    }
-
-    public boolean set(String key, String value) {
-        return properties.containsKey(key) && settingsDao.setNewStringValue(get(CFG_KEY_APP_ID), key, value);
-    }
-
-    public boolean set(String key, Date value) {
-        return properties.containsKey(key) && settingsDao.setNewDateValue(get(CFG_KEY_APP_ID), key, value);
     }
 
     private BigInteger getNumber(String key) {
@@ -159,5 +154,7 @@ public class ConfigurationHolder {
     }
 
 
-
+    public String getAppId() {
+        return APP_ID;
+    }
 }

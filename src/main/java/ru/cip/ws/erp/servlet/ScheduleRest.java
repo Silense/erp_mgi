@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.cip.ws.erp.ConfigurationHolder;
+import ru.cip.ws.erp.jpa.dao.SystemSettingsDaoImpl;
 import ru.cip.ws.erp.quartz.JobWrapper;
 
 import java.text.ParseException;
@@ -42,6 +43,9 @@ public class ScheduleRest {
 
     @Autowired
     private ConfigurationHolder cfg;
+
+    @Autowired
+    private SystemSettingsDaoImpl settingsDao;
 
 
     @RequestMapping(value = "/update", produces = TEXT_PLAIN_UTF8)
@@ -133,10 +137,13 @@ public class ScheduleRest {
             if (scheduler.isShutdown()) {
                 scheduler.start();
             }
-            scheduler.rescheduleJob(wrapper.getTriggerKey(), wrapper.createNewCronTrigger(cronExpression));
-
-            cfg.set(wrapper.getCfgKey(), cronExpression);
-
+            scheduler.deleteJob(wrapper.getJobKey());
+            scheduler.scheduleJob(wrapper.getJobDetail(), wrapper.createNewCronTrigger(cronExpression));
+            if(StringUtils.isNotEmpty(wrapper.getCfgKey())){
+                settingsDao.setNewStringValue(cfg.getAppId(), wrapper.getCfgKey(), cronExpression);
+            }  else {
+                settingsDao.setServiceSettingSchedule(cfg.getAppId(), cronExpression);
+            }
             return "Настройки расписания отправки внеплановых проверок изменены на '" + cronExpression + "'";
         }  catch (ParseException e) {
             log.warn("Cron expression ['{}'] is invalid: {}", cronExpression, e.getMessage());
@@ -175,7 +182,7 @@ public class ScheduleRest {
         if (jobDetail != null) {
             result.append("Искомое задание найдено JobDetail[").append(wrapper.getJobKey())
                     .append("]. Последняя дата запуска '")
-                    .append(sdf.format(cfg.getDate(CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE)))
+                    .append(sdf.format(settingsDao.getDate(cfg.getAppId(), CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE)))
                     .append("'<br/>");
             final List<? extends Trigger> triggersOfJob = scheduler.getTriggersOfJob(wrapper.getJobKey());
             result.append("Задание имеет ").append(triggersOfJob.size()).append(" триггер(а/ов) для запуска<br/>");

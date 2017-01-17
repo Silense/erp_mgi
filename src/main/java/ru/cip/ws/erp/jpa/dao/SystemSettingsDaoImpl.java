@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.cip.ws.erp.jpa.entity.RsysSystemService;
 import ru.cip.ws.erp.jpa.entity.RsysSystemServiceSetting;
 
 import javax.persistence.EntityManager;
@@ -57,6 +58,16 @@ public class SystemSettingsDaoImpl {
         }
     }
 
+    public Date getDate(String systemName, String key) {
+        final RsysSystemServiceSetting setting = getSetting(systemName, key);
+        return setting != null ? setting.getValueDate() : null;
+    }
+
+    public String getString(String systemName, String key) {
+        final RsysSystemServiceSetting setting = getSetting(systemName, key);
+        return setting != null ? setting.getValueString() : null;
+    }
+
     private RsysSystemServiceSetting getSetting(String systemName, String key) {
         final List<RsysSystemServiceSetting> resultList = em.createQuery(
                 "SELECT s FROM RsysSystemServiceSetting s WHERE s.system = :systemName AND s.settingId = :key",
@@ -82,4 +93,27 @@ public class SystemSettingsDaoImpl {
             return true;
         }
     }
+
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean setServiceSettingSchedule(String systemName, String value) {
+        final RsysSystemService service = getServiceSetting(systemName);
+        if (service == null) {
+            log.warn("No service to system[{}] found", systemName);
+            return false;
+        } else {
+            final String settingToChangeToString = service.getSchedule();
+            service.setSchedule(value);
+            final RsysSystemService merged = em.merge(service);
+            log.warn("Changed Service[{}] setting from '{}' to '{}'", systemName, settingToChangeToString, merged.getSchedule());
+            return true;
+        }
+    }
+
+    public RsysSystemService getServiceSetting(String systemName) {
+        return em.find(RsysSystemService.class, systemName);
+    }
+
+
+
 }

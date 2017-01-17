@@ -137,16 +137,23 @@ public class UplanDaoImpl {
         return getUplanListByIds(needToProcess);
     }
 
+    public Uplan getByOrderNum(String orderNum) {
+        final List<Uplan> resultList = em.createQuery(
+                "SELECT p FROM Uplan p LEFT JOIN FETCH p.records r WHERE p.ORDER_NUM = :orderNum", Uplan.class
+        ).setParameter("orderNum", orderNum).getResultList();
+        return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
+    }
+
     public Map<UplanAct, Set<UplanActViolation>> getViolations(Uplan check) {
         final List<UplanAct> resultList = em.createQuery(
                 "SELECT a FROM UplanAct a WHERE a.check.id = :checkId ", UplanAct.class
         ).setParameter("checkId", check.getCHECK_ID()).getResultList();
-        if(resultList.isEmpty()){
+        if (resultList.isEmpty()) {
             return Collections.emptyMap();
         } else {
             final Map<UplanAct, Set<UplanActViolation>> result = new LinkedHashMap<>(resultList.size());
             for (UplanAct act : resultList) {
-               result.put(act, getViolations(check, act));
+                result.put(act, getViolations(check, act));
             }
             return result;
         }
@@ -158,4 +165,6 @@ public class UplanDaoImpl {
         ).setParameter("checkId", check.getCHECK_ID()).getResultList();
         return new LinkedHashSet<>(result);
     }
+
+
 }
