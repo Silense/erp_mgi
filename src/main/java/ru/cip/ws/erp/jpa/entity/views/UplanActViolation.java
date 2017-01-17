@@ -73,7 +73,7 @@ public class UplanActViolation {
     /**
      * Отметка о  невыполнении выданного предписания
      **/
-    @Column(name = "INJUNCTION_IS_REFUSED")
+    @Transient //TODO @Column(name = "INJUNCTION_IS_REFUSED")
     private Integer INJUNCTION_IS_REFUSED;
 
     /**

@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.cip.ws.erp.jpa.entity.views.Uplan;
 import ru.cip.ws.erp.jpa.entity.views.UplanAct;
 import ru.cip.ws.erp.jpa.entity.views.UplanActViolation;
-import ru.cip.ws.erp.jpa.entity.views.UplanRecord;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -30,57 +29,9 @@ public class UplanDaoImpl {
     @Autowired
     private CheckErpDaoImpl checkErpDao;
 
-    public Map<Uplan, Set<UplanRecord>> getUnallocatedChecksByInterval(Date begDate, Date endDate) {
-        final List<Uplan> uplanList = em.createQuery(
-                "SELECT p FROM Uplan p " +
-                        "LEFT JOIN FETCH p.records r " +
-                        "WHERE p.ORDER_DATE >= :begDate " +
-                        "AND p.ORDER_DATE < :endDate",
-                Uplan.class)
-                .setParameter("begDate", begDate, TemporalType.TIMESTAMP)
-                .setParameter("endDate", endDate, TemporalType.TIMESTAMP)
-                .getResultList();
-        if (uplanList.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        final Map<Uplan, Set<UplanRecord>> result = new LinkedHashMap<>(uplanList.size());
-        for (Uplan uplan : uplanList) {
-            if (checkErpDao.notExistsForCheck(uplan)) {
-                result.put(uplan, uplan.getRecords());
-            }
-        }
-        return result;
-    }
-
-    public Map<Uplan, Set<UplanRecord>> getChecksForFirstAllocationByInterval(
-            final Date begDate,
-            final Date endDate
-    ) {
-        final List<Uplan> uplanList = em.createQuery(
-                "SELECT p FROM Uplan p LEFT JOIN FETCH p.records r " +
-                        "WHERE p.ORDER_DATE >= :begDate AND p.ORDER_DATE < :endDate " +
-                        "AND NOT EXISTS " +
-                        "( SELECT e.id FROM CheckErp e WHERE e.checkId = p.CHECK_ID " +
-                        "AND e.checkType.code = 'UNREGULAR' AND e.state.code <> 'ERROR_ALLOCATED' )",
-                Uplan.class)
-                .setParameter("begDate", begDate, TemporalType.TIMESTAMP)
-                .setParameter("endDate", endDate, TemporalType.TIMESTAMP)
-                .getResultList();
-        if (uplanList.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        final Map<Uplan, Set<UplanRecord>> result = new LinkedHashMap<>(uplanList.size());
-        for (Uplan uplan : uplanList) {
-            if (checkErpDao.notExistsForCheck(uplan)) {
-                result.put(uplan, uplan.getRecords());
-            }
-        }
-        return result;
-    }
-
     public List<Uplan> getChecksByInterval(final Date begDate, final Date endDate) {
         return em.createQuery(
-                "SELECT p FROM Uplan p LEFT JOIN FETCH p.records r " +
+                "SELECT distinct p FROM Uplan p LEFT JOIN FETCH p.records r " +
                         "WHERE p.ORDER_DATE >= :begDate AND p.ORDER_DATE < :endDate",
                 Uplan.class)
                 .setParameter("begDate", begDate, TemporalType.TIMESTAMP)
@@ -104,7 +55,7 @@ public class UplanDaoImpl {
         if (needToReallocate.isEmpty()) {
             return Collections.emptyList();
         } else {
-            return em.createQuery("SELECT p FROM Uplan p LEFT JOIN FETCH p.records r WHERE p.id IN :ids", Uplan.class)
+            return em.createQuery("SELECT distinct p FROM Uplan p LEFT JOIN FETCH p.records r WHERE p.id IN :ids", Uplan.class)
                     .setParameter("ids", needToReallocate).getResultList();
         }
     }
@@ -123,7 +74,7 @@ public class UplanDaoImpl {
 
     public Uplan getByOrderNum(String orderNum) {
         final List<Uplan> resultList = em.createQuery(
-                "SELECT p FROM Uplan p LEFT JOIN FETCH p.records r WHERE p.ORDER_NUM = :orderNum", Uplan.class
+                "SELECT distinct p FROM Uplan p LEFT JOIN FETCH p.records r WHERE p.ORDER_NUM = :orderNum", Uplan.class
         ).setParameter("orderNum", orderNum).getResultList();
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
