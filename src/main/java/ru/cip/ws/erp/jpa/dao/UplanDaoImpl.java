@@ -57,16 +57,11 @@ public class UplanDaoImpl {
             final Date endDate
     ) {
         final List<Uplan> uplanList = em.createQuery(
-                "SELECT p FROM Uplan p " +
-                        "LEFT JOIN FETCH p.records r " +
-                        "WHERE p.ORDER_DATE >= :begDate " +
-                        "AND p.ORDER_DATE < :endDate " +
-                        "AND NOT EXISTS (" +
-                        "SELECT e.id FROM CheckErp e " +
-                        "WHERE e.checkId = p.CHECK_ID " +
-                        "AND e.checkType.code = 'UNREGULAR' " +
-                        "AND e.state.code <> 'ERROR_ALLOCATED'" +
-                        ")",
+                "SELECT p FROM Uplan p LEFT JOIN FETCH p.records r " +
+                        "WHERE p.ORDER_DATE >= :begDate AND p.ORDER_DATE < :endDate " +
+                        "AND NOT EXISTS " +
+                        "( SELECT e.id FROM CheckErp e WHERE e.checkId = p.CHECK_ID " +
+                        "AND e.checkType.code = 'UNREGULAR' AND e.state.code <> 'ERROR_ALLOCATED' )",
                 Uplan.class)
                 .setParameter("begDate", begDate, TemporalType.TIMESTAMP)
                 .setParameter("endDate", endDate, TemporalType.TIMESTAMP)
@@ -85,10 +80,8 @@ public class UplanDaoImpl {
 
     public List<Uplan> getChecksByInterval(final Date begDate, final Date endDate) {
         return em.createQuery(
-                "SELECT p FROM Uplan p " +
-                        "LEFT JOIN FETCH p.records r " +
-                        "WHERE p.ORDER_DATE >= :begDate " +
-                        "AND p.ORDER_DATE < :endDate",
+                "SELECT p FROM Uplan p LEFT JOIN FETCH p.records r " +
+                        "WHERE p.ORDER_DATE >= :begDate AND p.ORDER_DATE < :endDate",
                 Uplan.class)
                 .setParameter("begDate", begDate, TemporalType.TIMESTAMP)
                 .setParameter("endDate", endDate, TemporalType.TIMESTAMP)
@@ -100,10 +93,8 @@ public class UplanDaoImpl {
         statesForReallocate.add("PARTIAL_ALLOCATION");
         statesForReallocate.add("ERROR_ALLOCATION");
         final List<BigInteger> needToReallocate = em.createQuery(
-                "SELECT erp.checkId " +
-                        "FROM CheckErp erp " +
-                        "WHERE erp.state.code IN :statesForReallocate " +
-                        "AND erp.checkType.code = 'UNREGULAR'",
+                "SELECT erp.checkId FROM CheckErp erp " +
+                        "WHERE erp.state.code IN :statesForReallocate AND erp.checkType.code = 'UNREGULAR'",
                 BigInteger.class
         ).setParameter("statesForReallocate", statesForReallocate).getResultList();
         return getUplanListByIds(needToReallocate);
@@ -113,13 +104,8 @@ public class UplanDaoImpl {
         if (needToReallocate.isEmpty()) {
             return Collections.emptyList();
         } else {
-            return em.createQuery(
-                    "SELECT p FROM Uplan p " +
-                            "LEFT JOIN FETCH p.records r " +
-                            "WHERE p.id IN :ids",
-                    Uplan.class)
-                    .setParameter("ids", needToReallocate)
-                    .getResultList();
+            return em.createQuery("SELECT p FROM Uplan p LEFT JOIN FETCH p.records r WHERE p.id IN :ids", Uplan.class)
+                    .setParameter("ids", needToReallocate).getResultList();
         }
     }
 
@@ -128,10 +114,8 @@ public class UplanDaoImpl {
         stateAllocated.add("ALLOCATED");
         stateAllocated.add("ERROR_RESULT_ALLOCATION");
         final List<BigInteger> needToProcess = em.createQuery(
-                "SELECT erp.checkId " +
-                        "FROM CheckErp erp " +
-                        "WHERE erp.state.code IN :stateAllocated " +
-                        "AND erp.checkType.code = 'UNREGULAR'",
+                "SELECT erp.checkId FROM CheckErp erp " +
+                        "WHERE erp.state.code IN :stateAllocated AND erp.checkType.code = 'UNREGULAR'",
                 BigInteger.class
         ).setParameter("stateAllocated", stateAllocated).getResultList();
         return getUplanListByIds(needToProcess);
@@ -144,22 +128,7 @@ public class UplanDaoImpl {
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
 
-    public Map<UplanAct, Set<UplanActViolation>> getViolations(Uplan check) {
-        final List<UplanAct> resultList = em.createQuery(
-                "SELECT a FROM UplanAct a WHERE a.check.id = :checkId ", UplanAct.class
-        ).setParameter("checkId", check.getCHECK_ID()).getResultList();
-        if (resultList.isEmpty()) {
-            return Collections.emptyMap();
-        } else {
-            final Map<UplanAct, Set<UplanActViolation>> result = new LinkedHashMap<>(resultList.size());
-            for (UplanAct act : resultList) {
-                result.put(act, getViolations(check, act));
-            }
-            return result;
-        }
-    }
-
-    private Set<UplanActViolation> getViolations(Uplan check, UplanAct act) {
+    public Set<UplanActViolation> getViolations(Uplan check, UplanAct act) {
         final List<UplanActViolation> result = em.createQuery(
                 "SELECT a FROM UplanActViolation a WHERE a.check.id = :checkId ", UplanActViolation.class
         ).setParameter("checkId", check.getCHECK_ID()).getResultList();
@@ -167,4 +136,10 @@ public class UplanDaoImpl {
     }
 
 
+    public UplanAct getAct(Uplan check) {
+        final List<UplanAct> resultList = em.createQuery(
+                "SELECT a FROM UplanAct a WHERE a.check.id = :checkId ", UplanAct.class
+        ).setParameter("checkId", check.getCHECK_ID()).getResultList();
+        return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
+    }
 }

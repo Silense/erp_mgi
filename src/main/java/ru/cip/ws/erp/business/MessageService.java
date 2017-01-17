@@ -143,13 +143,15 @@ public class MessageService {
             final int year,
             final Uplan check,
             final CheckErp checkErp,
-            final Map<UplanAct, Set<UplanActViolation>> actMap
+            final Set<CheckRecordErp> records,
+            final UplanAct act,
+            final Set<UplanActViolation> violations
     ) {
         final String messageType = "UPLAN_RESULT_294_INITIALIZATION";
         final ExpSessionEvent exportEvent = expSessionDao.createEvent(check.getCHECK_ID() + ":" + messageType, session);
         log.info("{} : Created {}", requestNumber, exportEvent);
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanResult294Initialization(
-                uuid, mailer, addressee, year, actMap, checkErp.getErpCode()
+                uuid, mailer, addressee, year, records, act, violations, checkErp.getErpCode()
         );
         return sendJaxbMessage(requestNumber, uuid, checkErp, messageType, requestMessage);
     }

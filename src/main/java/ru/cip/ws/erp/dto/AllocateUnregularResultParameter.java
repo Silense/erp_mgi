@@ -3,9 +3,8 @@ package ru.cip.ws.erp.dto;
 import ru.cip.ws.erp.jpa.entity.views.Uplan;
 import ru.cip.ws.erp.jpa.entity.views.UplanAct;
 import ru.cip.ws.erp.jpa.entity.views.UplanActViolation;
+import ru.cip.ws.erp.jpa.entity.views.UplanRecord;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -14,24 +13,31 @@ import java.util.Set;
  * Description: Структура содержащая данные необходимые для размещения результатов внеплановой проверки
  */
 public class AllocateUnregularResultParameter {
-    private Uplan check;
-    private Map<UplanAct, Set<UplanActViolation>> violations = new LinkedHashMap<>();
-    private int year;
+    private final Uplan check;
+    private final UplanAct act;
+    private final Set<UplanActViolation> violations;
+    private final int year;
+    private final Set<UplanRecord> records;
+
+    public AllocateUnregularResultParameter(Uplan check, UplanAct act, Set<UplanActViolation> violations, int year, Set<UplanRecord> records) {
+        this.check = check;
+        this.act = act;
+        this.violations = violations;
+        this.year = year;
+        this.records = records;
+    }
 
     public Uplan getCheck() {
         return check;
     }
 
-    public void setCheck(Uplan check) {
-        this.check = check;
+    public UplanAct getAct() {
+        return act;
     }
 
-    public Map<UplanAct, Set<UplanActViolation>> getViolations() {
+
+    public Set<UplanActViolation> getViolations() {
         return violations;
-    }
-
-    public void setViolations(Map<UplanAct, Set<UplanActViolation>> violations) {
-        this.violations = violations;
     }
 
     /**
@@ -46,7 +52,7 @@ public class AllocateUnregularResultParameter {
         return this.year != 0 ? this.year : check.getYEAR();
     }
 
-    public void setYear(int year) {
-        this.year = year;
+    public Set<UplanRecord> getRecords() {
+        return records;
     }
 }

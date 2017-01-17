@@ -32,11 +32,8 @@ public class UplanAct {
     @JoinColumn(name="CHECK_ID")
     private Uplan check;
 
-    @ManyToOne
-    @JoinColumn(name="CHECK_ADDRESS_ID")
-    private UplanRecord record;
 
-       /**
+    /**
      * Дата составления акта проведения проверки
      */
     @Column(name = "ACT_DATE_CREATE")
@@ -114,9 +111,6 @@ public class UplanAct {
      **/
     @Column(name = "UNDOIG_SEC_I")
     private String UNDOIG_SEC_I;
-
-    @Transient
-    private BigInteger ERP_ID;
 
 
     public BigInteger getINSTRUCTION_ID() {
@@ -239,19 +233,4 @@ public class UplanAct {
         this.UNDOIG_SEC_I = UNDOIG_SEC_I;
     }
 
-    public UplanRecord getRecord() {
-        return record;
-    }
-
-    public void setRecord(UplanRecord record) {
-        this.record = record;
-    }
-
-    public void setERP_ID(BigInteger ERP_ID) {
-        this.ERP_ID = ERP_ID;
-    }
-
-    public BigInteger getERP_ID() {
-        return ERP_ID;
-    }
 }

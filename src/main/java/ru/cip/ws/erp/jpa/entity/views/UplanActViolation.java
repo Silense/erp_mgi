@@ -1,6 +1,7 @@
 package ru.cip.ws.erp.jpa.entity.views;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -9,8 +10,8 @@ import java.util.Date;
  * Company: Bars Group [ www.bars.open.ru ]
  * Description:
  */
-
-//TODO
+@Entity
+@Table(name = "CIP_UNSCHEDL_CHECK_VIOLATION_V", schema = "ODOPM_SRC")
 public class UplanActViolation {
     /**
      * Идентификатор нарушения в рамках результатов по проверке
@@ -22,6 +23,10 @@ public class UplanActViolation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CHECK_ID")
     private Uplan check;
+
+    @Column(name="CHECK_ADDRESS_ID")
+    private BigInteger addressRecordId;
+
 
     /**
      * Характер  выявленного нарушения
@@ -80,13 +85,13 @@ public class UplanActViolation {
     /**
      * Информация о направлении материалов о выявленных нарушениях в компетентные органы
      **/
-    @Column(name = "LAWSUIT_SEC_I")
+    @Transient //TODO @Column(name = "LAWSUIT_SEC_I")
     private String LAWSUIT_SEC_I;
 
     /**
      * Примененные меры обеспечения производства по делу  об административном правонарушении
      **/
-    @Column(name = "LAWSUIT_SEC_II")
+    @Transient //TODO @Column(name = "LAWSUIT_SEC_II")
     private String LAWSUIT_SEC_II;
 
     /**
@@ -98,7 +103,7 @@ public class UplanActViolation {
     /**
      * Приостановление или аннулирование ранее выданных разрешений, имеющих разрешительный характер
      **/
-    @Column(name = "LAWSUIT_SEC_IV")
+    @Transient //TODO @Column(name = "LAWSUIT_SEC_IV")
     private String LAWSUIT_SEC_IV;
 
     /**
@@ -110,13 +115,13 @@ public class UplanActViolation {
     /**
      * Информация об обжаловании в вышестоящем органе суде решений контроля
      **/
-    @Column(name = "LAWSUIT_SEC_VI")
+    @Transient //TODO @Column(name = "LAWSUIT_SEC_VI")
     private String LAWSUIT_SEC_VI;
 
     /**
      * информация об отзыве продукции
      **/
-    @Column(name = "LAWSUIT_SEC_VII")
+    @Transient //TODO @Column(name = "LAWSUIT_SEC_VII")
     private String LAWSUIT_SEC_VII;
 
 
@@ -262,5 +267,13 @@ public class UplanActViolation {
 
     public void setVIOLATION_NOTE(String VIOLATION_NOTE) {
         this.VIOLATION_NOTE = VIOLATION_NOTE;
+    }
+
+    public BigInteger getAddressRecordId() {
+        return addressRecordId;
+    }
+
+    public void setAddressRecordId(BigInteger addressRecordId) {
+        this.addressRecordId = addressRecordId;
     }
 }

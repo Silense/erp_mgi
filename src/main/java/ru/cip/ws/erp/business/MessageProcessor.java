@@ -11,6 +11,8 @@ import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
 import ru.cip.ws.erp.jpa.dao.PlanActDaoImpl;
 import ru.cip.ws.erp.jpa.dao.UplanDaoImpl;
 import ru.cip.ws.erp.jpa.entity.views.Uplan;
+import ru.cip.ws.erp.jpa.entity.views.UplanAct;
+import ru.cip.ws.erp.jpa.entity.views.UplanActViolation;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -146,11 +148,20 @@ public class MessageProcessor {
         final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
         final Set<AllocateUnregularResultParameter> parameters = new HashSet<>(checks.size());
         for (Uplan check : checks) {
-            log.debug("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
-            final AllocateUnregularResultParameter allocationParameter = new AllocateUnregularResultParameter();
-            allocationParameter.setCheck(check);
-            allocationParameter.setViolations(uplanDao.getViolations(check));
-            parameters.add(allocationParameter);
+            log.debug("#{}-{}: ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
+            final UplanAct act = uplanDao.getAct(check);
+            if(act == null){
+                log.warn("#{}-{}: Skip cause no Act found", logTag, check.getCHECK_ID());
+                continue;
+            }
+            log.debug("#{}-{}: Act = {}", logTag, check.getCHECK_ID(), act.getACT_PLACE_CREATE());
+            final Set<UplanActViolation> violations = uplanDao.getViolations(check, act);
+            if(violations.isEmpty()){
+                log.warn("#{}-{}: Skip cause no Violations found", logTag, check.getCHECK_ID());
+                continue;
+            }
+            log.debug("#{}-{}: Violation = {}", violations.size());
+            parameters.add(new AllocateUnregularResultParameter(check, act, violations, 0, check.getRecords()));
         }
         final Map<String, String> result = allocationService.allocateUnregularResultBatch(
                 logTag,

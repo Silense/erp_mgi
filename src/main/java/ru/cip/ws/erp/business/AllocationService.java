@@ -219,11 +219,11 @@ public class AllocationService {
             final String stateCode = checkErpTuple.left.getState().getCode();
             if ("ALLOCATED".equalsIgnoreCase(stateCode)) {
                 log.debug("{} : UUID assign [{}]. Start ALLOCATED -> WAIT_RESULT_ALLOCATION", logTag, uuid);
-                syncViolations(logTag, checkErpTuple.right, parameter.getViolations());
+                syncViolations(logTag, checkErpTuple.right, parameter.getAct(), parameter.getViolations());
                 checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_RESULT_ALLOCATION");
             } else if ("ERROR_RESULT_ALLOCATION".equalsIgnoreCase(stateCode)) {
                 log.debug("{} : UUID assign [{}]. Start ERROR_RESULT_ALLOCATION -> WAIT_RESULT_ALLOCATION", logTag, uuid);
-                syncViolations(logTag, checkErpTuple.right, parameter.getViolations());
+                syncViolations(logTag, checkErpTuple.right, parameter.getAct(), parameter.getViolations());
                 checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_RESULT_ALLOCATION");
             } else {
                 final String result = "Check is not in available for result allocation state [" + stateCode + "]";
@@ -240,6 +240,8 @@ public class AllocationService {
                 parameter.getYear(),
                 parameter.getCheck(),
                 checkErpTuple.left,
+                checkErpTuple.right.keySet(),
+                parameter.getAct(),
                 parameter.getViolations()
         );
         log.info("{} : end. Result = '{}'", requestNumber, result);
@@ -250,16 +252,11 @@ public class AllocationService {
     private void syncViolations(
             final String logTag,
             final Map<CheckRecordErp, Set<CheckViolationErp>> violationsErp,
-            final Map<UplanAct, Set<UplanActViolation>> violations
+            final UplanAct act,
+            final Set<UplanActViolation> violations
     ) {
-        for (Map.Entry<UplanAct, Set<UplanActViolation>> entry : violations.entrySet()) {
-            for (Map.Entry<CheckRecordErp, Set<CheckViolationErp>> erpEntry : violationsErp.entrySet()) {
-                //TODO
-                entry.getKey().setERP_ID(erpEntry.getKey().getErpCode());
-                if (Objects.equals(entry.getKey().getRecord().getCORRELATION_ID(), erpEntry.getKey().getCorrelationId())) {
-                    syncViolations(logTag, erpEntry.getKey(), erpEntry.getValue(), entry.getValue());
-                }
-            }
+        for (Map.Entry<CheckRecordErp, Set<CheckViolationErp>> erpEntry : violationsErp.entrySet()) {
+            syncViolations(logTag, erpEntry.getKey(), erpEntry.getValue(), violations);
         }
     }
 
@@ -271,7 +268,7 @@ public class AllocationService {
         for (UplanActViolation record : violations) {
             boolean found = false;
             for (CheckViolationErp erpRecord : erpViolations) {
-                if (Objects.equals(erpRecord.getCorrelationId().intValue(), record.getACT_VIOLATION_ID())) {
+                if (Objects.equals(erpRecord.getCorrelationId(), record.getAddressRecordId())) {
                     found = true;
                     break;
                 }

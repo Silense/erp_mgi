@@ -4,6 +4,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import ru.cip.ws.erp.generated.erptypes.*;
+import ru.cip.ws.erp.jpa.entity.CheckRecordErp;
 import ru.cip.ws.erp.jpa.entity.views.*;
 
 import javax.xml.bind.JAXBElement;
@@ -14,6 +15,7 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -275,7 +277,9 @@ public class MessageFactory {
             final MessageToERPModelType.Mailer mailer,
             final MessageToERPModelType.Addressee addressee,
             final int year,
-            final Map<UplanAct, Set<UplanActViolation>> actMap,
+            final Set<CheckRecordErp> records,
+            final UplanAct act,
+            final Set<UplanActViolation> violations,
             final BigInteger erpID
     ) {
         final MessageToERP294Type messageToERP294Type = createMessageToERP294Type(mailer, addressee);
@@ -283,9 +287,8 @@ public class MessageFactory {
         messageToERP294Type.setUplanResult294Initialization(message);
         message.setYEAR(year);
         message.setID(erpID);
-
-        for (Map.Entry<UplanAct, Set<UplanActViolation>> entry : actMap.entrySet()) {
-            message.getUinspectionResult294Initialization().add(cteateUinspectionResult294Initialization(entry.getKey(), entry.getValue()));
+        for (CheckRecordErp record : records) {
+            message.getUinspectionResult294Initialization().add(cteateUinspectionResult294Initialization(act, record, violations));
         }
         return extendMessage(uuid, messageToERP294Type);
     }
@@ -371,12 +374,13 @@ public class MessageFactory {
     }
 
     private static MessageToERP294Type.UplanResult294Initialization.UinspectionResult294Initialization cteateUinspectionResult294Initialization(
-            final UplanAct act, 
+            final UplanAct act,
+            final CheckRecordErp recordErp,
             final Set<UplanActViolation> violations
     ) {
         final MessageToERP294Type.UplanResult294Initialization.UinspectionResult294Initialization result = of
                 .createMessageToERP294TypeUplanResult294InitializationUinspectionResult294Initialization();
-        result.setID(act.getERP_ID());
+        result.setID(recordErp.getErpCode());
         result.setACTDATECREATE(wrapDate(act.getACT_DATE_CREATE()));
         result.setACTTIMECREATE(wrapTime(act.getACT_TIME_CREATE()));
         result.setACTPLACECREATE(StringUtils.defaultString(act.getACT_PLACE_CREATE()));
@@ -391,7 +395,9 @@ public class MessageFactory {
         result.setINSPECTORS(act.getINSPECTORS());
         result.setUNDOIGSECI(act.getUNDOIG_SEC_I());
         for (UplanActViolation violation : violations) {
-            result.getUinspectionViolation294Initialization().add(createUinspectionViolation294Initialization(violation));
+            if(Objects.equals(violation.getAddressRecordId(), recordErp.getCorrelationId())) {
+                result.getUinspectionViolation294Initialization().add(createUinspectionViolation294Initialization(violation));
+            }
         }
         return result;
     }
