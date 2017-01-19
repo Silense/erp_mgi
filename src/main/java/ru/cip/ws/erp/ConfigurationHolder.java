@@ -49,6 +49,7 @@ public class ConfigurationHolder {
      */
     public static final String CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE = "schedule.unregular.allocate.lastFireDate";
     public static final String CFG_KEY_ALLOCATE_BY_ORDER_NUM = "schedule.unregular.allocate.order_num";
+    public static final String CFG_KEY_ALLOCATE_BY_DATE = "schedule.unregular.allocate.order_date";
 
     public static final String CFG_KEY_SCHEDULE_UNREGULAR_REALLOCATE = "shedule.unregular.reAllocate";
     public static final String CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATERESULT = "shedule.unregular.allocateResult";

@@ -344,7 +344,7 @@ public class IncomingMessageProcessor {
                                                                rawContent,
                                                                uuid
         );
-        log.debug("{} : Created {}", uuid, history);
+        log.info("{} : Created {}", uuid, history);
         return checkErpTuple;
     }
 
@@ -365,7 +365,7 @@ public class IncomingMessageProcessor {
                                                                rawContent,
                                                                uuid
         );
-        log.debug("{} : Created {}", uuid, history);
+        log.info("{} : Created {}", uuid, history);
         checkErpDao.setErpStatus(checkErpTuple.left, erpStatus, statusMessage, responseDate);
         if("ERROR".equals(erpStatus.getCode()) || "FAULT".equals(erpStatus.getCode())){
             if("WAIT_ALLOCATION".equals(checkErpTuple.left.getState().getCode())

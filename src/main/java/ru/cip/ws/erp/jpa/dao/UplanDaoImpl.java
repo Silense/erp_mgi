@@ -79,6 +79,13 @@ public class UplanDaoImpl {
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
 
+    public Uplan getByOrderNumAndOrderDate(String orderNum, Date orderDate) {
+        final List<Uplan> resultList = em.createQuery(
+                "SELECT distinct p FROM Uplan p LEFT JOIN FETCH p.records r WHERE p.ORDER_NUM = :orderNum AND p.ORDER_DATE = :orderDate", Uplan.class
+        ).setParameter("orderNum", orderNum).setParameter("orderDate", orderDate).getResultList();
+        return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
+    }
+
     public Set<UplanActViolation> getViolations(Uplan check, UplanAct act) {
         final List<UplanActViolation> result = em.createQuery(
                 "SELECT a FROM UplanActViolation a WHERE a.check.id = :checkId ", UplanActViolation.class
@@ -93,4 +100,6 @@ public class UplanDaoImpl {
         ).setParameter("checkId", check.getCHECK_ID()).getResultList();
         return resultList.iterator().hasNext() ? resultList.iterator().next() : null;
     }
+
+
 }

@@ -115,22 +115,22 @@ public class AllocationService {
         final String uuid = UUID.randomUUID().toString();
         try {
             if (checkErpTuple == null) {
-                log.debug("{} : UUID assign [{}]. Not allocated before", logTag, uuid);
+                log.info("{} : UUID assign [{}]. Not allocated before", logTag, uuid);
                 checkErpTuple = checkErpDao.createErp(parameter.getCheck(), parameter.getRecords(), uuid);
-                log.debug("{} : Created {}", logTag, checkErpTuple.left);
+                log.info("{} : Created {}", logTag, checkErpTuple.left);
                 for (CheckRecordErp recordErp : checkErpTuple.right) {
-                    log.debug("{} : Created {}", logTag, recordErp);
+                    log.info("{} : Created {}", logTag, recordErp);
                 }
                 needInitialization = true;
             } else {
                 final String stateCode = checkErpTuple.left.getState().getCode();
                 if ("ERROR_ALLOCATION".equalsIgnoreCase(stateCode)) {
-                    log.debug("{} : UUID assign [{}]. ERROR_ALLOCATION", logTag, uuid);
+                    log.info("{} : UUID assign [{}]. ERROR_ALLOCATION", logTag, uuid);
                     syncRecords(logTag, checkErpTuple.left, checkErpTuple.right, parameter.getRecords());
                     checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_ALLOCATION");
                     needInitialization = true;
                 } else if ("PARTIAL_ALLOCATION".equalsIgnoreCase(stateCode)) {
-                    log.debug("{} : UUID assign [{}]. PARTIAL_ALLOCATION", logTag, uuid);
+                    log.info("{} : UUID assign [{}]. PARTIAL_ALLOCATION", logTag, uuid);
                     syncRecords(logTag, checkErpTuple.left, checkErpTuple.right, parameter.getRecords());
                     checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_ALLOCATION");
                     needInitialization = false;
@@ -218,11 +218,11 @@ public class AllocationService {
         } else {
             final String stateCode = checkErpTuple.left.getState().getCode();
             if ("ALLOCATED".equalsIgnoreCase(stateCode)) {
-                log.debug("{} : UUID assign [{}]. Start ALLOCATED -> WAIT_RESULT_ALLOCATION", logTag, uuid);
+                log.info("{} : UUID assign [{}]. Start ALLOCATED -> WAIT_RESULT_ALLOCATION", logTag, uuid);
                 syncViolations(logTag, checkErpTuple.right, parameter.getAct(), parameter.getViolations());
                 checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_RESULT_ALLOCATION");
             } else if ("ERROR_RESULT_ALLOCATION".equalsIgnoreCase(stateCode)) {
-                log.debug("{} : UUID assign [{}]. Start ERROR_RESULT_ALLOCATION -> WAIT_RESULT_ALLOCATION", logTag, uuid);
+                log.info("{} : UUID assign [{}]. Start ERROR_RESULT_ALLOCATION -> WAIT_RESULT_ALLOCATION", logTag, uuid);
                 syncViolations(logTag, checkErpTuple.right, parameter.getAct(), parameter.getViolations());
                 checkErpDao.assignUUID(checkErpTuple.left, uuid, "WAIT_RESULT_ALLOCATION");
             } else {

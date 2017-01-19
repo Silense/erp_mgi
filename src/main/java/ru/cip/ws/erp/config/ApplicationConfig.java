@@ -41,7 +41,7 @@ public class ApplicationConfig {
         log.info("Read config file [{}]", path);
         if (log.isDebugEnabled()) {
             for (Map.Entry<Object, Object> entry : result.entrySet()) {
-                log.debug("{} = \'{}\'", entry.getKey(), entry.getValue());
+                log.info("{} = \'{}\'", entry.getKey(), entry.getValue());
             }
         }
         return result;

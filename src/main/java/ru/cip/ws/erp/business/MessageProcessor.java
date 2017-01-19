@@ -64,7 +64,7 @@ public class MessageProcessor {
         final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
         final Set<AllocateUnregularParameter> parameters = new HashSet<>(checks.size());
         for (Uplan check : checks) {
-            log.debug("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
+            log.info("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
             final AllocateUnregularParameter allocationParameter = new AllocateUnregularParameter();
             allocationParameter.setCheck(check);
             allocationParameter.setRecords(check.getRecords());
@@ -81,9 +81,9 @@ public class MessageProcessor {
         return result;
     }
 
-    public Map<String, String> unregularAllocate(long logTag, String description, String orderNum) {
-        log.info("#{} Start unregularAllocate with ORDER_NUM: '{}'. Desc = {}", logTag, orderNum, description);
-        final Uplan check = uplanDao.getByOrderNum(orderNum);
+    public Map<String, String> unregularAllocate(long logTag, final String description, final String orderNum, final Date orderDate ) {
+        log.info("#{} Start unregularAllocate with ORDER_NUM: '{}' and ORDER_DATE='{}'. Desc = {}", logTag, orderNum, orderDate, description);
+        final Uplan check = uplanDao.getByOrderNumAndOrderDate(orderNum, orderDate);
         if (check == null) {
             log.info("#{} Finish unregularAllocate. No check found for allocation", logTag);
             return Collections.emptyMap();
@@ -91,7 +91,7 @@ public class MessageProcessor {
         final MessageToERPModelType.Mailer mailer = cfg.getMailer();
         final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
         final Set<AllocateUnregularParameter> parameters = new HashSet<>(1);
-        log.debug("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
+        log.info("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
         final AllocateUnregularParameter allocationParameter = new AllocateUnregularParameter();
         allocationParameter.setCheck(check);
         allocationParameter.setRecords(check.getRecords());
@@ -119,7 +119,7 @@ public class MessageProcessor {
         final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
         final Set<AllocateUnregularParameter> parameters = new HashSet<>(checks.size());
         for (Uplan check : checks) {
-            log.debug("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
+            log.info("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
             final AllocateUnregularParameter allocationParameter = new AllocateUnregularParameter();
             allocationParameter.setCheck(check);
             allocationParameter.setRecords(check.getRecords());
@@ -148,19 +148,19 @@ public class MessageProcessor {
         final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
         final Set<AllocateUnregularResultParameter> parameters = new HashSet<>(checks.size());
         for (Uplan check : checks) {
-            log.debug("#{}-{}: ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
+            log.info("#{}-{}: ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
             final UplanAct act = uplanDao.getAct(check);
             if(act == null){
                 log.warn("#{}-{}: Skip cause no Act found", logTag, check.getCHECK_ID());
                 continue;
             }
-            log.debug("#{}-{}: Act = {}", logTag, check.getCHECK_ID(), act.getACT_PLACE_CREATE());
+            log.info("#{}-{}: Act = {}", logTag, check.getCHECK_ID(), act.getACT_PLACE_CREATE());
             final Set<UplanActViolation> violations = uplanDao.getViolations(check, act);
             if(violations.isEmpty()){
                 log.warn("#{}-{}: Skip cause no Violations found", logTag, check.getCHECK_ID());
                 continue;
             }
-            log.debug("#{}-{}: Violation = {}", violations.size());
+            log.info("#{}-{}: Violation = {}", violations.size());
             parameters.add(new AllocateUnregularResultParameter(check, act, violations, 0, check.getRecords()));
         }
         final Map<String, String> result = allocationService.allocateUnregularResultBatch(

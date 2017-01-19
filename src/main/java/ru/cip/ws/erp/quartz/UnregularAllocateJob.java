@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_ALLOCATE_BY_DATE;
 import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_ALLOCATE_BY_ORDER_NUM;
 import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE;
 
@@ -48,11 +49,14 @@ public class UnregularAllocateJob extends QuartzJobBean {
         final long logTag = counter.incrementAndGet();
         log.info("#{} Start Job[{}] by Trigger[{}]", logTag, ctx.getJobDetail().getKey(), ctx.getTrigger().getKey());
         final String checkOrderNum = settingsDao.getString(cfg.getAppId(), CFG_KEY_ALLOCATE_BY_ORDER_NUM);
-        if (StringUtils.isNotEmpty(checkOrderNum)) {
+        final Date checkOrderDate = settingsDao.getDate(cfg.getAppId(), CFG_KEY_ALLOCATE_BY_DATE);
+        log.info("#{} parameters from database ORDER_NUM='{}' ORDER_DATE='{}'", logTag, checkOrderNum, checkOrderDate);
+        if (StringUtils.isNotEmpty(checkOrderNum) && checkOrderDate != null) {
             final Map<String, String> result = messageProcessor.unregularAllocate(
                     logTag,
-                    "Ручное размещение внеплановой проверки с ORDER_NUM='" + checkOrderNum+"'",
-                   checkOrderNum
+                    "Ручное размещение внеплановой проверки с ORDER_NUM='" + checkOrderNum + "' и ORDER_DATE=" + sdf.format(checkOrderDate),
+                    checkOrderNum,
+                    checkOrderDate
             );
             log.info("#{} Finished Job[{}]: Result = {}", logTag, ctx.getJobDetail().getKey(), result);
             ctx.setResult(result);
