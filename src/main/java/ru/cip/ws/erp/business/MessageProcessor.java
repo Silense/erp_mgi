@@ -17,6 +17,8 @@ import ru.cip.ws.erp.jpa.entity.views.UplanActViolation;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static ru.cip.ws.erp.ConfigurationHolder.CFG_KEY_MGI_NAME;
+
 /**
  * Author: Upatov Egor <br>
  * Date: 22.09.2016, 14:30 <br>
@@ -67,6 +69,7 @@ public class MessageProcessor {
             log.info("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
             final AllocateUnregularParameter allocationParameter = new AllocateUnregularParameter();
             allocationParameter.setCheck(check);
+            allocationParameter.setKO_NAME(cfg.get(CFG_KEY_MGI_NAME));
             allocationParameter.setRecords(check.getRecords());
             parameters.add(allocationParameter);
         }
@@ -94,6 +97,7 @@ public class MessageProcessor {
         log.info("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
         final AllocateUnregularParameter allocationParameter = new AllocateUnregularParameter();
         allocationParameter.setCheck(check);
+        allocationParameter.setKO_NAME(cfg.get(CFG_KEY_MGI_NAME));
         allocationParameter.setRecords(check.getRecords());
         parameters.add(allocationParameter);
         final Map<String, String> result = allocationService.allocateUnregularBatch(
@@ -122,6 +126,7 @@ public class MessageProcessor {
             log.info("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
             final AllocateUnregularParameter allocationParameter = new AllocateUnregularParameter();
             allocationParameter.setCheck(check);
+            allocationParameter.setKO_NAME(cfg.get(CFG_KEY_MGI_NAME));
             allocationParameter.setRecords(check.getRecords());
             parameters.add(allocationParameter);
         }

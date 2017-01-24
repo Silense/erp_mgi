@@ -57,7 +57,7 @@ public class ConfigurationHolder {
     /**
      * Мейлер
      */
-    private static final String CFG_KEY_MGI_NAME = "mgi.org.name";
+    public static final String CFG_KEY_MGI_NAME = "mgi.org.name";
     private static final String CFG_KEY_MGI_OGRN = "mgi.org.ogrn";
     private static final String CFG_KEY_MGI_FRGU_ORG_ID = "mgi.org.frgu_org_id";
     private static final String CFG_KEY_MGI_FRGU_SERV_ID = "mgi.org.frgu_serv_id";

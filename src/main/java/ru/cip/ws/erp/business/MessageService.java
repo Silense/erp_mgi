@@ -86,7 +86,8 @@ public class MessageService {
             final CheckErp checkErp
     ) {
         final String messageType = "UPLAN_UNREGULAR_294_INITIALIZATION";
-        final ExpSessionEvent exportEvent = expSessionDao.createEvent(check.getCHECK_ID() + ":"+ messageType, session);
+        final String eventInfo = String.format("Размещение внеплановой проверки[%d] под номером '%s' c requestID='%s' и типом запроса %s", check.getCHECK_ID(), check.getORDER_NUM(), uuid, messageType);
+        final ExpSessionEvent exportEvent = expSessionDao.createEvent(eventInfo, session);
         log.info("{} : Created {}", logTag, exportEvent);
 
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanUnregular294Initialization(
@@ -113,7 +114,8 @@ public class MessageService {
             final Set<CheckRecordErp> checkRecords
     ) {
         final String messageType = "UPLAN_UNREGULAR_294_CORRECTION";
-        final ExpSessionEvent exportEvent = expSessionDao.createEvent(check.getCHECK_ID() + ":" + messageType, session);
+        final String eventInfo = String.format("Корректировка внеплановой проверки[%d] под номером '%s' c requestID='%s' и типом запроса %s", check.getCHECK_ID(), check.getORDER_NUM(), uuid, messageType);
+        final ExpSessionEvent exportEvent = expSessionDao.createEvent(eventInfo, session);
         log.info("{} : Created {}", requestNumber, exportEvent);
 
         final Map<BigInteger, BigInteger> erpIDMap = new HashMap<>(records.size());
@@ -148,7 +150,8 @@ public class MessageService {
             final Set<UplanActViolation> violations
     ) {
         final String messageType = "UPLAN_RESULT_294_INITIALIZATION";
-        final ExpSessionEvent exportEvent = expSessionDao.createEvent(check.getCHECK_ID() + ":" + messageType, session);
+        final String eventInfo = String.format("Размещение результатов внеплановой проверки[%d] под номером '%s' c requestID='%s' и типом запроса %s", check.getCHECK_ID(), check.getORDER_NUM(), uuid, messageType);
+        final ExpSessionEvent exportEvent = expSessionDao.createEvent(eventInfo, session);
         log.info("{} : Created {}", requestNumber, exportEvent);
         final JAXBElement<RequestMsg> requestMessage = MessageFactory.createUplanResult294Initialization(
                 uuid, mailer, addressee, year, records, act, violations, checkErp.getErpCode()
