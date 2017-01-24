@@ -29,7 +29,7 @@ public class PersistenceConfig {
 
     private static final Logger log = LoggerFactory.getLogger("CONFIG");
 
-    @Bean(name = "dataSource")
+    @Bean(name = "dataSource", destroyMethod = "")
     public DataSource lookupDatasource(@Qualifier("app.properties") Properties props) throws NamingException {
         final String jndiNameDatasource = props.getProperty(CFG_KEY_DATASOURCE_JNDI);
         log.info("Start lookup DataSource by jndiName='{}'", jndiNameDatasource);
