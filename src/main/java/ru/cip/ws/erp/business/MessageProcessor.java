@@ -161,10 +161,6 @@ public class MessageProcessor {
             }
             log.info("#{}-{}: Act = {}", logTag, check.getCHECK_ID(), act.getACT_PLACE_CREATE());
             final Set<UplanActViolation> violations = uplanDao.getViolations(check, act);
-            if(violations.isEmpty()){
-                log.warn("#{}-{}: Skip cause no Violations found", logTag, check.getCHECK_ID());
-                continue;
-            }
             log.info("#{}-{}: Violation = {}", violations.size());
             parameters.add(new AllocateUnregularResultParameter(check, act, violations, 0, check.getRecords()));
         }
