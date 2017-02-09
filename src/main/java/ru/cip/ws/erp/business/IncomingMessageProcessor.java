@@ -90,7 +90,7 @@ public class IncomingMessageProcessor {
                     );
                     checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
                     break;
-                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(localRow.getCorrelationId(), responseRow.getCORRELATIONID())) {
+                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(localRow.getCorrelationId().longValue(), responseRow.getCORRELATIONID())) {
                     log.info("{} : InspectionRegular294ResponseType[OGRN='{}'] correlated[BY correlationID] with CheckRecordErp[{}]",
                              uuid,
                              responseRow.getOGRN(),
@@ -204,7 +204,7 @@ public class IncomingMessageProcessor {
                     );
                     checkErpDao.setRecordErpCode(localRow, responseRow.getID(), getTotalValid(responseRow.getRest()));
                     break;
-                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(localRow.getCorrelationId().longValue(), responseRow.getCORRELATIONID())) {
+                } else if (responseRow.getCORRELATIONID() != null && Objects.equals(localRow.getCorrelationId(), responseRow.getCORRELATIONID())) {
                     log.info("{} : InspectionRegular294Response[OGRN='{}'] correlated[BY correlationID] with CheckRecordErp[{}]",
                              uuid,
                              responseRow.getOGRN(),
