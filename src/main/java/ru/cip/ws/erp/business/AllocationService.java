@@ -273,12 +273,13 @@ public class AllocationService {
                 for (CheckViolationErp erpRecord : erpViolations) {
                     if (Objects.equals(erpRecord.getCorrelationId(), BigInteger.valueOf(record.getACT_VIOLATION_ID()))) {
                         found = true;
+                        log.info("{} : MATCH IN RECORDS. FOR {} MATCH {} ", logTag, record, erpRecord);
                         break;
                     }
                 }
                 if (!found) {
                     final CheckViolationErp erpRecord = checkErpDao.createCheckViolationErp(checkRecordErp, record);
-                    log.error("{} : MISMATCH IN RECORDS. FOR {} CREATED {} ", logTag, record, erpRecord);
+                    log.warn("{} : MISMATCH IN RECORDS. FOR {} CREATED {} ", logTag, record, erpRecord);
                 }
             }
         }
