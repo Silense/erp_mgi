@@ -19,6 +19,7 @@ import ru.cip.ws.erp.jpa.entity.views.UplanAct;
 import ru.cip.ws.erp.jpa.entity.views.UplanActViolation;
 import ru.cip.ws.erp.jpa.entity.views.UplanRecord;
 
+import java.math.BigInteger;
 import java.util.*;
 
 /**
@@ -88,7 +89,6 @@ public class AllocationService {
         log.info("#{} : End {}. Result: {}", logTag, actionName, result);
         return result;
     }
-
 
 
     /**
@@ -268,16 +268,18 @@ public class AllocationService {
             final Set<CheckViolationErp> erpViolations,
             final Set<UplanActViolation> violations) {
         for (UplanActViolation record : violations) {
-            boolean found = false;
-            for (CheckViolationErp erpRecord : erpViolations) {
-                if (Objects.equals(erpRecord.getCorrelationId(), record.getAddressRecordId())) {
-                    found = true;
-                    break;
+            if (Objects.equals(record.getAddressRecordId(), checkRecordErp.getCorrelationId())) {
+                boolean found = false;
+                for (CheckViolationErp erpRecord : erpViolations) {
+                    if (Objects.equals(erpRecord.getCorrelationId(), BigInteger.valueOf(record.getACT_VIOLATION_ID()))) {
+                        found = true;
+                        break;
+                    }
                 }
-            }
-            if (!found) {
-                final CheckViolationErp erpRecord = checkErpDao.createCheckViolationErp(checkRecordErp, record);
-                log.error("{} : MISMATCH IN RECORDS. FOR {} CREATED {} ", logTag, record, erpRecord);
+                if (!found) {
+                    final CheckViolationErp erpRecord = checkErpDao.createCheckViolationErp(checkRecordErp, record);
+                    log.error("{} : MISMATCH IN RECORDS. FOR {} CREATED {} ", logTag, record, erpRecord);
+                }
             }
         }
     }
