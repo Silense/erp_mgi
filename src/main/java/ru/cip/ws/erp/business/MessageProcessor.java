@@ -161,7 +161,7 @@ public class MessageProcessor {
             }
             log.info("#{}-{}: Act = {}", logTag, check.getCHECK_ID(), act.getACT_PLACE_CREATE());
             final Set<UplanActViolation> violations = uplanDao.getViolations(check, act);
-            log.info("#{}-{}: Violation = {}", violations.size());
+            log.info("#{}-{}: Violation = {}",  logTag, check.getCHECK_ID(), violations.size());
             parameters.add(new AllocateUnregularResultParameter(check, act, violations, 0, check.getRecords()));
         }
         final Map<String, String> result = allocationService.allocateUnregularResultBatch(

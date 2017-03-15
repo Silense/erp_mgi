@@ -121,8 +121,8 @@ public class MessageService {
         final Map<BigInteger, BigInteger> erpIDMap = new HashMap<>(records.size());
         for (UplanRecord record : records) {
             for (CheckRecordErp checkRecord : checkRecords) {
-                if(Objects.equals(checkRecord.getCorrelationId(), record.getCORRELATION_ID())){
-                    erpIDMap.put(record.getCORRELATION_ID(), checkRecord.getErpCode());
+                if(Objects.equals(checkRecord.getCorrelationId(), record.getCHECK_ADDRESS_ID())){
+                    erpIDMap.put(record.getCHECK_ADDRESS_ID(), checkRecord.getErpCode());
                     break;
                 }
             }

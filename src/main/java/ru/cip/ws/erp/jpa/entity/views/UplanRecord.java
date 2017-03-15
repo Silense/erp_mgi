@@ -40,12 +40,13 @@ public class UplanRecord {
     @Column(name = "ADR_SEC_II")
     private String ADR_SEC_II;
 
+
     /**
-     * Идентификатор поставщика данных
+     * ID адреса проведения проверки TODO
      **/
     @Id
-    @Column(name = "CORRELATION_ID")
-    private BigInteger CORRELATION_ID;
+    @Column(name = "CHECK_ADDRESS_ID")
+    private BigInteger CHECK_ADDRESS_ID;
 
     /**
      * Внеплановая проверка к которой привязан адрес
@@ -54,11 +55,7 @@ public class UplanRecord {
     @JoinColumn(name = "CHECK_ID")
     private Uplan plan;
 
-    /**
-     * ID адреса проведения проверки TODO
-     **/
-    @Column(name = "CHECK_ADDRESS_ID")
-    private BigInteger CHECK_ADDRESS_ID;
+
 
     /**
      * ID распоряжения TODO
@@ -88,14 +85,6 @@ public class UplanRecord {
 
     public void setADR_SEC_II(final String ADR_SEC_II) {
         this.ADR_SEC_II = ADR_SEC_II;
-    }
-
-    public BigInteger getCORRELATION_ID() {
-        return CORRELATION_ID;
-    }
-
-    public void setCORRELATION_ID(final BigInteger CORRELATION_ID) {
-        this.CORRELATION_ID = CORRELATION_ID;
     }
 
     public String getINN() {
@@ -148,14 +137,13 @@ public class UplanRecord {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UplanAddress[").append(CORRELATION_ID);
+        final StringBuilder sb = new StringBuilder("UplanAddress[").append(CHECK_ADDRESS_ID);
         sb.append("]{ CHECK_ID=").append(plan != null ? plan.getCHECK_ID() : null);
         sb.append(", ADR_SEC_I='").append(ADR_SEC_I).append('\'');
         sb.append(", ORG_NAME='").append(ORG_NAME).append('\'');
         sb.append(", INN='").append(INN).append('\'');
         sb.append(", OGRN='").append(OGRN).append('\'');
         sb.append(", ADR_SEC_II='").append(ADR_SEC_II).append('\'');
-        sb.append(", CHECK_ADDRESS_ID=").append(CHECK_ADDRESS_ID);
         sb.append(", INSTRUCTION_ID=").append(INSTRUCTION_ID);
         sb.append('}');
         return sb.toString();

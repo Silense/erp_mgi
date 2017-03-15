@@ -292,7 +292,7 @@ public class AllocationService {
         for (UplanRecord record : records) {
             boolean found = false;
             for (CheckRecordErp erpRecord : erpRecords) {
-                if (Objects.equals(erpRecord.getCorrelationId(), record.getCORRELATION_ID())) {
+                if (Objects.equals(erpRecord.getCorrelationId(), record.getCHECK_ADDRESS_ID())) {
                     found = true;
                     break;
                 }

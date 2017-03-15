@@ -245,7 +245,7 @@ public class MessageFactory {
         message.setUSERNOTE(uplan.getUSER_NOTE());
         message.setTYPEOFINSP(TypeOfUnplannedInspection.fromValue(uplan.getTYPE_OF_INSP()));
         for (UplanRecord x : records) {
-            message.getUinspectionUnregular294Correction().add(createUinspectionUnregular294CorrectionType(x, erpIDMap.get(x.getCORRELATION_ID())));
+            message.getUinspectionUnregular294Correction().add(createUinspectionUnregular294CorrectionType(x, erpIDMap.get(x.getCHECK_ADDRESS_ID())));
         }
         return extendMessage(uuid, messageToERP294Type);
     }
@@ -565,7 +565,7 @@ public class MessageFactory {
         result.setADRSECI(source.getADR_SEC_I());
         result.setADRSECII(source.getADR_SEC_II());
         result.setLASTVIOLATIONID(wrapDate(source.getLAST_VIOLATION_ID()));
-        result.setCORRELATIONID(source.getCORRELATION_ID());
+        result.setCORRELATIONID(source.getCHECK_ADDRESS_ID());
         return result;
     }
 

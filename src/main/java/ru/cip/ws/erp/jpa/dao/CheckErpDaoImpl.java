@@ -130,7 +130,7 @@ public class CheckErpDaoImpl {
     public CheckRecordErp createCheckRecordErp(final CheckErp checkErp, final UplanRecord record) {
         final CheckRecordErp result = new CheckRecordErp();
         result.setCheck(checkErp);
-        result.setCorrelationId(record.getCORRELATION_ID());
+        result.setCorrelationId(record.getCHECK_ADDRESS_ID());
         result.setErpCode(null);
         result.setNote(null);
         em.persist(result);

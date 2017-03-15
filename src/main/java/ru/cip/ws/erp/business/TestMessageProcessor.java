@@ -429,7 +429,7 @@ public class TestMessageProcessor {
             a1.setADR_SEC_I("");
             a1.setADR_SEC_II("Адрес объекта проведения №1");
             a1.setLAST_VIOLATION_ID(parseTestDate("2014-10-10"));
-            a1.setCORRELATION_ID(BigInteger.valueOf(10001));
+            a1.setCHECK_ADDRESS_ID(BigInteger.valueOf(10001));
 
             item.getRecords().add(a1);
 
@@ -440,7 +440,7 @@ public class TestMessageProcessor {
             a2.setADR_SEC_I("");
             a2.setADR_SEC_II("Фактический адрес места проведения №2");
             a2.setLAST_VIOLATION_ID(null);
-            a2.setCORRELATION_ID(BigInteger.valueOf(10002));
+            a2.setCHECK_ADDRESS_ID(BigInteger.valueOf(10002));
 
             item.getRecords().add(a2);
 
@@ -497,7 +497,7 @@ public class TestMessageProcessor {
             a1.setADR_SEC_I("");
             a1.setADR_SEC_II("Адрес объекта проведения №1");
             a1.setLAST_VIOLATION_ID(null);
-            a1.setCORRELATION_ID(BigInteger.valueOf(10001));
+            a1.setCHECK_ADDRESS_ID(BigInteger.valueOf(10001));
 
             item.getRecords().add(a1);
 
@@ -508,7 +508,7 @@ public class TestMessageProcessor {
             a2.setADR_SEC_I("");
             a2.setADR_SEC_II("Фактический адрес места проведения №2");
             a2.setLAST_VIOLATION_ID(null);
-            a2.setCORRELATION_ID(BigInteger.valueOf(10002));
+            a2.setCHECK_ADDRESS_ID(BigInteger.valueOf(10002));
 
             item.getRecords().add(a2);
             parameters.add(item);
