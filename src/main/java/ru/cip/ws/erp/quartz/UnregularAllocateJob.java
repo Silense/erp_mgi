@@ -62,14 +62,11 @@ public class UnregularAllocateJob extends QuartzJobBean {
             ctx.setResult(result);
         } else {
             final Date begDate = settingsDao.getDate(cfg.getAppId(), CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE);
-            final Date endDate = ctx.getScheduledFireTime();
-            settingsDao.setNewDateValue(cfg.getAppId(), CFG_KEY_SCHEDULE_UNREGULAR_ALLOCATE_LAST_FIRE_DATE, endDate);
-            final String dateInterval = "[" + sdf.format(begDate) + "]-[" + sdf.format(endDate) + "]";
+            final String dateInterval = sdf.format(begDate);
             final Map<String, String> result = messageProcessor.unregularAllocate(
                     logTag,
-                    "Автоматическое размещение внеплановых проверок за промежуток " + dateInterval,
-                    begDate,
-                    endDate
+                    "Автоматическое размещение внеплановых проверок от " + dateInterval,
+                    begDate
             );
             log.info("#{} Finished Job[{}]: Result = {}", logTag, ctx.getJobDetail().getKey(), result);
             ctx.setResult(result);

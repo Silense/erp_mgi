@@ -46,17 +46,15 @@ public class MessageProcessor {
     public Map<String, String> unregularAllocate(
             final long logTag,
             final String description,
-            final Date begDate,
-            final Date endDate
+            final Date begDate
     ) {
         log.info(
-                "#{} Start unregularAllocate from [{}] to [{}]: {}",
+                "#{} Start unregularAllocate from [{}]: {}",
                 logTag,
                 sdf.format(begDate),
-                sdf.format(endDate),
                 description
         );
-        final List<Uplan> checks = uplanDao.getChecksByInterval(begDate, endDate);
+        final List<Uplan> checks = uplanDao.getUnAllocatedChecksFromDate(begDate);
         if (checks.isEmpty()) {
             log.info("#{} Finish unregularAllocate. No checks found for allocation", logTag);
             return Collections.emptyMap();
@@ -84,7 +82,7 @@ public class MessageProcessor {
         return result;
     }
 
-    public Map<String, String> unregularAllocate(long logTag, final String description, final String orderNum, final Date orderDate ) {
+    public Map<String, String> unregularAllocate(long logTag, final String description, final String orderNum, final Date orderDate) {
         log.info("#{} Start unregularAllocate with ORDER_NUM: '{}' and ORDER_DATE='{}'. Desc = {}", logTag, orderNum, orderDate, description);
         final Uplan check = uplanDao.getByOrderNumAndOrderDate(orderNum, orderDate);
         if (check == null) {
@@ -155,13 +153,13 @@ public class MessageProcessor {
         for (Uplan check : checks) {
             log.info("#{}-{}: ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
             final UplanAct act = uplanDao.getAct(check);
-            if(act == null){
+            if (act == null) {
                 log.warn("#{}-{}: Skip cause no Act found", logTag, check.getCHECK_ID());
                 continue;
             }
             log.info("#{}-{}: Act = {}", logTag, check.getCHECK_ID(), act.getACT_PLACE_CREATE());
             final Set<UplanActViolation> violations = uplanDao.getViolations(check, act);
-            log.info("#{}-{}: Violation = {}",  logTag, check.getCHECK_ID(), violations.size());
+            log.info("#{}-{}: Violation = {}", logTag, check.getCHECK_ID(), violations.size());
             parameters.add(new AllocateUnregularResultParameter(check, act, violations, 0, check.getRecords()));
         }
         final Map<String, String> result = allocationService.allocateUnregularResultBatch(

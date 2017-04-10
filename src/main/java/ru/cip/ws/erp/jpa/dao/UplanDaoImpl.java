@@ -102,4 +102,17 @@ public class UplanDaoImpl {
     }
 
 
+    public List<Uplan> getUnAllocatedChecksFromDate(Date begDate) {
+        return em.createQuery(
+                "SELECT distinct p " +
+                        "FROM Uplan p " +
+                        "LEFT JOIN FETCH p.records r " +
+                        "WHERE p.ORDER_DATE >= :begDate " +
+                        "AND NOT EXISTS (" +
+                        "   SELECT p.id FROM CheckErp c WHERE c.checkId = p.CHECK_ID " +
+                        ")",
+                Uplan.class)
+                .setParameter("begDate", begDate, TemporalType.TIMESTAMP)
+                .getResultList();
+    }
 }
