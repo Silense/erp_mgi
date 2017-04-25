@@ -93,12 +93,10 @@ public class ScheduleRest {
         } else {
             cronExpression.append("* ");
         }
-        cronExpression.append("? ");
-        if (StringUtils.isNotEmpty(year)) {
-            cronExpression.append(year.trim()).append(" ");
-        } else {
-            cronExpression.append("*");
-        }
+        cronExpression.append("?");
+//        if (StringUtils.isNotEmpty(year)) {
+//            cronExpression.append(year.trim());
+//        }
         final String result = setScheduleExpression(wrapper, cronExpression.toString());
         log.info("End update [{}]. Result={} ", wrapper.getJobKey(), result);
         return ResponseEntity.ok(result);

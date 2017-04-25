@@ -109,7 +109,7 @@ public class UplanDaoImpl {
                         "LEFT JOIN FETCH p.records r " +
                         "WHERE p.ORDER_DATE >= :begDate " +
                         "AND NOT EXISTS (" +
-                        "   SELECT p.id FROM CheckErp c WHERE c.checkId = p.CHECK_ID " +
+                        "   SELECT c.id FROM CheckErp c WHERE c.checkId = p.CHECK_ID " +
                         ")",
                 Uplan.class)
                 .setParameter("begDate", begDate, TemporalType.TIMESTAMP)
