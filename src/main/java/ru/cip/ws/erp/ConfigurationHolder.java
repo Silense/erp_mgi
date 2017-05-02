@@ -138,12 +138,12 @@ public class ConfigurationHolder {
         return sb.toString();
     }
 
-    public MessageToERPModelType.Mailer getMailer() {
+    public MessageToERPModelType.Mailer getMailer(final String frguServId) {
         return MessageFactory.createMailer(
                 get(CFG_KEY_MGI_NAME),
                 get(CFG_KEY_MGI_OGRN),
                 getNumber(CFG_KEY_MGI_FRGU_ORG_ID),
-                getNumber(CFG_KEY_MGI_FRGU_SERV_ID)
+                getNumber(frguServId)
         );
     }
 

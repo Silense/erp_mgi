@@ -389,13 +389,13 @@ public class TestMessageProcessor {
     }
 
     public Map<String, String> processUplanUnRegular294Initialization(final long logTag, final Integer fromId, final Integer toId) {
-        final MessageToERPModelType.Mailer mailer = MessageFactory.createMailer("ФНС России", "1047707030513", new BigInteger("10000001169"), new BigInteger("10001696877"));
-        final MessageToERPModelType.Addressee addressee = MessageFactory.createAddressee("1020500000", "Прокуратура Московской области ");
         final Set<AllocateUnregularParameter> parameters = new LinkedHashSet<>();
         int currentNumber = fromId;
         while (currentNumber <= toId) {
             final AllocateUnregularParameter item = new AllocateUnregularParameter();
             item.setKO_NAME("Федеральная налоговая служба");
+            item.setMailer(MessageFactory.createMailer("ФНС России", "1047707030513", new BigInteger("10000001169"), new BigInteger("10001696877")));
+            item.setAddressee(MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "));
 
             final Uplan uplan = new Uplan();
             uplan.setCHECK_ID(new BigInteger(String.valueOf(currentNumber)));
@@ -450,20 +450,18 @@ public class TestMessageProcessor {
         return allocationService.allocateUnregularBatch(
                 logTag,
                 "4.1.7 :: Эталонный :: Запрос на первичное размещение внеплановой проверки",
-                mailer,
-                addressee,
                 parameters
         );
     }
 
     public Map<String, String> processUplanUnRegular294Correction(final long logTag, final Integer fromId, final Integer toId) {
-        final MessageToERPModelType.Mailer mailer = MessageFactory.createMailer("ФНС России", "1047707030513", new BigInteger("10000001169"), new BigInteger("10001696877"));
-        final MessageToERPModelType.Addressee addressee = MessageFactory.createAddressee("1020500000", "Прокуратура Московской области ");
         final Set<AllocateUnregularParameter> parameters = new LinkedHashSet<>();
         int currentNumber = fromId;
         while (currentNumber <= toId) {
             final AllocateUnregularParameter item = new AllocateUnregularParameter();
             item.setKO_NAME("Федеральная налоговая служба");
+            item.setMailer(MessageFactory.createMailer("ФНС России", "1047707030513", new BigInteger("10000001169"), new BigInteger("10001696877")));
+            item.setAddressee(MessageFactory.createAddressee("1020500000", "Прокуратура Московской области "));
             final Uplan uplan = new Uplan();
             uplan.setCHECK_ID(new BigInteger(String.valueOf(currentNumber)));
             uplan.setREQUEST_NUM("Номер решения №");
@@ -518,8 +516,6 @@ public class TestMessageProcessor {
         return allocationService.allocateUnregularBatch(
                 logTag,
                 "4.1.8 :: Эталонный :: Запрос на корректировку результатов внеплановой проверки",
-                mailer,
-                addressee,
                 parameters
         );
     }
@@ -589,14 +585,12 @@ public class TestMessageProcessor {
             v1.setAddressRecordId(new BigInteger("201600000859"));
             violations.add(v2);
 
-            parameterSet.add(new AllocateUnregularResultParameter(uplan,act, violations, 2015, uplan.getRecords()));
+            parameterSet.add(new AllocateUnregularResultParameter(uplan,act, violations, 2015, uplan.getRecords(), mailer, addressee));
             currentNumber++;
         }
         return allocationService.allocateUnregularResultBatch(
                 logTag,
                 "4.1.10 :: Эталонный :: Запрос на повторное первичное размещение результатов внеплановой проверки с корректными данными",
-                mailer,
-                addressee,
                 parameterSet
         );
     }

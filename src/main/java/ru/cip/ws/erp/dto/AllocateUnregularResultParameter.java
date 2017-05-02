@@ -1,5 +1,6 @@
 package ru.cip.ws.erp.dto;
 
+import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
 import ru.cip.ws.erp.jpa.entity.views.Uplan;
 import ru.cip.ws.erp.jpa.entity.views.UplanAct;
 import ru.cip.ws.erp.jpa.entity.views.UplanActViolation;
@@ -18,13 +19,25 @@ public class AllocateUnregularResultParameter {
     private final Set<UplanActViolation> violations;
     private final int year;
     private final Set<UplanRecord> records;
+    private final MessageToERPModelType.Mailer mailer;
+    private final MessageToERPModelType.Addressee addressee;
 
-    public AllocateUnregularResultParameter(Uplan check, UplanAct act, Set<UplanActViolation> violations, int year, Set<UplanRecord> records) {
+    public AllocateUnregularResultParameter(
+            Uplan check,
+            UplanAct act,
+            Set<UplanActViolation> violations,
+            int year,
+            Set<UplanRecord> records,
+            MessageToERPModelType.Mailer mailer,
+            MessageToERPModelType.Addressee addressee
+    ) {
         this.check = check;
         this.act = act;
         this.violations = violations;
         this.year = year;
         this.records = records;
+        this.mailer = mailer;
+        this.addressee = addressee;
     }
 
     public Uplan getCheck() {
@@ -42,6 +55,7 @@ public class AllocateUnregularResultParameter {
 
     /**
      * Вернуть строку-идентификатор проверки
+     *
      * @return строка-идентификатор проверки
      */
     public String getCheckId() {
@@ -54,5 +68,13 @@ public class AllocateUnregularResultParameter {
 
     public Set<UplanRecord> getRecords() {
         return records;
+    }
+
+    public MessageToERPModelType.Mailer getMailer() {
+        return mailer;
+    }
+
+    public MessageToERPModelType.Addressee getAddressee() {
+        return addressee;
     }
 }

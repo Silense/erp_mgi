@@ -59,8 +59,6 @@ public class AllocationService {
      *
      * @param logTag     префикс-номер для логиирования
      * @param desc       Общее пояснение к размещению проверок (для EXP_SESSION)
-     * @param mailer     от имени какой структуры будем размещать
-     * @param addressee  на имя какой структуры будем размещать
      * @param parameters Списко структур для отправки в ЕРП
      * @return карта результатов размещения <Идентификатор проверки, Результат размещения>,
      * где результат размещения- номер requestId для ЕРП в случае успешной отправки
@@ -69,8 +67,6 @@ public class AllocationService {
     public Map<String, String> allocateUnregularBatch(
             final long logTag,
             final String desc,
-            final MessageToERPModelType.Mailer mailer,
-            final MessageToERPModelType.Addressee addressee,
             final Set<AllocateUnregularParameter> parameters
     ) {
         final String actionName = "UNREGULAR_ALLOCATION_BATCH";
@@ -83,7 +79,7 @@ public class AllocationService {
         log.info("#{} : Created {}", logTag, session);
         final Map<String, String> result = new LinkedHashMap<>(parameters.size());
         for (AllocateUnregularParameter param : parameters) {
-            result.put(param.getCheckId(), allocateUnregular(logTag, mailer, addressee, session, param));
+            result.put(param.getCheckId(), allocateUnregular(logTag, param.getMailer(), param.getAddressee(), session, param));
         }
         expSessionDao.setSessionStatus(session, SessionStatus.DONE);
         log.info("#{} : End {}. Result: {}", logTag, actionName, result);
@@ -180,8 +176,6 @@ public class AllocationService {
     public Map<String, String> allocateUnregularResultBatch(
             final long logTag,
             final String desc,
-            final MessageToERPModelType.Mailer mailer,
-            final MessageToERPModelType.Addressee addressee,
             final Set<AllocateUnregularResultParameter> parameters
     ) {
         final String actionType = "UNREGULAR_RESULT_ALLOCATION_BATCH";
@@ -194,7 +188,7 @@ public class AllocationService {
         log.info("#{} : Created {}", logTag, session);
         final Map<String, String> result = new LinkedHashMap<>(parameters.size());
         for (AllocateUnregularResultParameter param : parameters) {
-            result.put(param.getCheckId(), allocateUnregularResult(logTag, mailer, addressee, session, param));
+            result.put(param.getCheckId(), allocateUnregularResult(logTag, session, param));
         }
         expSessionDao.setSessionStatus(session, SessionStatus.DONE);
         log.info("#{} : End {}. Result: {}", logTag, actionType, result);
@@ -203,8 +197,6 @@ public class AllocationService {
 
     private String allocateUnregularResult(
             final long requestNumber,
-            final MessageToERPModelType.Mailer mailer,
-            final MessageToERPModelType.Addressee addressee,
             final ExpSession session,
             final AllocateUnregularResultParameter parameter) {
         final String logTag = "#" + requestNumber + "-" + parameter.getCheckId();
@@ -237,8 +229,8 @@ public class AllocationService {
                 logTag,
                 session,
                 uuid,
-                mailer,
-                addressee,
+                parameter.getMailer(),
+                parameter.getAddressee(),
                 parameter.getYear(),
                 parameter.getCheck(),
                 checkErpTuple.left,

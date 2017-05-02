@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import ru.cip.ws.erp.ConfigurationHolder;
 import ru.cip.ws.erp.dto.AllocateUnregularParameter;
 import ru.cip.ws.erp.dto.AllocateUnregularResultParameter;
-import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
 import ru.cip.ws.erp.jpa.dao.PlanActDaoImpl;
 import ru.cip.ws.erp.jpa.dao.UplanDaoImpl;
 import ru.cip.ws.erp.jpa.entity.views.Uplan;
@@ -60,8 +59,6 @@ public class MessageProcessor {
             return Collections.emptyMap();
         }
         log.info("#{} Found {} checks for unregularAllocation", logTag, checks.size());
-        final MessageToERPModelType.Mailer mailer = cfg.getMailer();
-        final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
         final Set<AllocateUnregularParameter> parameters = new HashSet<>(checks.size());
         for (Uplan check : checks) {
             log.info("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
@@ -69,15 +66,11 @@ public class MessageProcessor {
             allocationParameter.setCheck(check);
             allocationParameter.setKO_NAME(cfg.get(CFG_KEY_MGI_NAME));
             allocationParameter.setRecords(check.getRecords());
+            allocationParameter.setMailer(cfg.getMailer(check.getFRGU_NUM()));
+            allocationParameter.setAddressee(cfg.getAddressee());
             parameters.add(allocationParameter);
         }
-        final Map<String, String> result = allocationService.allocateUnregularBatch(
-                logTag,
-                description,
-                mailer,
-                addressee,
-                parameters
-        );
+        final Map<String, String> result = allocationService.allocateUnregularBatch(logTag, description, parameters);
         log.info("#{} Finish unregularAllocate. Result = {}", logTag, result);
         return result;
     }
@@ -89,22 +82,17 @@ public class MessageProcessor {
             log.info("#{} Finish unregularAllocate. No check found for allocation", logTag);
             return Collections.emptyMap();
         }
-        final MessageToERPModelType.Mailer mailer = cfg.getMailer();
-        final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
+
         final Set<AllocateUnregularParameter> parameters = new HashSet<>(1);
         log.info("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
         final AllocateUnregularParameter allocationParameter = new AllocateUnregularParameter();
         allocationParameter.setCheck(check);
         allocationParameter.setKO_NAME(cfg.get(CFG_KEY_MGI_NAME));
         allocationParameter.setRecords(check.getRecords());
+        allocationParameter.setMailer(cfg.getMailer(check.getFRGU_NUM()));
+        allocationParameter.setAddressee(cfg.getAddressee());
         parameters.add(allocationParameter);
-        final Map<String, String> result = allocationService.allocateUnregularBatch(
-                logTag,
-                description,
-                mailer,
-                addressee,
-                parameters
-        );
+        final Map<String, String> result = allocationService.allocateUnregularBatch(logTag, description, parameters);
         log.info("#{} Finish unregularAllocate. Result = {}", logTag, result);
         return result;
     }
@@ -117,8 +105,6 @@ public class MessageProcessor {
             return Collections.emptyMap();
         }
         log.info("#{} Found {} checks for unregularReAllocation", logTag, checks.size());
-        final MessageToERPModelType.Mailer mailer = cfg.getMailer();
-        final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
         final Set<AllocateUnregularParameter> parameters = new HashSet<>(checks.size());
         for (Uplan check : checks) {
             log.info("#{}-{}:ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
@@ -126,15 +112,11 @@ public class MessageProcessor {
             allocationParameter.setCheck(check);
             allocationParameter.setKO_NAME(cfg.get(CFG_KEY_MGI_NAME));
             allocationParameter.setRecords(check.getRecords());
+            allocationParameter.setMailer(cfg.getMailer(check.getFRGU_NUM()));
+            allocationParameter.setAddressee(cfg.getAddressee());
             parameters.add(allocationParameter);
         }
-        final Map<String, String> result = allocationService.allocateUnregularBatch(
-                logTag,
-                description,
-                mailer,
-                addressee,
-                parameters
-        );
+        final Map<String, String> result = allocationService.allocateUnregularBatch(logTag, description, parameters);
         log.info("#{} Finish unregularReAllocate. Result = {}", logTag, result);
         return result;
     }
@@ -147,8 +129,6 @@ public class MessageProcessor {
             return Collections.emptyMap();
         }
         log.info("#{} Found {} checks for unregularAllocateResult", logTag, checks.size());
-        final MessageToERPModelType.Mailer mailer = cfg.getMailer();
-        final MessageToERPModelType.Addressee addressee = cfg.getAddressee();
         final Set<AllocateUnregularResultParameter> parameters = new HashSet<>(checks.size());
         for (Uplan check : checks) {
             log.info("#{}-{}: ORDER_NUM='{}'", logTag, check.getCHECK_ID(), check.getORDER_NUM());
@@ -160,15 +140,19 @@ public class MessageProcessor {
             log.info("#{}-{}: Act = {}", logTag, check.getCHECK_ID(), act.getACT_PLACE_CREATE());
             final Set<UplanActViolation> violations = uplanDao.getViolations(check, act);
             log.info("#{}-{}: Violation = {}", logTag, check.getCHECK_ID(), violations.size());
-            parameters.add(new AllocateUnregularResultParameter(check, act, violations, 0, check.getRecords()));
+            parameters.add(
+                    new AllocateUnregularResultParameter(
+                            check,
+                            act,
+                            violations,
+                            0,
+                            check.getRecords(),
+                            cfg.getMailer(check.getFRGU_NUM()),
+                            cfg.getAddressee()
+                    )
+            );
         }
-        final Map<String, String> result = allocationService.allocateUnregularResultBatch(
-                logTag,
-                description,
-                mailer,
-                addressee,
-                parameters
-        );
+        final Map<String, String> result = allocationService.allocateUnregularResultBatch(logTag, description, parameters);
         log.info("#{} Finish unregularAllocateResult. Result = {}", logTag, result);
         return result;
     }

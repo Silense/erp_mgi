@@ -1,5 +1,6 @@
 package ru.cip.ws.erp.dto;
 
+import ru.cip.ws.erp.generated.erptypes.MessageToERPModelType;
 import ru.cip.ws.erp.jpa.entity.views.Uplan;
 import ru.cip.ws.erp.jpa.entity.views.UplanRecord;
 
@@ -16,6 +17,8 @@ public class AllocateUnregularParameter {
     private Uplan check;
     private Set<UplanRecord> records = new LinkedHashSet<>();
     private String KO_NAME;
+    private MessageToERPModelType.Mailer mailer;
+    private MessageToERPModelType.Addressee addressee;
 
     public Uplan getCheck() {
         return check;
@@ -47,5 +50,21 @@ public class AllocateUnregularParameter {
 
     public void setKO_NAME(String KO_NAME) {
         this.KO_NAME = KO_NAME;
+    }
+
+    public void setMailer(MessageToERPModelType.Mailer mailer) {
+        this.mailer = mailer;
+    }
+
+    public MessageToERPModelType.Mailer getMailer() {
+        return mailer;
+    }
+
+    public void setAddressee(MessageToERPModelType.Addressee addressee) {
+        this.addressee = addressee;
+    }
+
+    public MessageToERPModelType.Addressee getAddressee() {
+        return addressee;
     }
 }
